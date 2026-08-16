@@ -38,6 +38,7 @@ The EPM defines:
 - Execution Modes as engineering-level rigor classifications;
 - traceability;
 - controlled reconsideration;
+- engineering completion conditions;
 - engineering-level process integrity and invariants.
 
 The EPM does not define:
@@ -575,7 +576,40 @@ A reconsidered element shall not be silently overwritten when doing so would obs
 
 ---
 
-## 24. Process Integrity
+## 24. Process Completion
+
+### Definition
+
+**Engineering Process Completion** is the engineering condition in which the Process Instance has satisfied the applicable final Requirements, required verification, required Decision Gates, and other completion conditions established by its governing Process definition.
+
+Completion is an engineering validity condition. It does not define how a Runtime terminates or records the Process Instance.
+
+### Completion Conditions
+
+A process definition shall identify its completion conditions sufficiently to determine when the Engineering Objective has been adequately addressed.
+
+Where applicable, completion conditions shall account for:
+
+- resolved and satisfied material Requirements;
+- applicable Constraints;
+- required Decisions;
+- required verification results;
+- material Risks and accepted residual conditions;
+- required Artifacts and their status;
+- unresolved matters that prevent valid completion;
+- applicable final Decision Gates.
+
+A Process Instance shall not be considered engineering-complete merely because planned activities have been performed or an expected Artifact has been produced.
+
+### Relationship to Termination
+
+Engineering completion establishes eligibility for execution termination; the PEM defines the execution semantics for recognizing and performing that termination.
+
+A Process Instance may also be suspended or terminated without engineering completion when the applicable execution or governance conditions permit it. Such termination shall not be represented as Engineering Process Completion unless the EPM completion conditions are satisfied.
+
+---
+
+## 25. Process Integrity
 
 The Engineering Process Model establishes the authoritative engineering semantics of the process.
 
@@ -613,13 +647,13 @@ Material Artifacts shall retain sufficient status and traceability to determine 
 
 Material Risks shall remain visible to the engineering decisions and progression conditions they affect.
 
-### Knowledge Integrity
-
-Material engineering knowledge shall remain available across execution boundaries.
-
 ### Transition Integrity
 
 Engineering progression shall occur only when applicable Transition Rules and Decision Gates permit it.
+
+### Knowledge Integrity
+
+Material engineering knowledge shall remain available across execution boundaries.
 
 ### Iteration Integrity
 
@@ -627,7 +661,7 @@ New Evidence or materially changed conditions shall be capable of causing legiti
 
 ---
 
-## 25. Engineering Invariants
+## 26. Engineering Invariants
 
 The Engineering Process Model is governed by the following fundamental invariants:
 
@@ -642,12 +676,13 @@ The Engineering Process Model is governed by the following fundamental invariant
 9. **Artifact Integrity** — material engineering outputs remain identifiable and their relevant status remains explicit.
 10. **Risk Visibility** — material Risks remain visible to affected engineering Decisions and progression conditions.
 11. **Knowledge Continuity** — material engineering knowledge remains available across execution boundaries.
-12. **Iteration** — material new Evidence or changed conditions can cause controlled reconsideration.
-13. **Implementation Independence** — engineering semantics do not depend on a particular Runtime, software architecture, AI model, or storage mechanism.
+12. **Completion Integrity** — Engineering Process Completion is determined by explicit engineering completion conditions, not merely activity completion.
+13. **Iteration** — material new Evidence or changed conditions can cause controlled reconsideration.
+14. **Implementation Independence** — engineering semantics do not depend on a particular Runtime, software architecture, AI model, or storage mechanism.
 
 ---
 
-## 26. Process Model Boundaries
+## 27. Process Model Boundaries
 
 The EPM defines the engineering process but does not define its execution implementation.
 
@@ -659,7 +694,8 @@ The following belong to the Process Execution Model:
 - Participant interaction mechanics;
 - Execution Context management and persistence mechanics;
 - interruption and resumption mechanics;
-- Runtime conformance mechanisms.
+- Runtime conformance mechanisms;
+- execution termination mechanics.
 
 The following belong to implementation:
 
@@ -682,7 +718,7 @@ The EPM therefore remains independent of the mechanism used to execute it.
 
 ---
 
-## 27. Relationship to the Process Execution Model
+## 28. Relationship to the Process Execution Model
 
 The EPM and PEM define different aspects of the same system.
 
@@ -695,6 +731,7 @@ The EPM defines:
 - Transition Rules;
 - Decision Gates;
 - engineering progression;
+- Engineering Process Completion;
 - engineering integrity and invariants.
 
 The PEM defines:
@@ -705,6 +742,7 @@ The PEM defines:
 - execution control;
 - Execution Context management;
 - interruption and resumption;
+- execution termination;
 - Runtime conformance.
 
 The boundary is therefore:
@@ -729,7 +767,7 @@ The PEM shall not redefine engineering validity conditions established by the EP
 
 ---
 
-## 28. Conformance-Oriented Requirements
+## 29. Conformance-Oriented Requirements
 
 A process definition conforms to the EPM when its material engineering semantics are explicitly defined sufficiently to determine:
 
@@ -755,7 +793,7 @@ The PEM defines the additional requirements for a Runtime claiming execution con
 
 ---
 
-## 29. Core Invariants Summary
+## 30. Core Invariants Summary
 
 The EPM can be summarized by the following invariant chain:
 
