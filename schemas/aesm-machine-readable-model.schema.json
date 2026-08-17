@@ -5,131 +5,31 @@
   "description": "Structural schema for the canonical machine-readable representation of the AESM Operational Model.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["modelId", "modelVersion", "schemaVersion", "status", "authority", "serialization", "specificationRefs", "entityTypes", "relationships", "operationClasses", "invariants", "extensions"],
+  "required": ["modelId", "modelVersion", "schemaVersion", "status", "authority", "serialization", "specificationRefs", "semanticModel", "operationClasses", "invariants", "extensions"],
   "properties": {
     "modelId": {"const": "aesm.operational-model"},
     "modelVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
     "schemaVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
     "status": {"type": "string", "enum": ["candidate", "frozen", "superseded"]},
-    "authority": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["engineering", "execution", "representation"],
-      "properties": {
-        "engineering": {"const": "EPM"},
-        "execution": {"const": "PEM"},
-        "representation": {"const": "AESM Operational Model"}
-      }
-    },
-    "serialization": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["format", "encoding", "schemaDialect"],
-      "properties": {
-        "format": {"const": "JSON"},
-        "encoding": {"const": "UTF-8"},
-        "schemaDialect": {"const": "https://json-schema.org/draft/2020-12/schema"}
-      }
-    },
-    "specificationRefs": {
-      "type": "array",
-      "minItems": 3,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["type", "path"],
-        "properties": {
-          "type": {"type": "string", "enum": ["EPM", "PEM", "OperationalModel"]},
-          "path": {"type": "string", "minLength": 1}
-        }
-      }
-    },
-    "entityTypes": {
-      "type": "array",
-      "minItems": 1,
-      "items": {"$ref": "#/$defs/entityType"}
-    },
-    "relationships": {
-      "type": "array",
-      "items": {"$ref": "#/$defs/relationship"}
-    },
-    "operationClasses": {
-      "type": "array",
-      "items": {"$ref": "#/$defs/operationClass"}
-    },
-    "invariants": {
-      "type": "array",
-      "items": {"$ref": "#/$defs/invariant"}
-    },
-    "extensions": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["allowed", "rules"],
-      "properties": {
-        "allowed": {"type": "boolean"},
-        "rules": {"type": "array", "items": {"type": "string"}}
-      }
-    }
+    "authority": {"$ref": "#/$defs/authority"},
+    "serialization": {"$ref": "#/$defs/serialization"},
+    "specificationRefs": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/specificationRef"}},
+    "semanticModel": {"$ref": "#/$defs/semanticModel"},
+    "operationClasses": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/operationClass"}},
+    "invariants": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/invariant"}},
+    "extensions": {"$ref": "#/$defs/extensions"}
   },
   "$defs": {
-    "field": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["name", "type", "required"],
-      "properties": {
-        "name": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$"},
-        "type": {"type": "string", "enum": ["string", "boolean", "integer", "number", "object", "array", "reference", "enum", "timestamp"]},
-        "required": {"type": "boolean"},
-        "cardinality": {"type": "string"},
-        "target": {"type": "string"},
-        "enum": {"type": "array", "items": {"type": "string"}},
-        "description": {"type": "string"}
-      }
-    },
-    "entityType": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["kind", "identity", "fields"],
-      "properties": {
-        "kind": {"type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$"},
-        "identity": {"type": "string", "minLength": 1},
-        "fields": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/field"}},
-        "description": {"type": "string"}
-      }
-    },
-    "relationship": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "source", "target", "cardinality", "required"],
-      "properties": {
-        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]*$"},
-        "source": {"type": "string"},
-        "target": {"type": "string"},
-        "cardinality": {"type": "string", "enum": ["one-to-one", "one-to-many", "many-to-one", "many-to-many"]},
-        "required": {"type": "boolean"},
-        "description": {"type": "string"}
-      }
-    },
-    "operationClass": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "operations"],
-      "properties": {
-        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]*$"},
-        "operations": {"type": "array", "items": {"type": "string"}},
-        "description": {"type": "string"}
-      }
-    },
-    "invariant": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "owner", "statement"],
-      "properties": {
-        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]*$"},
-        "owner": {"type": "string", "enum": ["EPM", "PEM", "OperationalModel"]},
-        "statement": {"type": "string", "minLength": 1},
-        "enforcement": {"type": "string", "enum": ["semantic", "execution", "representation", "cross-layer"]}
-      }
-    }
+    "authority": {"type":"object","additionalProperties":false,"required":["engineering","execution","representation"],"properties":{"engineering":{"const":"EPM"},"execution":{"const":"PEM"},"representation":{"const":"AESM Operational Model"}}},
+    "serialization": {"type":"object","additionalProperties":false,"required":["format","encoding","schemaDialect"],"properties":{"format":{"const":"JSON"},"encoding":{"const":"UTF-8"},"schemaDialect":{"const":"https://json-schema.org/draft/2020-12/schema"}}},
+    "specificationRef": {"type":"object","additionalProperties":false,"required":["type","path"],"properties":{"type":{"type":"string","enum":["EPM","PEM","OperationalModel"]},"path":{"type":"string","minLength":1}}},
+    "field": {"type":"object","additionalProperties":false,"required":["name","type","required"],"properties":{"name":{"type":"string","pattern":"^[A-Za-z][A-Za-z0-9_]*$"},"type":{"type":"string","enum":["string","boolean","integer","number","object","array","reference","enum","timestamp"]},"required":{"type":"boolean"},"target":{"type":"string"},"enum":{"type":"array","items":{"type":"string"}},"description":{"type":"string"}}},
+    "entityType": {"type":"object","additionalProperties":false,"required":["kind","identity","fields"],"properties":{"kind":{"type":"string","pattern":"^[A-Z][A-Za-z0-9]*$"},"identity":{"const":"id"},"description":{"type":"string"},"fields":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/field"}}}},
+    "relationship": {"type":"object","additionalProperties":false,"required":["id","source","target","cardinality","required"],"properties":{"id":{"type":"string","pattern":"^[a-z][a-z0-9_.-]*$"},"source":{"type":"string"},"target":{"type":"string"},"cardinality":{"type":"string","enum":["one-to-one","one-to-many","many-to-one","many-to-many"]},"required":{"type":"boolean"},"description":{"type":"string"}}},
+    "semanticModel": {"type":"object","additionalProperties":false,"required":["entityTypes","relationships","stateCategories","conditionCategories","authorityPath","traceabilityRequirements"],"properties":{"entityTypes":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/entityType"}},"relationships":{"type":"array","items":{"$ref":"#/$defs/relationship"}},"stateCategories":{"type":"array","minItems":1,"items":{"type":"string"}},"conditionCategories":{"type":"array","minItems":1,"items":{"type":"string"}},"authorityPath":{"type":"array","minItems":1,"items":{"type":"string"}},"traceabilityRequirements":{"type":"array","minItems":1,"items":{"type":"string"}}}},
+    "operation": {"type":"object","additionalProperties":false,"required":["id","mutation"],"properties":{"id":{"type":"string","pattern":"^[a-z][a-zA-Z0-9_.-]*$"},"mutation":{"type":"string","enum":["none","candidate-only","controlled-record-mutation","pem-controlled","controlled-engineering-mutation"]},"subject":{"type":"string"},"inputs":{"type":"array","items":{"type":"string"}},"outputs":{"type":"array","items":{"type":"string"}},"authority":{"type":"string","enum":["EPM","PEM","OperationalModel","cross-layer"]},"preconditions":{"type":"array","items":{"type":"string"}},"postconditions":{"type":"array","items":{"type":"string"}},"traceRequired":{"type":"boolean"}}},
+    "operationClass": {"type":"object","additionalProperties":false,"required":["id","operations"],"properties":{"id":{"type":"string","pattern":"^[a-z][a-z0-9_.-]*$"},"description":{"type":"string"},"operations":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/operation"}}}},
+    "invariant": {"type":"object","additionalProperties":false,"required":["id","owner","statement","enforcement"],"properties":{"id":{"type":"string","pattern":"^[a-z][a-z0-9_.-]*$"},"owner":{"type":"string","enum":["EPM","PEM","OperationalModel"]},"statement":{"type":"string","minLength":1},"enforcement":{"type":"string","enum":["semantic","execution","representation","cross-layer"]}}},
+    "extensions": {"type":"object","additionalProperties":false,"required":["allowed","rules"],"properties":{"allowed":{"type":"boolean"},"rules":{"type":"array","items":{"type":"string"}}}}
   }
 }
