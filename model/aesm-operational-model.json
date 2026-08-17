@@ -1,0 +1,243 @@
+{
+  "modelId": "aesm.operational-model",
+  "modelVersion": "0.1.0",
+  "schemaVersion": "0.1.0",
+  "status": "candidate",
+  "authority": {
+    "engineering": "EPM",
+    "execution": "PEM",
+    "representation": "AESM Operational Model"
+  },
+  "serialization": {
+    "format": "JSON",
+    "encoding": "UTF-8",
+    "schemaDialect": "https://json-schema.org/draft/2020-12/schema"
+  },
+  "specificationRefs": [
+    {"type": "EPM", "path": "specifications/Engineering Process Model.md"},
+    {"type": "PEM", "path": "specifications/Process Execution Model.md"},
+    {"type": "OperationalModel", "path": "specifications/AESM Operational Model.md"}
+  ],
+  "entityTypes": [
+    {"kind": "ProcessInstance", "identity": "id", "description": "One execution of an EPM for a specific Engineering Objective.", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "epmRef", "type": "reference", "target": "EPM", "required": true},
+      {"name": "pemRef", "type": "reference", "target": "PEM", "required": true},
+      {"name": "engineeringObjective", "type": "reference", "target": "EngineeringObjective", "required": true},
+      {"name": "executionMode", "type": "reference", "target": "ExecutionMode", "required": true},
+      {"name": "lifecycleStatus", "type": "enum", "required": true, "enum": ["Initialized", "Active", "Suspended", "Interrupted", "EngineeringComplete", "RuntimeTerminated", "Abandoned"]},
+      {"name": "executionContext", "type": "reference", "target": "ExecutionContext", "required": true}
+    ]},
+    {"kind": "EngineeringObjective", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "statement", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true}
+    ]},
+    {"kind": "ExecutionContext", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "processInstanceRef", "type": "reference", "target": "ProcessInstance", "required": true},
+      {"name": "currentProcessState", "type": "reference", "target": "ProcessState", "required": true},
+      {"name": "executionMode", "type": "reference", "target": "ExecutionMode", "required": true},
+      {"name": "lastAuthoritativeUpdate", "type": "timestamp", "required": true},
+      {"name": "pendingPlan", "type": "reference", "target": "Plan", "required": false},
+      {"name": "continuity", "type": "object", "required": true}
+    ]},
+    {"kind": "ProcessState", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "definitionRef", "type": "reference", "target": "ProcessStateDefinition", "required": true},
+      {"name": "conditionStatus", "type": "object", "required": true}
+    ]},
+    {"kind": "ProcessStateDefinition", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "name", "type": "string", "required": true},
+      {"name": "progressionConditions", "type": "array", "target": "ProgressionCondition", "required": true},
+      {"name": "decisionGates", "type": "array", "target": "DecisionGate", "required": true}
+    ]},
+    {"kind": "TransitionRule", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "sourceState", "type": "reference", "target": "ProcessStateDefinition", "required": true},
+      {"name": "targetState", "type": "reference", "target": "ProcessStateDefinition", "required": true},
+      {"name": "requiredConditions", "type": "array", "required": true},
+      {"name": "prohibitedConditions", "type": "array", "required": false}
+    ]},
+    {"kind": "Transition", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "sourceState", "type": "reference", "target": "ProcessState", "required": true},
+      {"name": "targetState", "type": "reference", "target": "ProcessState", "required": true},
+      {"name": "ruleRef", "type": "reference", "target": "TransitionRule", "required": true},
+      {"name": "evaluationResult", "type": "object", "required": true}
+    ]},
+    {"kind": "DecisionGate", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "evaluationStatus", "type": "enum", "required": true, "enum": ["Satisfied", "NotSatisfied", "NotYetDeterminable", "NotApplicable"]},
+      {"name": "result", "type": "string", "required": true},
+      {"name": "supportingRefs", "type": "array", "required": false}
+    ]},
+    {"kind": "ProgressionCondition", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "evaluationResult", "type": "string", "required": true},
+      {"name": "supportingRefs", "type": "array", "required": false}
+    ]},
+    {"kind": "ExecutionMode", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "mode", "type": "enum", "required": true, "enum": ["Direct", "Guided", "Full"]},
+      {"name": "basis", "type": "string", "required": false},
+      {"name": "rigorExpectations", "type": "array", "required": false}
+    ]},
+    {"kind": "Requirement", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "statement", "type": "string", "required": true},
+      {"name": "resolutionState", "type": "enum", "required": true, "enum": ["Open", "Contested", "Resolved"]},
+      {"name": "satisfactionState", "type": "string", "required": false}
+    ]},
+    {"kind": "Constraint", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "statement", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true}
+    ]},
+    {"kind": "Investigation", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "objective", "type": "string", "required": true},
+      {"name": "engineeringQuestion", "type": "string", "required": false},
+      {"name": "status", "type": "string", "required": true},
+      {"name": "resultRefs", "type": "array", "required": false}
+    ]},
+    {"kind": "Evidence", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "contentOrReference", "type": "string", "required": true},
+      {"name": "provenance", "type": "object", "required": false},
+      {"name": "status", "type": "string", "required": true}
+    ]},
+    {"kind": "Assumption", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "proposition", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true}
+    ]},
+    {"kind": "Risk", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "description", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true},
+      {"name": "treatment", "type": "string", "required": false}
+    ]},
+    {"kind": "CandidateSolution", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "description", "type": "string", "required": true},
+      {"name": "evaluationStatus", "type": "string", "required": true}
+    ]},
+    {"kind": "Evaluation", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "subjectRef", "type": "reference", "required": true},
+      {"name": "criteria", "type": "array", "required": true},
+      {"name": "result", "type": "string", "required": true}
+    ]},
+    {"kind": "EngineeringDecision", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "decision", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true},
+      {"name": "rationale", "type": "string", "required": true},
+      {"name": "reconsiderationStatus", "type": "string", "required": false}
+    ]},
+    {"kind": "VerificationResult", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "verificationTarget", "type": "reference", "required": true},
+      {"name": "criteria", "type": "array", "required": true},
+      {"name": "result", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true}
+    ]},
+    {"kind": "Artifact", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "representation", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true},
+      {"name": "version", "type": "string", "required": false}
+    ]},
+    {"kind": "Plan", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "purpose", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true}
+    ]},
+    {"kind": "ExecutionDetermination", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "determination", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true}
+    ]},
+    {"kind": "ExecutionAction", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "purpose", "type": "string", "required": true},
+      {"name": "participantRef", "type": "reference", "target": "Participant", "required": false},
+      {"name": "resultRef", "type": "reference", "target": "ExecutionResult", "required": false}
+    ]},
+    {"kind": "ExecutionResult", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "actionRef", "type": "reference", "target": "ExecutionAction", "required": true},
+      {"name": "status", "type": "string", "required": true},
+      {"name": "outputs", "type": "array", "required": false}
+    ]},
+    {"kind": "Participant", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "participantType", "type": "enum", "required": true, "enum": ["Human", "AIAgent"]},
+      {"name": "capabilities", "type": "array", "required": false},
+      {"name": "authority", "type": "array", "required": false}
+    ]},
+    {"kind": "ParticipantInput", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "participantRef", "type": "reference", "target": "Participant", "required": true},
+      {"name": "content", "type": "string", "required": true}
+    ]},
+    {"kind": "ParticipantContribution", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "participantRef", "type": "reference", "target": "Participant", "required": true},
+      {"name": "contributionType", "type": "string", "required": true},
+      {"name": "validationStatus", "type": "string", "required": true}
+    ]},
+    {"kind": "ExecutionTrace", "identity": "id", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "processInstanceRef", "type": "reference", "target": "ProcessInstance", "required": true},
+      {"name": "events", "type": "array", "required": true}
+    ]}
+  ],
+  "relationships": [
+    {"id": "process-instance.execution-context", "source": "ProcessInstance", "target": "ExecutionContext", "cardinality": "one-to-one", "required": true},
+    {"id": "process-instance.objective", "source": "ProcessInstance", "target": "EngineeringObjective", "cardinality": "many-to-one", "required": true},
+    {"id": "process-state.transition-rule", "source": "ProcessStateDefinition", "target": "TransitionRule", "cardinality": "one-to-many", "required": false},
+    {"id": "transition.rule", "source": "Transition", "target": "TransitionRule", "cardinality": "many-to-one", "required": true},
+    {"id": "evidence.engineering-decision", "source": "Evidence", "target": "EngineeringDecision", "cardinality": "many-to-many", "required": false},
+    {"id": "execution-action.result", "source": "ExecutionAction", "target": "ExecutionResult", "cardinality": "one-to-one", "required": false},
+    {"id": "participant.contribution", "source": "Participant", "target": "ParticipantContribution", "cardinality": "one-to-many", "required": false},
+    {"id": "execution-trace.process-instance", "source": "ExecutionTrace", "target": "ProcessInstance", "cardinality": "many-to-one", "required": true}
+  ],
+  "operationClasses": [
+    {"id": "lifecycle", "operations": ["initializeProcessInstance", "loadProcessInstance", "changeEngineeringObjective", "changeExecutionMode", "suspendExecution", "resumeExecution", "establishEngineeringProcessCompletion", "terminateRuntimeExecution"]},
+    {"id": "observation", "operations": ["inspectExecutionContext", "inspectProcessState", "inspectEngineeringKnowledge", "inspectConditions", "observeEnvironment"]},
+    {"id": "evaluation", "operations": ["evaluateProcessState", "evaluateTransitionRule", "evaluateDecisionGate", "evaluateProgressionCondition", "evaluateVerificationResult", "evaluateImpact", "evaluateObjectiveChange", "evaluateModeChange"]},
+    {"id": "investigation", "operations": ["establishInvestigationObjective", "performInvestigationActivity", "recordInvestigationResult", "evaluateInvestigationSufficiency", "continueInvestigation", "closeInvestigation"]},
+    {"id": "contribution", "operations": ["submitParticipantInput", "submitObservation", "submitEvidenceCandidate", "submitAssumption", "submitCandidateSolution", "submitEvaluation", "proposeEngineeringDecision", "submitVerificationResult", "submitArtifactResult"]},
+    {"id": "execution", "operations": ["establishExecutionDetermination", "createPlan", "updatePlan", "authorizeExecutionAction", "performExecutionAction", "recordExecutionResult", "updateExecutionContext", "performTransition", "recordTraceEvent"]},
+    {"id": "reconsideration", "operations": ["identifyAffectedConclusions", "initiateReconsideration", "reviseEngineeringState", "recordRevisedDecision", "preserveHistoricalState"]}
+  ],
+  "invariants": [
+    {"id": "epm-authority", "owner": "EPM", "enforcement": "cross-layer", "statement": "Engineering validity cannot be redefined by Runtime convenience or Agent output."},
+    {"id": "pem-execution", "owner": "PEM", "enforcement": "execution", "statement": "Execution follows PEM semantics."},
+    {"id": "context-authority", "owner": "OperationalModel", "enforcement": "representation", "statement": "Execution Context represents the authoritative operational continuation state."},
+    {"id": "agent-runtime-boundary", "owner": "OperationalModel", "enforcement": "cross-layer", "statement": "An Agent is a Participant and is not synonymous with the Runtime."},
+    {"id": "decision-distinction", "owner": "OperationalModel", "enforcement": "semantic", "statement": "Engineering Decision and Execution Determination remain distinct."},
+    {"id": "completion-termination-distinction", "owner": "OperationalModel", "enforcement": "semantic", "statement": "Engineering Process Completion and Runtime Termination remain distinct."},
+    {"id": "knowledge-distinction", "owner": "OperationalModel", "enforcement": "semantic", "statement": "Evidence, Assumptions, unknowns, contested information, and conclusions remain distinguishable."},
+    {"id": "observation-nonmutation", "owner": "OperationalModel", "enforcement": "semantic", "statement": "Observation does not itself mutate authoritative Process Instance state."},
+    {"id": "traceability", "owner": "OperationalModel", "enforcement": "representation", "statement": "Material engineering and execution changes remain reconstructable."},
+    {"id": "continuity", "owner": "OperationalModel", "enforcement": "representation", "statement": "Execution can resume without conversational memory."},
+    {"id": "controlled-mutation", "owner": "OperationalModel", "enforcement": "cross-layer", "statement": "Raw Participant, Agent, tool, or environment output does not silently become authoritative state."},
+    {"id": "reconsideration-history", "owner": "OperationalModel", "enforcement": "semantic", "statement": "Revised conclusions preserve prior history."},
+    {"id": "condition-driven-progression", "owner": "EPM", "enforcement": "cross-layer", "statement": "Activity completion alone does not establish engineering progression."},
+    {"id": "objective-integrity", "owner": "EPM", "enforcement": "semantic", "statement": "Engineering Objective changes are explicit and traceable."},
+    {"id": "requirement-resolution-distinction", "owner": "EPM", "enforcement": "semantic", "statement": "Requirement resolution remains distinct from Requirement satisfaction."}
+  ],
+  "extensions": {
+    "allowed": true,
+    "rules": [
+      "Extensions must have stable identifiers.",
+      "Extensions must declare their purpose.",
+      "Extensions must not redefine core entities, relationships, or invariants.",
+      "Extensions must remain distinguishable from the canonical model."
+    ]
+  }
+}
