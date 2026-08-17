@@ -7,6 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / "model/aesm-operational-model.json"
 SCHEMA = ROOT / "schemas/aesm-machine-readable-model.schema.json"
 
+# Primary entity vocabulary derived from the reconciled Phase 3 Matrix A.
+# OperationDefinition and TraceEvent are intentionally excluded: they are
+# semantic/structural concepts, not top-level entity kinds.
 REQUIRED_KINDS = {
     "ProcessInstance", "EngineeringObjective", "ExecutionContext", "ProcessState",
     "ProcessStateDefinition", "TransitionRule", "Transition", "DecisionGate",
@@ -15,7 +18,7 @@ REQUIRED_KINDS = {
     "EngineeringDecision", "VerificationResult", "Artifact", "ExecutionDetermination",
     "Plan", "ExecutionAction", "ExecutionResult", "Participant", "ParticipantInput",
     "ParticipantContribution", "ValidationAssessment", "StateMutation", "ExecutionTrace",
-    "TraceEvent", "Reconsideration", "OperationDefinition"
+    "Reconsideration", "Observation"
 }
 
 REQUIRED_PROCESS_FIELDS = {
@@ -40,61 +43,91 @@ REQUIRED_DISTINCTIONS = {
 }
 
 
-def fail(message):
-    raise SystemExit(f"FAIL: {message}")
+def collect_error(errors, message):
+    errors.append(message)
 
 
 def main():
+    errors = []
+
     try:
         model = json.loads(MODEL.read_text(encoding="utf-8"))
         schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
     except Exception as exc:
-        fail(f"JSON parsing failed: {exc}")
+        raise SystemExit(f"FAIL: JSON parsing failed: {exc}")
 
     if model.get("serialization", {}).get("format") != "JSON":
-        fail("model serialization format is not JSON")
+        collect_error(errors, "model serialization format is not JSON")
     if "2020-12" not in model.get("serialization", {}).get("schemaDialect", ""):
-        fail("model does not declare JSON Schema Draft 2020-12")
+        collect_error(errors, "model does not declare JSON Schema Draft 2020-12")
     if schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
-        fail("schema is not Draft 2020-12")
+        collect_error(errors, "schema is not Draft 2020-12")
 
     semantic = model.get("semanticModel", {})
     entities = semantic.get("entityTypes", [])
     by_kind = {e.get("kind"): e for e in entities}
+
     missing = REQUIRED_KINDS - set(by_kind)
     if missing:
-        fail("missing entity kinds: " + ", ".join(sorted(missing)))
+        collect_error(errors, "missing entity kinds: " + ", ".join(sorted(missing)))
 
-    for kind, required in [("ProcessInstance", REQUIRED_PROCESS_FIELDS), ("ExecutionContext", REQUIRED_CONTEXT_FIELDS)]:
-        fields = {f.get("name") for f in by_kind[kind].get("fields", [])}
-        missing_fields = required - fields
-        if missing_fields:
-            fail(f"{kind} missing fields: {', '.join(sorted(missing_fields))}")
+    for kind, required in [
+        ("ProcessInstance", REQUIRED_PROCESS_FIELDS),
+        ("ExecutionContext", REQUIRED_CONTEXT_FIELDS),
+    ]:
+        if kind in by_kind:
+            fields = {f.get("name") for f in by_kind[kind].get("fields", [])}
+            missing_fields = required - fields
+            if missing_fields:
+                collect_error(errors, f"{kind} missing fields: {', '.join(sorted(missing_fields))}")
 
-    if "EngineeringCompletion" not in json.dumps(model) or "RuntimeTermination" not in json.dumps(model):
-        fail("engineering completion/runtime termination distinction is not represented")
+    model_text = json.dumps(model)
+    if "EngineeringCompletion" not in model_text or "RuntimeTermination" not in model_text:
+        collect_error(errors, "engineering completion/runtime termination distinction is not represented")
 
     for a, b in REQUIRED_DISTINCTIONS:
         if a not in by_kind or b not in by_kind:
-            fail(f"required distinction missing: {a} != {b}")
+            collect_error(errors, f"required distinction missing: {a} != {b}")
 
     relationships = semantic.get("relationships", [])
     rel_text = json.dumps(relationships)
     for token in ["ValidationAssessment", "StateMutation", "ExecutionTrace", "Reconsideration"]:
         if token not in rel_text:
-            fail(f"relationship coverage missing for {token}")
+            collect_error(errors, f"relationship coverage missing for {token}")
 
-    operations = semantic.get("operations", [])
-    operation_text = json.dumps(operations)
+    # Operation semantics are represented by the top-level operationClasses
+    # structure, not by a semanticModel.operations entity collection.
+    operation_classes = model.get("operationClasses", [])
+    operation_text = json.dumps(operation_classes)
     for token in ["observe", "evaluate", "contribution", "execution", "reconsideration"]:
         if token.lower() not in operation_text.lower():
-            fail(f"operation-class coverage missing for {token}")
+            collect_error(errors, f"operation-class coverage missing for {token}")
 
-    invariants = semantic.get("invariants", [])
+    invariants = model.get("invariants", [])
     invariant_text = json.dumps(invariants)
     for token in ["arbitrary Agent output", "tool output", "authoritative state"]:
         if token.lower() not in invariant_text.lower():
-            fail(f"controlled-mutation invariant missing: {token}")
+            collect_error(errors, f"controlled-mutation invariant missing: {token}")
+
+    # TraceEvent is a structural type contained by ExecutionTrace rather than
+    # a primary entity kind. Validate that the ExecutionTrace definition has
+    # an explicit event collection.
+    trace = by_kind.get("ExecutionTrace")
+    if trace is not None:
+        trace_fields = {f.get("name") for f in trace.get("fields", [])}
+        event_fields = {"events", "eventRefs", "traceEvents", "eventRecords"}
+        if not trace_fields.intersection(event_fields):
+            collect_error(
+                errors,
+                "ExecutionTrace does not expose an explicit ordered event collection "
+                "(expected one of: events, eventRefs, traceEvents, eventRecords)",
+            )
+
+    if errors:
+        print("FAIL: Phase 3 semantic validation")
+        for error in errors:
+            print(f"FAIL: {error}")
+        raise SystemExit(1)
 
     print("PASS: Phase 3 JSON parsing")
     print("PASS: Schema dialect declaration")
@@ -105,6 +138,7 @@ def main():
     print("PASS: Relationship coverage")
     print("PASS: Operation-class coverage")
     print("PASS: Controlled-mutation invariant coverage")
+    print("PASS: ExecutionTrace event-collection coverage")
     print("PASS: Phase 3 semantic baseline validation")
 
 
