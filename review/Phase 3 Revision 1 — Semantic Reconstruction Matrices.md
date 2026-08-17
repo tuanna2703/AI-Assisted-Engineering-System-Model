@@ -2,137 +2,146 @@
 
 **Project:** AI-Assisted Engineering System Model (AESM)  
 **Phase:** Phase 3 Revision 1  
-**Status:** Working Reconstruction Baseline  
-**Version:** 0.1.0  
-**Source authority:** Phase 2 AESM Operational Model, EPM, PEM
-
----
+**Status:** Reconciled Working Baseline — Canonical Model Not Yet Regenerated  
+**Version:** 0.1.1  
+**Authority:** Phase 2 AESM Operational Model, with EPM and PEM semantic authority
 
 ## 1. Purpose
 
-This document defines the intermediate semantic reconstruction matrices used to rebuild the AESM machine-readable model directly from the Phase 2 Operational Model.
-
-It is intentionally an intermediate artifact. It is not a Runtime schema and does not define an Agent protocol.
-
-The reconstruction rule is:
+These matrices reconstruct the Phase 2 Operational Model into a machine-readable semantic inventory before regeneration of the canonical JSON model and structural schema.
 
 ```text
-EPM / PEM semantic authority
-        ↓
+EPM / PEM
+   ↓
 AESM Operational Model
-        ↓
+   ↓
 Semantic inventory
-        ↓
-Reconstruction matrices
-        ↓
+   ↓
+Reconciliation matrices
+   ↓
 Canonical machine-readable model
-        ↓
-Derived implementation schemas
+   ↓
+Derived schemas
 ```
 
-The matrices exist to prevent semantic loss during serialization.
+The matrices are intermediate semantic artifacts. They do not define an API, Agent protocol, Runtime architecture, database schema, or programming-language implementation.
 
 ---
 
-# 2. Matrix A — Entity Completeness
+# 2. Reconciliation Results
 
-The canonical model MUST represent the following operational concepts without collapsing distinct concepts.
+The first matrix draft exposed several issues that are corrected here.
 
-| Entity / Concept | Layer | Required | Primary role | Status |
-|---|---|---:|---|---|
-| ProcessInstance | Operational | Yes | One execution of an EPM | Required |
-| ExecutionContext | Operational | Yes | Authoritative continuation state | Required |
-| EngineeringObjective | EPM/Operational | Yes | Purpose of engineering process | Required |
-| ProcessState | EPM/PEM | Yes | Current execution state | Required |
-| ProcessStateDefinition | EPM/PEM | Yes | Semantic definition of state | Required |
-| TransitionRule | EPM/PEM | Yes | Conditions governing progression | Required |
-| Transition | PEM/Operational | Yes | Recorded state change | Required |
-| DecisionGate | EPM/PEM | Yes | Condition controlling progression | Required |
-| ProgressionCondition | EPM | Yes | Condition for progression | Required |
-| ExecutionMode | Operational | Yes | Execution configuration | Required |
-| Requirement | EPM | Yes | Engineering requirement | Required |
-| Constraint | EPM | Yes | Engineering constraint | Required |
-| Investigation | EPM | Yes | Evidence-gathering process | Required |
-| Evidence | EPM | Yes | Support for engineering knowledge | Required |
-| Assumption | EPM | Yes | Explicit uncertain proposition | Required |
-| Risk | EPM | Yes | Potential adverse outcome | Required |
-| CandidateSolution | EPM | Yes | Candidate engineering solution | Required |
-| Evaluation | EPM | Yes | Assessment of an engineering subject | Required |
-| EngineeringDecision | EPM | Yes | Authoritative engineering conclusion | Required |
-| VerificationResult | EPM | Yes | Verification outcome | Required |
-| Artifact | EPM/Operational | Yes | Engineering output/representation | Required |
-| Plan | PEM | Yes | Planned execution | Required |
-| ExecutionDetermination | PEM | Yes | Execution-specific determination | Required |
-| ExecutionAction | PEM | Yes | Authorized execution activity | Required |
-| ExecutionResult | PEM | Yes | Result of execution action | Required |
-| Participant | Operational | Yes | Human/AI participant | Required |
-| ParticipantInput | Operational | Yes | Input submitted by participant | Required |
-| ParticipantContribution | Operational | Yes | Validated/contributory input | Required |
-| ExecutionTrace | Operational | Yes | Reconstruction of execution | Required |
-| Condition | Cross-layer | Yes | Explicit evaluable condition | Required |
-| Observation | Operational | Yes | Non-authoritative observation | Required |
-| Reconsideration | EPM/Operational | Yes | Controlled revision process | Required |
-| ValidationAssessment | Cross-layer | Yes | Assessment preceding authoritative mutation | Required |
-| StateMutation | Operational | Yes | Authoritative state change | Required |
-
-### Rule
-
-`Observation`, `ParticipantInput`, `ParticipantContribution`, `ValidationAssessment`, and `StateMutation` MUST remain distinguishable. They represent different stages of the authority path.
+| Finding | Resolution |
+|---|---|
+| ProcessInstance → EngineeringObjective was N:1 | **1:1 per Process Instance**; an objective may have history, but a Process Instance has one current objective at a time |
+| `Decision` was used as an undefined generic entity | Replaced with **EngineeringDecision** except where `Decision State` is a logical state category |
+| ExecutionTrace cardinality conflicted with the Operational Model | Canonical model uses **one ExecutionTrace per Process Instance**, containing ordered trace events; event-level traceability is represented by trace events |
+| Condition was introduced as an entity without sufficient semantic basis | Retained as a **cross-layer semantic type**, not a new independent engineering entity |
+| Observation/Input/Contribution/Validation/Mutation were treated as ordinary peer entities | Reclassified as **operational records/stages in the authority path**; they remain distinct but do not redefine the EPM entity inventory |
+| StateMutation was treated as an independent engineering entity | Reclassified as an **authoritative state-change record** associated with Execution Context and traceability |
+| ExecutionContext was represented too shallowly | Expanded into explicit Process, Engineering, Decision, Knowledge, and Continuity state references/collections |
+| ProcessStateDefinition lacked required EPM/PEM semantics | Expanded to include purpose, inputs, activities, outputs, invariants, entry/progression/completion/exit conditions, gates, verification, and reconsideration |
+| Transition and DecisionGate lacked sufficient basis/history | Added condition, gate, verification, decision, evaluation-history, and trace references |
+| Operation list lacked semantic metadata | Operations now require subject, inputs, outputs, authority, mutation classification, preconditions, postconditions, and trace requirement |
+| Controlled mutation existed only as an invariant | Explicit authority-path records are now required |
+| Reconsideration was only a status | Reconsideration is now an explicit operational record/process preserving prior state and revised conclusions |
 
 ---
 
-# 3. Matrix B — Property Completeness
+# 3. Matrix A — Entity Completeness
 
-## 3.1 ProcessInstance
+The canonical model MUST represent the Operational Model's primary entities and MUST NOT collapse distinct semantic concepts.
 
-Required semantic properties:
+| Entity / Record | Classification | Authority | Required |
+|---|---|---|---:|
+| ProcessInstance | Primary operational entity | Operational | Yes |
+| EngineeringObjective | Primary entity | EPM | Yes |
+| ExecutionContext | Primary operational entity | Operational/PEM | Yes |
+| ProcessState | Runtime/current-state record | EPM/PEM | Yes |
+| ProcessStateDefinition | State definition | EPM/PEM | Yes |
+| TransitionRule | Execution-control entity | EPM/PEM | Yes |
+| Transition | Execution occurrence | PEM/Operational | Yes |
+| DecisionGate | Progression-control entity | EPM/PEM | Yes |
+| ProgressionCondition | Condition record | EPM | Yes |
+| ExecutionMode | Operational entity | EPM/Operational | Yes |
+| Requirement | Engineering knowledge entity | EPM | Yes |
+| Constraint | Engineering knowledge entity | EPM | Yes |
+| Investigation | Engineering activity/entity | EPM | Yes |
+| Evidence | Engineering knowledge entity | EPM | Yes |
+| Assumption | Engineering knowledge entity | EPM | Yes |
+| Risk | Engineering knowledge entity | EPM | Yes |
+| CandidateSolution | Engineering knowledge entity | EPM | Yes |
+| Evaluation | Engineering knowledge entity | EPM | Yes |
+| EngineeringDecision | Engineering conclusion | EPM | Yes |
+| VerificationResult | Verification record | EPM/PEM | Yes |
+| Artifact | Engineering output | EPM | Yes |
+| ExecutionDetermination | Execution-control record | PEM | Yes |
+| Plan | Execution-control entity | PEM | Yes |
+| ExecutionAction | Execution occurrence | PEM | Yes |
+| ExecutionResult | Execution result | PEM | Yes |
+| ExecutionTrace | One trace for a Process Instance | PEM/Operational | Yes |
+| Participant | Human/AI participant | Operational | Yes |
+| ParticipantInput | Participant-originated input record | Operational | Yes |
+| ParticipantContribution | Candidate/validated contribution record | Operational | Yes |
+| Observation | Non-authoritative observation record | Operational | Yes |
+| ValidationAssessment | Assessment record | Cross-layer | Yes |
+| StateMutation | Authoritative state-change record | PEM/Operational | Yes |
+| Reconsideration | Controlled reconsideration record/process | EPM/Operational | Yes |
+| Condition | Cross-layer semantic type | EPM/PEM | Yes |
+
+**Important:** `Condition`, `Observation`, `ParticipantInput`, `ParticipantContribution`, `ValidationAssessment`, and `StateMutation` are operationally necessary records/types but MUST NOT be allowed to replace or redefine the EPM's engineering entities.
+
+---
+
+# 4. Matrix B — Property Completeness
+
+## 4.1 ProcessInstance
 
 - identity
-- EPM reference and version
-- PEM reference and version
-- Engineering Objective reference
-- Execution Mode reference
-- engineering lifecycle status
+- EPM identity/version
+- PEM identity/version
+- current Engineering Objective
+- Execution Mode
+- engineering completion status
 - Runtime lifecycle status
 - Execution Context reference
 - initialization information
-- execution history reference
+- ExecutionTrace reference
+- objective-change history
 
-## 3.2 ExecutionContext
+Engineering completion and Runtime termination MUST remain separate dimensions.
 
-Required semantic properties:
+## 4.2 ExecutionContext
 
 - identity
 - Process Instance reference
 - current Process State
 - Execution Mode
 - current Engineering Objective
-- Requirement state
-- Constraint state
-- Investigation state
-- Evidence state
-- Assumption state
-- Risk state
-- Candidate Solution state
-- Evaluation state
-- unresolved/contested matters
-- Artifact state
-- Decision state
-- Decision Gate state
-- knowledge state
+- Requirements and resolution/satisfaction state
+- Constraints
+- Investigations and status
+- Evidence and provenance/status
+- Assumptions and status
+- Risks and status
+- Candidate Solutions and evaluation status
+- Evaluations
+- unresolved/contested/invalidated matters
+- Artifacts
+- accepted/pending/affected Engineering Decisions
+- applicable Decision Gates and current evaluations
+- Verification Results
 - continuity state
-- pending execution condition
+- pending execution condition/activity
 - current/pending Plan
 - last authoritative update
 - interruption/resumption information
 - continuation information
 
-## 3.3 ProcessStateDefinition
+## 4.3 ProcessStateDefinition
 
-Required semantic properties:
-
-- identity
-- name
+- identity/name
 - purpose
 - objective relationship
 - applicable inputs
@@ -146,10 +155,21 @@ Required semantic properties:
 - Decision Gates
 - verification requirements
 - reconsideration conditions
+- valid Transition Rules
 
-## 3.4 TransitionRule
+## 4.4 ProcessState
 
-Required semantic properties:
+- identity
+- definition reference
+- entry-condition status
+- current condition status
+- progression-condition evaluations
+- applicable gates and gate evaluations
+- verification-condition evaluations
+- reconsideration-condition status
+- applicable Transition Rules
+
+## 4.5 TransitionRule
 
 - identity
 - source state
@@ -160,14 +180,12 @@ Required semantic properties:
 - required verification
 - reconsideration conditions
 
-## 3.5 Transition
-
-Required semantic properties:
+## 4.6 Transition
 
 - identity
 - source state
 - target state
-- Transition Rule
+- Transition Rule reference
 - condition evaluation
 - gate evaluation
 - verification basis
@@ -175,77 +193,86 @@ Required semantic properties:
 - transition result/status
 - trace reference
 
-## 3.6 DecisionGate
-
-Required semantic properties:
+## 4.7 DecisionGate
 
 - identity
 - purpose
+- applicable state/context
 - conditions
-- evaluation history
 - current evaluation status
+- evaluation result
+- evaluation history
 - supporting Evidence
-- supporting Decisions
-- result
+- supporting Engineering Decisions
 
-## 3.7 EngineeringDecision
-
-Required semantic properties:
-
-- identity
-- decision statement
-- rationale
-- supporting Evidence
-- relevant Requirements
-- relevant Constraints
-- relevant Evaluations
-- status
-- supersession/reconsideration relationship
-- historical predecessor where applicable
-
-## 3.8 Requirement
-
-Required semantic properties:
+## 4.8 Requirement
 
 - identity
 - statement
 - source/context
 - resolution state
-- satisfaction state
+- satisfaction state, when applicable
 - supporting Evidence
-- related Decisions
+- related Constraints
+- related Evaluations
+- related Engineering Decisions
 - related Verification Results
+- history
 
-## 3.9 Investigation
+Resolution and satisfaction MUST remain distinct.
 
-Required semantic properties:
+## 4.9 Investigation
 
 - identity
-- objective
-- engineering question
-- scope
-- activities
-- Evidence/results
+- objective/purpose
+- engineering question/uncertainty
+- scope/context
+- activities/evidence-gathering actions
+- results/Evidence
 - sufficiency assessment
 - status
 - closure basis
 
-## 3.10 Evidence
+Investigation completion is objective/sufficiency-driven, not task-list-driven.
 
-Required semantic properties:
+## 4.10 Evidence
 
 - identity
 - content/reference
 - provenance
 - source
-- acquisition context
-- reliability/relevance assessment where applicable
+- acquisition/context information
+- relevance/reliability assessment where applicable
 - status
-- relationships to conclusions
+- relationships to Investigations, Evaluations, Decisions, Verification Results, and conclusions
 
-## 3.11 Plan
+## 4.11 EngineeringDecision
 
-Required semantic properties:
+- identity
+- decision/conclusion
+- rationale/basis
+- status
+- supporting Evidence
+- relevant Requirements
+- relevant Constraints
+- relevant Risks
+- relevant Candidate Solutions
+- relevant Evaluations
+- reconsideration status
+- predecessor/supersession history
+
+## 4.12 VerificationResult
+
+- identity
+- verification target
+- criteria
+- method/activity reference
+- result
+- status
+- supporting Evidence
+- effect on applicable conditions/gates
+
+## 4.13 Plan
 
 - identity
 - purpose
@@ -256,22 +283,18 @@ Required semantic properties:
 - execution conditions
 - resulting Execution Results
 
-## 3.12 ExecutionAction
-
-Required semantic properties:
+## 4.14 ExecutionAction
 
 - identity
 - purpose
 - authorization basis
-- participant/actor
+- participant/actor reference
 - preconditions
 - action specification
 - result reference
 - trace reference
 
-## 3.13 ExecutionResult
-
-Required semantic properties:
+## 4.15 ExecutionResult
 
 - identity
 - action reference
@@ -281,78 +304,171 @@ Required semantic properties:
 - validation status
 - trace reference
 
-## 3.14 Reconsideration
-
-Required semantic properties:
+## 4.16 ExecutionDetermination
 
 - identity
-- triggering condition
+- execution determination
+- basis
+- status
+- applicable authority/conditions
+- trace reference
+
+It MUST remain distinct from EngineeringDecision.
+
+## 4.17 Participant / Input / Contribution
+
+### Participant
+- identity
+- participant type: Human or AIAgent
+- capabilities
+- authority
+
+### ParticipantInput
+- identity
+- participant reference
+- content
+- provenance/time/context
+
+### ParticipantContribution
+- identity
+- participant reference
+- contribution type
+- content/reference
+- validation status
+- validation assessment reference
+
+## 4.18 Observation
+
+- identity
+- source/observer
+- observation content/reference
+- context
+- timestamp/order
+- status
+- resulting candidate contribution references
+
+Observation MUST NOT directly mutate authoritative state.
+
+## 4.19 ValidationAssessment
+
+- identity
+- subject/contribution reference(s)
+- validation criteria
+- evaluator/authority
+- result/status
+- supporting basis
+- permitted mutation reference where applicable
+
+## 4.20 StateMutation
+
+- identity
+- affected Process Instance/Execution Context
+- source operation
+- actor/authority
+- prior state reference where required
+- proposed/resulting state
+- validation basis
+- timestamp/order
+- trace reference
+
+## 4.21 Reconsideration
+
+- identity
+- trigger condition
 - affected conclusions
-- affected state
-- affected Requirements
-- affected Decisions
+- affected Requirements/Constraints/Risks/Solutions where applicable
+- affected Process/Decision/Knowledge state
 - evaluation process
 - revised conclusions
 - preserved historical state
 - status
+- trace
+
+## 4.22 ExecutionTrace
+
+One ExecutionTrace belongs to one Process Instance and contains ordered trace events.
+
+The trace MUST support reconstruction of:
+
+- material engineering changes
+- Process State transitions
+- Decision/Gate evaluations
+- execution determinations
+- plans/actions/results
+- authoritative state mutations
+- reconsideration and historical revisions
+- participant contributions where material
 
 ---
 
-# 4. Matrix C — Relationship Completeness
+# 5. Matrix C — Relationship Completeness
 
-| Relationship | Cardinality | Purpose |
+| Relationship | Cardinality | Status |
 |---|---|---|
-| ProcessInstance → ExecutionContext | 1:1 | Authoritative continuation state |
-| ProcessInstance → EngineeringObjective | N:1 | Objective identity |
-| ProcessInstance → ExecutionTrace | 1:N | Execution reconstruction |
-| ExecutionContext → ProcessState | N:1 | Current state |
-| ExecutionContext → EngineeringObjective | N:1 | Current objective |
-| ExecutionContext → Requirement | 1:N | Requirement state |
-| ExecutionContext → Decision | 1:N | Decision state |
-| ExecutionContext → Plan | 1:N | Current/pending plan |
-| ProcessStateDefinition → TransitionRule | 1:N | Valid progression paths |
-| Transition → TransitionRule | N:1 | Rule used |
-| Transition → Evidence | N:M | Evidence supporting transition |
-| Transition → DecisionGate | N:M | Gate evaluation |
-| Transition → VerificationResult | N:M | Verification basis |
-| Requirement → Evidence | N:M | Requirement support |
-| Requirement → EngineeringDecision | N:M | Decision relationship |
-| Requirement → VerificationResult | N:M | Satisfaction verification |
-| Investigation → Evidence | 1:N | Investigation results |
-| Evidence → EngineeringDecision | N:M | Decision support |
-| CandidateSolution → Evaluation | 1:N | Solution assessment |
-| Evaluation → EngineeringDecision | N:M | Decision basis |
-| EngineeringDecision → EngineeringDecision | N:1 | Supersession/reconsideration history |
-| Plan → ExecutionAction | 1:N | Planned execution |
-| ExecutionAction → ExecutionResult | 1:1 | Action outcome |
-| Participant → ParticipantInput | 1:N | Submitted inputs |
-| Participant → ParticipantContribution | 1:N | Contributions |
-| ParticipantContribution → ValidationAssessment | 1:N | Contribution validation |
-| ValidationAssessment → StateMutation | 1:N | Authorized mutation basis |
-| StateMutation → ExecutionContext | N:1 | Authoritative update |
-| ExecutionTrace → StateMutation | 1:N | Mutation trace |
-| ExecutionTrace → ExecutionAction | 1:N | Action trace |
-| Reconsideration → EngineeringDecision | N:M | Affected/revised decisions |
-| Reconsideration → Evidence | N:M | Reconsideration evidence |
-| Reconsideration → ExecutionContext | N:1 | State being reconsidered |
+| ProcessInstance → EngineeringObjective | 1:1 current objective | Required |
+| ProcessInstance → ExecutionContext | 1:1 | Required |
+| ProcessInstance → ExecutionTrace | 1:1 | Required |
+| ExecutionContext → ProcessState | N:1 current state | Required |
+| ExecutionContext → EngineeringObjective | N:1 current objective | Required |
+| ExecutionContext → Requirement | 1:N | Required |
+| ExecutionContext → Constraint | 1:N | Required |
+| ExecutionContext → Investigation | 1:N | Required |
+| ExecutionContext → Evidence | 1:N | Required |
+| ExecutionContext → Assumption | 1:N | Required |
+| ExecutionContext → Risk | 1:N | Required |
+| ExecutionContext → CandidateSolution | 1:N | Required |
+| ExecutionContext → Evaluation | 1:N | Required |
+| ExecutionContext → EngineeringDecision | 1:N | Required |
+| ExecutionContext → VerificationResult | 1:N | Required |
+| ExecutionContext → Artifact | 1:N | Required |
+| ExecutionContext → DecisionGate | 1:N | Required |
+| ExecutionContext → Plan | 1:N | Required |
+| ProcessStateDefinition → TransitionRule | 1:N | Required |
+| Transition → TransitionRule | N:1 | Required |
+| Transition → Evidence | N:M | Applicable |
+| Transition → DecisionGate | N:M | Applicable |
+| Transition → VerificationResult | N:M | Applicable |
+| Requirement → Evidence | N:M | Applicable |
+| Requirement → Constraint | N:M | Applicable |
+| Requirement → EngineeringDecision | N:M | Applicable |
+| Requirement → VerificationResult | N:M | Applicable |
+| Investigation → Evidence | 1:N | Required |
+| Evidence → EngineeringDecision | N:M | Applicable |
+| CandidateSolution → Evaluation | 1:N | Required |
+| Evaluation → EngineeringDecision | N:M | Applicable |
+| EngineeringDecision → EngineeringDecision | N:1 predecessor/supersession | Applicable |
+| Reconsideration → EngineeringDecision | N:M | Required |
+| Reconsideration → ExecutionContext | N:1 | Required |
+| Reconsideration → Evidence | N:M | Applicable |
+| Plan → ExecutionAction | 1:N | Required |
+| ExecutionAction → ExecutionResult | 1:1 | Required |
+| Participant → ParticipantInput | 1:N | Required |
+| Participant → ParticipantContribution | 1:N | Required |
+| ParticipantContribution → ValidationAssessment | N:M | Applicable |
+| ValidationAssessment → StateMutation | 1:N | Applicable |
+| StateMutation → ExecutionContext | N:1 | Required |
+| StateMutation → ExecutionTrace | N:1 | Required |
+| ExecutionAction → ExecutionTrace | N:1 | Required |
+| Transition → ExecutionTrace | N:1 | Required |
+
+**Cardinality rule:** `N:1` means many records may reference one authoritative/current object; it does not imply that the target is shared as an independent engineering fact across unrelated Process Instances.
 
 ---
 
-# 5. Matrix D — State and Condition Semantics
+# 6. Matrix D — State and Condition Semantics
 
-AESM MUST distinguish state from conditions used to evaluate progression.
+## State categories
 
-### State categories
-
-- Engineering state
-- Process state
-- Execution state
-- Knowledge state
-- Decision state
-- Continuity state
+- Process State
+- Engineering State
+- Decision State
+- Knowledge State
+- Execution State
+- Continuity State
 - Artifact state
+- lifecycle/completion state
 
-### Condition categories
+## Condition categories
 
 - Entry condition
 - Progression condition
@@ -366,252 +482,184 @@ AESM MUST distinguish state from conditions used to evaluate progression.
 - Objective-change condition
 - Mode-change condition
 
-A condition MUST have:
+Every operational Condition representation MUST support:
 
-- identity;
-- statement/expression;
-- subject or scope;
-- evaluation status;
-- evaluation result;
-- evaluation basis;
-- evaluation history where material.
+- identity
+- statement/expression
+- subject/scope
+- evaluation status
+- evaluation result
+- evaluation basis
+- evaluation history where material
 
-A condition MUST NOT be inferred solely from an activity having been performed.
-
----
-
-# 6. Matrix E — Operation Semantics
-
-Operations are semantic operation classes, not API endpoints.
-
-Each operation definition MUST be able to identify:
-
-- operation identity;
-- operation class;
-- subject entity;
-- required inputs;
-- expected outputs;
-- authority layer;
-- whether the operation observes or mutates authoritative state;
-- preconditions;
-- postconditions;
-- trace requirement.
-
-## Operation classes
-
-### Observation
-
-Examples:
-
-- inspectExecutionContext
-- inspectProcessState
-- inspectEngineeringKnowledge
-- inspectConditions
-- observeEnvironment
-
-Mutation: **No**
-
-### Evaluation
-
-Examples:
-
-- evaluateProcessState
-- evaluateTransitionRule
-- evaluateDecisionGate
-- evaluateProgressionCondition
-- evaluateVerificationResult
-- evaluateImpact
-
-Mutation: **normally no direct authoritative mutation**
-
-### Investigation
-
-Examples:
-
-- establishInvestigationObjective
-- performInvestigationActivity
-- recordInvestigationResult
-- evaluateInvestigationSufficiency
-- continueInvestigation
-- closeInvestigation
-
-Mutation: **controlled**, subject to validation and authority rules
-
-### Contribution
-
-Examples:
-
-- submitParticipantInput
-- submitObservation
-- submitEvidenceCandidate
-- submitAssumption
-- submitCandidateSolution
-- submitEvaluation
-- proposeEngineeringDecision
-- submitVerificationResult
-- submitArtifactResult
-
-Mutation: **candidate contribution only** unless separately validated and authorized
-
-### Execution
-
-Examples:
-
-- establishExecutionDetermination
-- createPlan
-- updatePlan
-- authorizeExecutionAction
-- performExecutionAction
-- recordExecutionResult
-- updateExecutionContext
-- performTransition
-- recordTraceEvent
-
-Mutation: **controlled authoritative execution mutation**
-
-### Reconsideration
-
-Examples:
-
-- identifyAffectedConclusions
-- initiateReconsideration
-- reviseEngineeringState
-- recordRevisedDecision
-- preserveHistoricalState
-
-Mutation: **controlled authoritative engineering mutation**
+A condition MUST NOT be inferred solely from activity completion.
 
 ---
 
-# 7. Matrix F — Authority and Mutation
+# 7. Matrix E — Operation Semantics
 
-The authority path is normative:
+Operations are semantic operations, not API endpoints. Every operation definition MUST identify:
+
+- operation identity
+- operation class
+- subject
+- required inputs
+- expected outputs
+- authority layer
+- observation/mutation classification
+- preconditions
+- postconditions
+- trace requirement
+
+| Class | Examples | Mutation classification |
+|---|---|---|
+| Observation | inspectExecutionContext, inspectProcessState, inspectEngineeringKnowledge, inspectConditions, observeEnvironment | Non-mutating |
+| Evaluation | evaluateProcessState, evaluateTransitionRule, evaluateDecisionGate, evaluateProgressionCondition, evaluateVerificationResult, evaluateImpact | Non-mutating assessment unless explicitly coupled to a permitted record operation |
+| Investigation | establishInvestigationObjective, performInvestigationActivity, recordInvestigationResult, evaluateInvestigationSufficiency, continueInvestigation, closeInvestigation | Controlled record mutation |
+| Contribution | submitParticipantInput, submitObservation, submitEvidenceCandidate, submitAssumption, submitCandidateSolution, submitEvaluation, proposeEngineeringDecision, submitVerificationResult, submitArtifactResult | Candidate contribution; not automatically authoritative |
+| Execution | establishExecutionDetermination, createPlan, updatePlan, authorizeExecutionAction, performExecutionAction, recordExecutionResult, updateExecutionContext, performTransition, recordTraceEvent | Controlled PEM-governed mutation |
+| Reconsideration | identifyAffectedConclusions, initiateReconsideration, reviseEngineeringState, recordRevisedDecision, preserveHistoricalState | Controlled engineering-state mutation |
+
+`evaluateX` MUST NOT silently mutate authoritative engineering state merely by producing an evaluation result.
+
+---
+
+# 8. Matrix F — Authority and Controlled Mutation
+
+The canonical authority path is:
 
 ```text
-External / participant / Agent / tool / environment output
-                         ↓
-                    Observation
-                         ↓
-                Candidate contribution
-                         ↓
-               Validation / evaluation
-                         ↓
-             Authorized state mutation
-                         ↓
-              Updated Execution Context
-                         ↓
-                       Trace
+Participant / Agent / Tool / Environment output
+                 ↓
+             Observation
+                 ↓
+       Candidate contribution
+                 ↓
+       Validation / evaluation
+                 ↓
+      Authorized state mutation
+                 ↓
+       Updated Execution Context
+                 ↓
+               Trace
 ```
 
-| Source | May observe | May propose | May directly establish authoritative state |
+| Source | Observe | Propose | Direct authoritative mutation |
 |---|---:|---:|---:|
 | Human Participant | Yes | Yes | Only through defined authority path |
 | AI Agent | Yes | Yes | No implicit authority |
 | Tool | Yes | Yes | No implicit authority |
 | Environment | Yes | No | No |
-| Runtime | Yes | No independent engineering authority | Only according to PEM-controlled execution semantics |
-| EPM | N/A | N/A | Owns engineering semantics |
-| PEM | N/A | N/A | Owns execution semantics |
+| Runtime | Yes | No independent engineering authority | Only PEM-controlled execution mutations |
+| EPM | N/A | N/A | Defines engineering meaning/validity |
+| PEM | N/A | N/A | Defines execution semantics/control |
 
-### Required distinctions
+Required distinctions:
 
 ```text
-ParticipantInput
-≠ ParticipantContribution
-
-ParticipantContribution
-≠ ValidationAssessment
-
-ValidationAssessment
-≠ StateMutation
-
-EngineeringDecision
-≠ ExecutionDetermination
-
-EngineeringCompletion
-≠ RuntimeTermination
+ParticipantInput ≠ ParticipantContribution
+ParticipantContribution ≠ ValidationAssessment
+ValidationAssessment ≠ StateMutation
+EngineeringDecision ≠ ExecutionDetermination
+Engineering Completion ≠ Runtime Termination
+Observation ≠ Authoritative Knowledge
 ```
 
 ---
 
-# 8. Matrix G — Traceability
+# 9. Matrix G — Traceability
 
-The machine-readable model MUST support reconstruction of the engineering chain:
+The machine-readable model MUST support reconstruction of:
 
 ```text
 User Request
-    ↓
-Requirement / Objective
-    ↓
+  ↓
+Engineering Objective / Requirement
+  ↓
 Investigation
-    ↓
+  ↓
 Evidence
-    ↓
+  ↓
 Evaluation
-    ↓
+  ↓
 Engineering Decision
-    ↓
+  ↓
 Verification
-    ↓
-Plan / Execution Determination
-    ↓
+  ↓
+Execution Determination / Plan
+  ↓
 Execution Action
-    ↓
+  ↓
 Execution Result
-    ↓
-Authoritative State Update
-    ↓
-Trace
+  ↓
+Authoritative State Mutation
+  ↓
+Execution Trace
 ```
 
-At minimum, material changes MUST be attributable to:
+Material changes MUST be attributable, where applicable, to:
 
-- process instance;
-- timestamp/ordering information;
-- actor/participant where relevant;
-- source operation;
-- affected entity;
-- prior state where required;
-- resulting state;
-- supporting basis;
-- trace event.
+- Process Instance
+- timestamp/order
+- actor/participant
+- source operation
+- affected entity/state
+- prior state
+- resulting state
+- supporting basis
+- trace event
 
-Historical state MUST remain reconstructable when reconsideration changes a conclusion.
-
----
-
-# 9. Reconstruction Rules
-
-The revised canonical model MUST satisfy these rules:
-
-1. No Phase 2 core entity may disappear during serialization.
-2. No Phase 2 semantic distinction may be collapsed for convenience.
-3. Required operational relationships MUST be explicit.
-4. Authoritative state MUST be distinguishable from candidate information.
-5. Observation MUST remain non-mutating.
-6. Operations MUST have semantic meaning without becoming API definitions.
-7. EPM authority and PEM authority MUST remain distinct.
-8. Engineering Completion and Runtime Termination MUST remain distinct.
-9. Engineering Decision and Execution Determination MUST remain distinct.
-10. Requirement resolution and satisfaction MUST remain distinct.
-11. Reconsideration MUST preserve historical state.
-12. Execution Context MUST contain enough authoritative state to support continuation.
-13. Traceability MUST be reconstructable.
-14. JSON Schema MUST remain structural validation, not a substitute for EPM/PEM semantics.
-15. Runtime implementation details MUST remain outside the canonical model.
+Reconsideration MUST preserve enough history to reconstruct the superseded state and the basis for the revision.
 
 ---
 
-# 10. Exit Criteria for Reconstruction
+# 10. Reconciliation Rules
 
-The reconstruction stage is complete only when:
+1. No Phase 2 primary engineering entity may disappear during serialization.
+2. No EPM/PEM semantic distinction may be collapsed for implementation convenience.
+3. `EngineeringDecision` is the canonical engineering conclusion entity; generic `Decision` is not a separate entity.
+4. A Process Instance has one current Engineering Objective at a time; objective history is retained separately.
+5. A Process Instance has one authoritative Execution Context and one logical Execution Trace; trace events provide event-level reconstruction.
+6. `Condition` is a cross-layer semantic type, not a replacement for Process State or Decision Gate.
+7. Observation, Participant Input, Participant Contribution, Validation Assessment, and State Mutation remain distinct operational records.
+8. Authoritative state is distinguishable from candidate information.
+9. Observation is non-mutating.
+10. Engineering validity belongs to EPM; execution control belongs to PEM.
+11. Engineering Completion and Runtime Termination remain separate state dimensions.
+12. Engineering Decision and Execution Determination remain separate entities.
+13. Requirement resolution and satisfaction remain separate properties.
+14. Investigation sufficiency is objective-driven, not activity-list-driven.
+15. Reconsideration preserves historical state.
+16. Execution Context is sufficient to determine current execution state and resume without conversational memory.
+17. JSON Schema validates structure; it does not replace EPM/PEM semantic rules.
+18. Runtime, Agent, IDE, database, API, and tool-specific implementation details remain outside the canonical semantic model.
 
-- Entity Completeness = Pass
-- Property Completeness = Pass
-- Relationship Completeness = Pass
-- State/Condition Completeness = Pass
-- Operation Semantics = Pass
-- Authority/Mutation = Pass
-- Traceability = Pass
+---
 
-Only then should the revised JSON Schema and canonical JSON model be generated.
+# 11. Matrix Review Result
+
+| Matrix | Result | Notes |
+|---|---|---|
+| Entity Completeness | **PASS — reconciled** | Primary entities and operational records are distinguished |
+| Property Completeness | **PASS — baseline** | Required Operational Model properties represented |
+| Relationship Completeness | **PASS — baseline** | Cardinalities reconciled with one trace/context per Process Instance |
+| State & Condition | **PASS — baseline** | State categories separated from condition evaluation |
+| Operation Semantics | **PASS — baseline** | Operations now carry semantic metadata requirements |
+| Authority & Mutation | **PASS — baseline** | Controlled mutation path explicitly represented |
+| Traceability | **PASS — baseline** | Engineering/execution chain reconstructable in principle |
+
+**Overall:** `RECONSTRUCTION MATRICES — READY FOR CANONICAL MODEL REGENERATION`
+
+This does **not** mean Phase 3 is complete. It means the intermediate reconstruction stage has reached the threshold for rebuilding the canonical machine-readable model.
+
+---
+
+# 12. Next Derivation
+
+The next artifacts SHALL be regenerated from these reconciled matrices:
+
+1. canonical machine-readable model;
+2. JSON Schema;
+3. semantic validation rules / conformance checks.
+
+No further conceptual expansion is required before that derivation unless regeneration exposes a direct contradiction with the Phase 2 Operational Model.
