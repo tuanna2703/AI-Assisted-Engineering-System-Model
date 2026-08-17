@@ -2,8 +2,8 @@
 
 **Project:** AI-Assisted Engineering System Model (AESM)  
 **Phase:** Operationalization — Phase 2  
-**Status:** Initial Normative Draft  
-**Derived from:** Engineering Process Model (EPM) and Process Execution Model (PEM), together with `analysis/AESM Operationalization Analysis.md`
+**Status:** Revised Normative Draft — Review Revision 1  
+**Derived from:** Engineering Process Model (EPM), Process Execution Model (PEM), and `analysis/AESM Operationalization Analysis.md`
 
 ---
 
@@ -16,29 +16,28 @@ It is the normative bridge between the semantic specifications and later machine
 It defines:
 
 - operational entities;
-- their required properties and relationships;
+- required properties and relationships;
 - lifecycle and state semantics;
 - permitted classes of operations;
 - validation responsibilities;
 - persistence and continuity requirements;
-- information that must be observable to participating Agents and Humans.
+- Agent and Human visibility requirements;
+- boundaries between engineering meaning, execution control, and environment capabilities.
 
-It does **not** define a programming language, database, API framework, Agent framework, IDE integration, or concrete Runtime architecture.
+It does not prescribe a programming language, database, API framework, Agent framework, IDE integration, serialization technology, or concrete Runtime architecture.
 
 ---
 
 ## 2. Authority and Layering
 
-AESM is layered as follows:
-
 ```text
 EPM
-  ↓
+  ↓  engineering meaning and validity
 PEM
-  ↓
+  ↓  execution semantics and control
 AESM Operational Model
-  ↓
-Machine-readable Model / Protocol
+  ↓  operational representation and operations
+Machine-Readable Model / Protocol
   ↓
 Runtime Implementation
   ↓
@@ -50,7 +49,7 @@ The authority of the layers is preserved:
 - **EPM** defines engineering meaning and validity.
 - **PEM** defines execution semantics and control.
 - **Operational Model** defines how those semantics are represented and operated upon.
-- **Machine-readable artifacts** provide implementation-consumable representations of the operational model.
+- **Machine-readable artifacts** provide implementation-consumable representations.
 - **Runtime** implements PEM using the operational model.
 - **Agent and Environment adapters** expose capabilities without redefining AESM semantics.
 
@@ -70,7 +69,7 @@ The Process Instance's Execution Context is the authoritative operational state 
 
 ### 3.3 Controlled Mutation
 
-Authoritative state MUST NOT be modified by arbitrary Agent output. Changes MUST pass through applicable execution and validation rules.
+Authoritative state MUST NOT be modified by arbitrary Agent output, tool output, or environment events. Changes MUST pass through applicable validation and execution rules.
 
 ### 3.4 Explicit Knowledge Status
 
@@ -78,11 +77,11 @@ Known information, Evidence, Assumptions, unresolved matters, contested informat
 
 ### 3.5 Traceability
 
-Material changes to engineering knowledge and execution state MUST remain traceable.
+Material engineering changes and execution-state changes MUST remain traceable.
 
 ### 3.6 Environment Independence
 
-The model MUST NOT require VS Code, a specific Agent framework, database, programming language, or tool protocol.
+The model MUST NOT require VS Code, a specific Agent framework, database, programming language, operating system, or tool protocol.
 
 ### 3.7 Continuity
 
@@ -90,7 +89,15 @@ Execution MUST be resumable from persisted operational state without dependence 
 
 ### 3.8 Engineering Validity vs Execution Control
 
-Engineering validity belongs to EPM. Execution control belongs to PEM. The operational layer MUST preserve that boundary.
+Engineering validity belongs to EPM. Execution control belongs to PEM. The operational layer MUST preserve this boundary.
+
+### 3.9 Condition-Driven Progression
+
+Completion of an arbitrary activity list MUST NOT by itself establish engineering progression. Progression is determined by applicable EPM conditions, gates, verification, and other validity requirements.
+
+### 3.10 Observation Integrity
+
+Observation MUST NOT itself modify authoritative Process Instance state. Observed information becomes authoritative engineering knowledge only through the applicable validation and state-mutation rules.
 
 ---
 
@@ -101,15 +108,18 @@ The operational model consists of the following primary entity classes.
 ```text
 Process Instance
 ├── Engineering Objective
+├── Execution Mode
 ├── Execution Context
-│   ├── Process State
+│   ├── Process Status
 │   ├── Engineering State
 │   ├── Decision State
 │   ├── Knowledge State
 │   └── Continuity State
+├── Process State Definitions
 ├── Engineering Knowledge
 │   ├── Requirements
 │   ├── Constraints
+│   ├── Investigations
 │   ├── Evidence
 │   ├── Assumptions
 │   ├── Risks
@@ -118,8 +128,13 @@ Process Instance
 │   ├── Engineering Decisions
 │   ├── Verification Results
 │   └── Artifacts
-├── Execution Records
+├── Execution Control
+│   ├── Transition Rules
+│   ├── Transitions
+│   ├── Decision Gates
+│   ├── Progression Conditions
 │   ├── Execution Determinations
+│   ├── Plans
 │   ├── Execution Actions
 │   ├── Execution Results
 │   └── Execution Trace
@@ -128,7 +143,7 @@ Process Instance
     └── AI Agents
 ```
 
-This hierarchy is logical. Physical storage MAY use a different structure provided semantic relationships and required behavior are preserved.
+This hierarchy is logical. Physical storage MAY use another structure provided semantic relationships and required behavior are preserved.
 
 ---
 
@@ -146,58 +161,55 @@ A Process Instance MUST have, at minimum:
 - applicable EPM identity/version;
 - applicable PEM identity/version;
 - Engineering Objective;
+- Execution Mode;
 - lifecycle status;
 - current Execution Context reference or embedded representation;
-- creation/initialization information;
+- initialization information;
 - execution history or reference to it.
 
-Additional properties MAY be implementation-specific when they do not affect semantic interoperability.
-
-## 5.3 Relationships
-
-A Process Instance MUST be able to reference or contain:
-
-- its Engineering Objective;
-- its current Execution Context;
-- relevant Requirements and Constraints;
-- Evidence and Assumptions;
-- Engineering Decisions;
-- Verification results;
-- Artifacts;
-- Risks;
-- Participants;
-- Execution Trace.
-
-## 5.4 Lifecycle
-
-A Process Instance MUST support at least these logical conditions:
-
-```text
-Initialized
-   ↓
-Active
-   ↓
-Suspended / Interrupted
-   ↓
-Resumed
-   ↓
-Active
-   ↓
-Completed OR Terminated
-```
-
-The exact status vocabulary is to be normalized by the later machine-readable model, but Runtime termination MUST remain distinct from Engineering Process Completion.
-
-## 5.5 Initialization
+## 5.3 Initialization
 
 Initialization MUST establish enough state to begin execution without inventing engineering facts.
 
 At initialization:
 
 - the Engineering Objective MUST be identified;
-- the applicable EPM and PEM MUST be known;
+- applicable EPM and PEM MUST be known;
 - the initial Process State MUST be established according to EPM/PEM rules;
-- unknown Requirements, Evidence, Assumptions, or other knowledge MUST NOT be represented as established facts merely because they are absent.
+- Execution Mode MUST be established according to applicable rules;
+- unknown Requirements, Evidence, Assumptions, Risks, or other knowledge MUST NOT be represented as established facts merely because they are absent.
+
+## 5.4 Lifecycle
+
+A Process Instance MUST distinguish at least:
+
+```text
+Initialized
+    ↓
+Active
+    ↓
+Suspended / Interrupted
+    ↓
+Resumed
+    ↓
+Active
+    ↓
+Engineering Complete
+    OR
+Runtime Terminated / Execution Abandoned
+```
+
+The exact machine-readable status vocabulary is deferred, but Runtime termination MUST remain distinct from Engineering Process Completion.
+
+## 5.5 Objective Change
+
+The Engineering Objective MUST NOT be silently changed.
+
+A material objective change MUST be represented as an explicit event or operation and MUST trigger impact evaluation over affected Requirements, Constraints, Decisions, Candidate Solutions, verification conditions, Risks, and other relevant engineering state.
+
+Where the EPM requires it, affected conclusions MUST enter controlled reconsideration before execution continues.
+
+The prior objective and its history MUST remain traceable.
 
 ---
 
@@ -211,21 +223,22 @@ It is a logical construct, not a prescribed storage mechanism.
 
 ## 6.2 Required Components
 
-Execution Context MUST provide, directly or through authoritative references, the following logical components:
+Execution Context MUST provide, directly or through authoritative references:
 
 ### Process Status
 
 - Process Instance identity;
 - current execution status;
 - current Process State;
-- execution mode;
+- Execution Mode;
 - current lifecycle condition.
 
 ### Engineering State
 
 - Engineering Objective;
-- relevant Requirements;
+- relevant Requirements and their resolution state;
 - Constraints;
+- Investigations and their current purpose/status;
 - Evidence;
 - Assumptions;
 - Risks;
@@ -244,42 +257,45 @@ Execution Context MUST provide, directly or through authoritative references, th
 
 ### Knowledge State
 
-- relevant known Evidence;
-- Evidence provenance/context where available;
+- relevant Evidence and provenance/context where available;
 - Assumptions and their status;
-- unresolved or contested information;
-- invalidated knowledge;
-- verification results.
+- unresolved, contested, or invalidated information;
+- verification results;
+- other knowledge necessary to interpret current engineering state.
 
 ### Continuity State
 
 - last authoritative update;
 - pending execution condition/activity;
+- current or pending Plan where applicable;
 - relevant execution history/reference;
 - interruption/resumption information;
 - information required to continue without conversational memory.
 
 ## 6.3 Completeness
 
-Execution Context MUST contain or reference all operational information necessary for a conforming Runtime to determine what execution state currently exists and to continue according to PEM rules.
+Execution Context MUST contain or reference all operational information necessary for a conforming Runtime to determine the current execution state and continue according to PEM rules.
+
+The `completed work` and `remaining work` aspects of continuity state describe execution continuity only. They MUST NOT be treated as an independent definition of engineering progression.
 
 ## 6.4 Consistency
 
-A Runtime MUST validate that the Execution Context is internally consistent before treating it as authoritative.
+A Runtime MUST validate that Execution Context is internally consistent before treating it as authoritative.
 
-Examples of consistency conditions include:
+Consistency checks MUST include, where applicable:
 
 - current Process State is valid for the Process Instance;
-- referenced Decisions exist and have valid status;
+- lifecycle status is compatible with engineering completion status;
+- referenced Decisions and knowledge entities exist and have valid status;
 - required relationships are resolvable;
-- lifecycle status does not contradict completion state;
-- invalidated knowledge is not simultaneously represented as accepted Evidence without an explicit later validity determination.
+- invalidated information is not simultaneously represented as accepted Evidence without an explicit later validity determination;
+- applicable gates and progression conditions are evaluated against the current state.
 
 ## 6.5 Portability
 
-The logical Execution Context MUST be representable independently of a Runtime's transient memory or process.
+The logical Execution Context MUST be representable independently of Runtime transient memory or process state.
 
-A compatible Runtime MUST be able to reconstruct equivalent operational state from the persisted representation.
+A compatible Runtime MUST be able to reconstruct equivalent operational state from persisted representation.
 
 ---
 
@@ -289,69 +305,99 @@ A compatible Runtime MUST be able to reconstruct equivalent operational state fr
 
 Process State semantics are owned by EPM. PEM executes those semantics.
 
+The Operational Model MUST represent Process State without redefining its engineering meaning.
+
 ## 7.2 Operational Representation
 
-The active Process State MUST identify:
+The active Process State MUST identify, directly or by reference:
 
 - state identity;
 - applicable state definition;
 - entry condition status;
-- current work/condition status;
+- current engineering/execution condition;
 - applicable progression conditions;
 - applicable Decision Gates;
 - applicable verification conditions;
 - applicable reconsideration conditions;
-- valid exit/transition conditions.
+- valid Transition Rules.
 
 ## 7.3 State Evaluation
 
-The Runtime MUST be able to determine whether the current Process State permits progression, requires additional work, requires reconsideration, or is complete according to the applicable EPM semantics.
+The Runtime MUST be able to determine whether the current Process State:
+
+- permits progression;
+- requires additional engineering work;
+- requires additional execution work;
+- requires reconsideration;
+- is blocked by an unsatisfied condition;
+- is complete according to EPM semantics.
 
 ---
 
-# 8. Transition
+# 8. Transition Rule
 
 ## 8.1 Definition
 
-A Transition represents a movement between Process States that is permitted by the applicable EPM and executed under PEM control.
+A Transition Rule defines the conditions under which movement from one Process State to another is valid.
+
+Transition Rule semantics are derived from EPM and executed under PEM control.
 
 ## 8.2 Required Properties
+
+A Transition Rule MUST identify:
+
+- Rule identity;
+- applicable source state;
+- target state;
+- required conditions;
+- prohibited conditions where applicable;
+- required Decision Gates where applicable;
+- required verification conditions where applicable;
+- reconsideration conditions where applicable.
+
+## 8.3 Evaluation
+
+A Transition Rule MUST be evaluated against the authoritative Process Instance state before the associated Transition is performed.
+
+An Agent request or completion of an activity MUST NOT override an unsatisfied Transition Rule.
+
+---
+
+# 9. Transition
+
+## 9.1 Definition
+
+A Transition is an occurrence in which the Process Instance moves from one Process State to another under a valid Transition Rule.
+
+## 9.2 Required Properties
 
 A Transition MUST identify:
 
 - source state;
 - target state;
-- triggering/qualifying conditions;
-- required Decision Gates, where applicable;
-- required verification conditions, where applicable;
+- applicable Transition Rule;
+- evaluation result;
 - transition result/status;
-- basis/trace reference.
+- relevant Evidence, verification, or Decision basis where applicable;
+- execution trace reference.
 
-## 8.3 Validity
+## 9.3 Validity
 
-A Runtime MUST NOT perform a Transition that violates applicable EPM conditions.
+A Runtime MUST NOT perform a Transition that violates applicable EPM conditions or PEM execution control.
 
-Completion of an activity or Agent request alone MUST NOT establish Transition validity.
+## 9.4 Trace
 
-## 8.4 Transition Record
-
-A completed Transition MUST be traceable to:
-
-- the prior state;
-- the resulting state;
-- the conditions evaluated;
-- the relevant Evidence/verification where applicable;
-- the execution event that caused the transition.
+A completed Transition MUST remain traceable to its prior state, resulting state, evaluated conditions, relevant engineering basis, and execution event.
 
 ---
 
-# 9. Decision Gate
+# 10. Decision Gate
 
-## 9.1 Definition
+## 10.1 Definition
 
 A Decision Gate is an EPM-defined condition that controls whether execution may progress beyond a particular point.
 
-## 9.2 Operational Properties
+## 10.2 Operational Properties
 
 A gate MUST identify:
 
@@ -360,10 +406,10 @@ A gate MUST identify:
 - required inputs or conditions;
 - evaluation status;
 - result;
-- basis or supporting references;
+- supporting basis/references;
 - evaluation history.
 
-## 9.3 Evaluation Results
+## 10.3 Evaluation Results
 
 The operational model MUST distinguish at least:
 
@@ -374,48 +420,78 @@ Not Yet Determinable
 Not Applicable
 ```
 
-The exact final vocabulary may be refined during machine-readable schema design.
+## 10.4 Enforcement
 
-## 9.4 Enforcement
-
-If a required Decision Gate is not satisfied, the Runtime MUST prevent any Transition that depends on that gate.
+If a required Decision Gate is not satisfied, the Runtime MUST prevent any dependent Transition.
 
 ---
 
-# 10. Progression Condition
+# 11. Progression Condition
 
 A Progression Condition represents an EPM-defined condition required for valid advancement.
 
-A Progression Condition MUST be:
+It MUST be:
 
 - identifiable;
-- associated with the applicable state or transition;
-- evaluable using available operational state;
+- associated with the applicable state or Transition Rule;
+- evaluable using authoritative operational state;
 - associated with an evaluation result;
-- traceable to the Evidence, Decision, verification, or other state that supports the result.
+- traceable to supporting Evidence, Decisions, verification, or other relevant state.
 
-Progression MUST be determined from applicable conditions rather than from superficial activity completion.
+Progression MUST be determined from applicable conditions rather than superficial activity completion.
 
 ---
 
-# 11. Engineering Knowledge Model
+# 12. Execution Mode
 
-## 11.1 General Rule
+Execution Mode controls the intended level of engineering rigor without changing the fundamental validity requirements of the EPM.
 
-Engineering knowledge entities MUST retain their semantic identity and MUST NOT be collapsed into a generic `task`, `note`, or `message` representation when doing so would lose EPM meaning.
+The operational model MUST support the EPM-defined modes:
 
-## 11.2 Requirement
+- **Direct Mode**;
+- **Guided Mode**;
+- **Full Mode**.
+
+An Execution Mode representation MUST identify:
+
+- current mode;
+- basis for selection where required;
+- applicable rigor expectations;
+- mode-change history where a change occurs.
+
+A mode change MUST NOT silently weaken an applicable engineering validity condition. Where the EPM requires explicit recognition or reconsideration, the mode change MUST be treated accordingly.
+
+---
+
+# 13. Engineering Knowledge Model
+
+## 13.1 General Rule
+
+Engineering knowledge entities MUST retain their semantic identity. They MUST NOT be collapsed into a generic `task`, `note`, or `message` representation when doing so loses EPM meaning.
+
+## 13.2 Requirement
 
 A Requirement MUST support:
 
 - identity;
 - statement/content;
-- status;
-- relevant source/context;
-- relationships to Constraints, Evidence, Solutions, Decisions, and verification where applicable;
+- resolution state;
+- satisfaction state where applicable and distinct from resolution;
+- source/context;
+- relationships to Constraints, Evidence, Investigations, Solutions, Evaluations, Decisions, and verification where applicable;
 - history/traceability.
 
-## 11.3 Constraint
+Requirement resolution MUST preserve the EPM distinction:
+
+```text
+Open
+Contested
+Resolved
+```
+
+Resolution MUST NOT be interpreted as satisfaction.
+
+## 13.3 Constraint
 
 A Constraint MUST support:
 
@@ -426,7 +502,26 @@ A Constraint MUST support:
 - affected engineering entities;
 - history/traceability.
 
-## 11.4 Evidence
+## 13.4 Investigation
+
+An Investigation is an objective-driven engineering activity intended to reduce material uncertainty.
+
+It MUST NOT be operationalized as a rigid universal task list.
+
+An Investigation MUST support:
+
+- identity;
+- objective/purpose;
+- uncertainty or engineering question being addressed;
+- relevant Process State/context;
+- activities or evidence-gathering actions where applicable;
+- resulting knowledge;
+- status/sufficiency determination where applicable;
+- relationships to Evidence, Requirements, Constraints, Assumptions, Risks, Candidate Solutions, Evaluations, Decisions, or verification.
+
+Investigation completion MUST be determined by whether its objective has been sufficiently achieved, not merely by completion of a predetermined list of activities.
+
+## 13.5 Evidence
 
 Evidence MUST support:
 
@@ -435,11 +530,11 @@ Evidence MUST support:
 - provenance/context where available;
 - relevance;
 - status;
-- relationships to the conclusions, evaluations, Decisions, or verification results it supports.
+- relationships to Investigations, Evaluations, Decisions, verification results, and other conclusions it supports.
 
-Evidence MUST NOT be silently replaced by an unsupported conclusion.
+Observation or Agent output MUST NOT automatically become accepted Evidence.
 
-## 11.5 Assumption
+## 13.6 Assumption
 
 An Assumption MUST support:
 
@@ -449,7 +544,7 @@ An Assumption MUST support:
 - affected engineering entities;
 - invalidation/resolution history.
 
-## 11.6 Risk
+## 13.7 Risk
 
 A Risk MUST support:
 
@@ -457,10 +552,12 @@ A Risk MUST support:
 - description;
 - affected engineering entities;
 - status;
-- treatment/response where applicable;
+- treatment/response;
 - history.
 
-## 11.7 Candidate Solution
+Risk treatment MAY include acceptance, mitigation, avoidance, transfer, investigation, or monitoring as applicable to the EPM context.
+
+## 13.8 Candidate Solution
 
 A Candidate Solution MUST support:
 
@@ -468,20 +565,24 @@ A Candidate Solution MUST support:
 - description;
 - relevant Requirements;
 - relevant Constraints;
+- relevant Risks;
 - evaluation status;
 - relationship to resulting Engineering Decisions.
 
-## 11.8 Evaluation
+## 13.9 Evaluation
 
 An Evaluation MUST support:
 
 - evaluated subject;
+- Requirements considered;
+- Constraints considered;
+- Risks considered;
+- Evidence considered;
 - applicable criteria/basis;
-- Evidence and Constraints considered;
 - result;
-- relationship to resulting conclusions or Decisions.
+- relationship to conclusions or Decisions.
 
-## 11.9 Engineering Decision
+## 13.10 Engineering Decision
 
 An Engineering Decision MUST support:
 
@@ -493,9 +594,9 @@ An Engineering Decision MUST support:
 - affected Requirements, Constraints, Risks, Solutions, or Artifacts;
 - reconsideration status/history.
 
-An Engineering Decision MUST NOT be inferred solely from an Agent message or Execution Determination.
+An Engineering Decision MUST NOT be inferred solely from an Agent message, Participant Input, Execution Result, or Execution Determination.
 
-## 11.10 Verification Result
+## 13.11 Verification Result
 
 A Verification Result MUST support:
 
@@ -508,7 +609,7 @@ A Verification Result MUST support:
 - supporting Evidence;
 - effect on applicable progression conditions.
 
-## 11.11 Artifact
+## 13.12 Artifact
 
 An Artifact MUST support:
 
@@ -520,11 +621,11 @@ An Artifact MUST support:
 
 ---
 
-# 12. Execution Model
+# 14. Execution Model
 
-## 12.1 Execution Cycle
+## 14.1 Execution Cycle
 
-A Runtime SHALL implement the PEM execution cycle:
+A conforming Runtime SHALL implement the PEM execution cycle:
 
 ```text
 Observe
@@ -542,45 +643,67 @@ Update Context
 Repeat
 ```
 
-The operational model represents the information exchanged and state changes required by this cycle. It does not turn the cycle into a fixed engineering workflow.
+The operational model represents the information and state changes required by this cycle. It does not turn the cycle into a fixed engineering workflow.
 
-## 12.2 Execution Determination
+## 14.2 Observe
 
-An Execution Determination represents the Runtime-level determination of what execution condition/action is currently permissible or required.
+Observation retrieves or receives relevant information about the Process Instance, engineering state, execution environment, or results.
+
+Observation MUST NOT itself modify authoritative Process Instance state.
+
+Observed information MUST enter authoritative state only through the applicable classification and validation process.
+
+## 14.3 Evaluate
+
+Evaluation determines the current execution condition using authoritative state and applicable EPM/PEM rules.
+
+Evaluation MAY identify:
+
+- satisfied conditions;
+- unsatisfied conditions;
+- information gaps;
+- required investigation;
+- required verification;
+- required reconsideration;
+- permissible transitions;
+- prohibited transitions.
+
+## 14.4 Plan
+
+A Plan represents the selection or organization of next execution activities within the current Process State and applicable constraints.
+
+A Plan MAY be transient or persistable depending on implementation and traceability requirements.
+
+A Plan MUST NOT itself establish engineering validity or progression.
+
+## 14.5 Execution Determination
+
+An Execution Determination represents a Runtime-level determination of what execution condition/action is currently permissible, required, blocked, or pending.
 
 It MUST remain distinct from Engineering Decision.
 
-It may identify, for example:
-
-- an action that can proceed;
-- an information gap blocking execution;
-- a required verification;
-- a required reconsideration;
-- a prohibited transition;
-- a completion condition.
-
-## 12.3 Execution Action
+## 14.6 Execution Action
 
 An Execution Action represents an operational activity undertaken as part of PEM execution.
 
 It MUST be associated with:
 
-- the relevant Process Instance;
-- current Execution Context;
+- Process Instance;
+- relevant Execution Context;
 - purpose/basis;
-- actor or Agent where applicable;
+- actor/Participant where applicable;
 - resulting Execution Result.
 
 An Execution Action is not itself proof of engineering validity.
 
-## 12.4 Execution Result
+## 14.7 Execution Result
 
 An Execution Result records what resulted from an Execution Action.
 
 It MAY produce or reference:
 
 - observations;
-- Evidence;
+- Evidence candidates;
 - Artifact changes;
 - verification results;
 - execution errors;
@@ -591,38 +714,43 @@ The Runtime MUST validate which results can affect authoritative state.
 
 ---
 
-# 13. Participant Model
+# 15. Participant Model
 
-## 13.1 Participant
+## 15.1 Participant
 
 A Participant represents an entity contributing to execution.
 
-## 13.2 AI Agent
+## 15.2 Human Participant and AI Agent
 
-An AI Agent is a Participant operating within the process. It is not the Runtime.
+Human Participants and AI Agents are Participants. An AI Agent is not the Runtime.
 
-The operational model MUST preserve this distinction.
+## 15.3 Participant Input
 
-## 13.3 Participant Contribution
+Participant Input is information supplied by a Participant to the process.
 
-A Participant contribution MUST be attributable to its source and MUST be classifiable according to its semantic role.
+Participant Input MUST remain distinguishable from authoritative engineering knowledge and from an Engineering Decision.
 
-Examples include:
+## 15.4 Participant Contribution
+
+A Participant Contribution is a classified contribution made by a Participant during execution.
+
+It MAY include:
 
 - observation;
 - analysis;
-- Evidence;
+- Evidence candidate;
 - Assumption;
 - Candidate Solution;
 - Evaluation;
-- proposed Decision;
+- proposed Engineering Decision;
 - Artifact change;
 - verification result;
+- execution outcome;
 - request for clarification.
 
-A contribution becomes part of authoritative engineering state only through the applicable validation and execution rules.
+A contribution becomes part of authoritative engineering or execution state only through applicable validation and execution rules.
 
-## 13.4 Authority
+## 15.5 Authority
 
 Participant capability and Participant authority MUST remain separate properties.
 
@@ -630,66 +758,69 @@ An Agent having access to a tool does not automatically have authority to perfor
 
 ---
 
-# 14. Agent Visibility Boundary
+# 16. Agent Visibility Boundary
 
 The Agent-facing representation MUST expose sufficient information for the Agent to participate meaningfully in current execution.
 
-At minimum, an Agent may require access to:
+At minimum, the Agent MAY require access to:
 
 - Process Instance identity;
 - Engineering Objective;
 - current Process State;
-- relevant Requirements and Constraints;
+- Execution Mode;
+- relevant Requirements and their resolution state;
+- Constraints;
+- relevant Investigations;
 - relevant Evidence;
 - Assumptions;
 - Risks;
-- Candidate Solutions and evaluations where applicable;
+- Candidate Solutions and Evaluations where applicable;
 - accepted/pending Engineering Decisions;
 - verification status;
-- Decision Gates;
-- progression conditions;
+- applicable Decision Gates;
+- applicable progression conditions;
 - unresolved matters;
 - relevant Artifacts;
 - execution scope;
 - current continuity state.
 
-The exact message format is intentionally deferred to the Agent Execution Contract.
+The exact message format is deferred to the Agent Execution Contract.
 
 The Agent MUST NOT be required to reconstruct authoritative process state solely from conversational history.
 
 ---
 
-# 15. Controlled State Mutation
+# 17. Controlled State Mutation
 
 All authoritative state mutation MUST follow this conceptual sequence:
 
 ```text
-Candidate Contribution / Execution Result
-                ↓
-          Classification
-                ↓
-       Semantic Validation
-                ↓
-       Execution Validation
-                ↓
-        State Determination
-                ↓
-        Authoritative Update
-                ↓
-          Trace Recording
+Participant Input / Candidate Contribution / Execution Result
+                         ↓
+                   Classification
+                         ↓
+                  Semantic Validation
+                         ↓
+                  Execution Validation
+                         ↓
+                   State Determination
+                         ↓
+                  Authoritative Update
+                         ↓
+                    Trace Recording
 ```
-
-The exact implementation mechanism is not prescribed.
 
 This sequence prevents raw Agent output, tool output, or environmental events from silently becoming authoritative engineering state.
 
+A validation failure MUST leave authoritative state unchanged unless the applicable operation explicitly represents a valid failure state.
+
 ---
 
-# 16. Controlled Reconsideration
+# 18. Controlled Reconsideration
 
 When material new information affects prior engineering conclusions, the operational model MUST support controlled reconsideration.
 
-The minimum operational sequence is:
+The minimum sequence is:
 
 ```text
 New Evidence / Change
@@ -711,11 +842,11 @@ Preserve prior history
 
 Prior Decisions MUST remain historically reconstructable.
 
-A revised Decision MUST NOT erase the fact that an earlier Decision existed.
+A revised Decision MUST NOT silently erase the existence or basis of an earlier Decision.
 
 ---
 
-# 17. Verification and Failure Handling
+# 19. Verification and Failure Handling
 
 Verification results are operationally significant when they affect EPM progression conditions.
 
@@ -723,77 +854,85 @@ A failed verification MUST be representable as a state-affecting result.
 
 Where verification is required for progression, a failed or unresolved verification MUST prevent invalid progression.
 
-The Runtime MUST permit subsequent work required by the EPM, which may include investigation, Artifact modification, reconsideration, or re-verification.
+The Runtime MUST permit subsequent work required by the EPM, including investigation, Artifact modification, reconsideration, or re-verification where applicable.
 
 ---
 
-# 18. Execution Trace
+# 20. Traceability and Execution Trace
 
-## 18.1 Purpose
+## 20.1 Engineering Traceability
 
-Execution Trace records material execution and engineering-state evolution so that the Process Instance remains auditable and recoverable.
+Engineering Traceability represents relationships explaining how engineering conclusions are supported and how they relate to Requirements, Evidence, Constraints, Risks, Solutions, Evaluations, Decisions, verification, and Artifacts.
 
-## 18.2 Traceable Events
+For example:
 
-At minimum, the trace SHOULD support records for:
+```text
+Requirement
+   ↓
+Evidence
+   ↓
+Evaluation
+   ↓
+Engineering Decision
+```
+
+## 20.2 Execution Trace
+
+Execution Trace records material execution evolution, including:
 
 - Process Instance initialization;
-- state evaluation;
-- state transitions;
+- observation/evaluation events where material;
+- Plans where material;
+- Transition Rule evaluations;
+- Transitions;
 - Decision Gate evaluations;
 - progression-condition evaluations;
 - Execution Determinations;
 - Execution Actions;
 - Execution Results;
 - Participant contributions;
-- Evidence additions/changes;
-- Assumption changes;
+- Evidence/Assumption changes;
 - Engineering Decisions;
 - verification results;
 - Artifact changes;
 - reconsideration events;
 - interruption/resumption;
+- objective or mode changes;
 - completion/termination.
 
-## 18.3 State vs History
+## 20.3 Current State vs History
 
 Execution Context represents current authoritative operational state.
 
-Execution Trace represents material historical evolution.
+Engineering Traceability represents current and historical engineering relationships.
 
-They MUST NOT be treated as interchangeable.
+Execution Trace represents historical execution evolution.
 
----
-
-# 19. Persistence and Recovery
-
-## 19.1 Logical Requirement
-
-A conforming implementation MUST be able to persist sufficient Process Instance state and restore it later.
-
-## 19.2 Recovery
-
-After interruption, the Runtime MUST be able to reconstruct the authoritative Execution Context without depending on the prior Agent's transient memory.
-
-## 19.3 Equivalence
-
-A successful restoration MUST preserve operationally significant identity, relationships, state, and traceability.
-
-## 19.4 Physical Storage
-
-The operational model does not prescribe:
-
-- filesystem layout;
-- database technology;
-- serialization library;
-- cloud service;
-- IDE storage mechanism.
-
-These belong to implementations and environment adapters.
+These concepts MUST NOT be treated as interchangeable.
 
 ---
 
-# 20. Completion, Suspension, and Termination
+# 21. Persistence and Recovery
+
+## 21.1 Logical Requirement
+
+A conforming implementation MUST persist sufficient Process Instance state and restore it later.
+
+## 21.2 Recovery
+
+After interruption, the Runtime MUST reconstruct authoritative Execution Context without depending on the prior Agent's transient memory.
+
+## 21.3 Equivalence
+
+Successful restoration MUST preserve operationally significant identity, relationships, state, knowledge status, and traceability.
+
+## 21.4 Physical Storage
+
+The model does not prescribe filesystem layout, database technology, serialization library, cloud service, or IDE storage mechanism.
+
+---
+
+# 22. Completion, Suspension, and Termination
 
 The operational model MUST represent separately:
 
@@ -807,17 +946,17 @@ A Runtime MAY terminate while engineering remains incomplete.
 
 Engineering Process Completion MUST be established according to EPM completion semantics.
 
-Only then may Runtime termination be interpreted as termination after successful completion rather than simple execution cessation.
+Runtime termination MUST NOT automatically imply Engineering Process Completion.
 
 ---
 
-# 21. Environment Boundary
+# 23. Environment Boundary
 
 The Execution Environment provides capabilities used during execution.
 
 The operational model MUST NOT encode VS Code-specific or tool-specific assumptions.
 
-An environment may expose capabilities such as:
+An environment MAY expose capabilities such as:
 
 ```text
 read file
@@ -828,41 +967,68 @@ run test
 inspect version control
 ```
 
-but these capabilities are environment-level mechanisms, not EPM entities.
+These capabilities are environment-level mechanisms, not EPM entities.
 
-An environment adapter MUST map available capabilities into the execution interface without changing EPM/PEM validity semantics.
+An Environment Adapter MUST map available capabilities into the execution interface without changing EPM or PEM validity semantics.
+
+An environment event or tool result MUST enter authoritative state only through controlled mutation.
 
 ---
 
-# 22. Validation Responsibilities
+# 24. Runtime Operational Responsibilities
 
-Validation occurs at multiple levels.
+A conforming Runtime is responsible, as applicable, for:
 
-## 22.1 Structural Validation
+- loading the applicable EPM and PEM;
+- establishing Process Instances;
+- establishing and maintaining Execution Context;
+- coordinating Participants;
+- presenting relevant state to Participants;
+- evaluating Process State conditions;
+- evaluating Transition Rules, Decision Gates, and progression conditions;
+- executing valid Transitions;
+- managing the execution cycle;
+- controlling Execution Actions;
+- receiving and classifying Execution Results;
+- maintaining authoritative state;
+- preserving continuity;
+- recording execution trace;
+- supporting controlled reconsideration;
+- distinguishing engineering completion from Runtime termination.
 
-Determines whether an operational representation satisfies its required structure and relationships.
+The Runtime MUST perform these responsibilities without redefining EPM engineering semantics.
 
-## 22.2 Semantic Validation
+---
 
-Determines whether a proposed state or knowledge update is consistent with EPM semantics.
+# 25. Validation Responsibilities
 
-## 22.3 Execution Validation
+Validation occurs at multiple conceptual levels.
 
-Determines whether the proposed action or transition is permitted under PEM control.
+## 25.1 Structural Validation
 
-## 22.4 Persistence Validation
+Determines whether an operational representation satisfies required structure and relationships.
+
+## 25.2 Semantic Validation
+
+Determines whether a proposed engineering-state update is consistent with EPM semantics.
+
+## 25.3 Execution Validation
+
+Determines whether a proposed execution action, Transition, or state mutation is permitted under PEM control.
+
+## 25.4 Persistence Validation
 
 Determines whether stored state can be safely restored as authoritative operational state.
 
-## 22.5 Conformance Validation
+## 25.5 Conformance Validation
 
-Determines whether an implementation satisfies the normative EPM/PEM/Operational Model requirements.
+Determines whether an implementation satisfies normative EPM, PEM, and Operational Model requirements.
 
-These validation levels MUST remain conceptually distinct even if a Runtime combines them in one implementation component.
+These validation levels MUST remain conceptually distinct even if an implementation combines them.
 
 ---
 
-# 23. Operation Classes
+# 26. Operation Classes
 
 The operational model defines operation classes rather than implementation-specific APIs.
 
@@ -870,9 +1036,11 @@ The operational model defines operation classes rather than implementation-speci
 
 - initialize Process Instance;
 - load Process Instance;
+- change Engineering Objective through the controlled objective-change operation;
+- change Execution Mode where permitted;
 - suspend execution;
 - resume execution;
-- complete Process Instance;
+- establish Engineering Process Completion;
 - terminate Runtime execution.
 
 ### Observation Operations
@@ -880,22 +1048,33 @@ The operational model defines operation classes rather than implementation-speci
 - inspect current Execution Context;
 - inspect applicable Process State;
 - inspect relevant engineering knowledge;
-- inspect applicable gates and progression conditions.
+- inspect applicable gates and progression conditions;
+- observe environment information.
 
 ### Evaluation Operations
 
 - evaluate Process State;
+- evaluate Transition Rule;
 - evaluate Decision Gate;
 - evaluate progression condition;
 - evaluate verification result;
-- evaluate impact of new Evidence.
+- evaluate impact of new Evidence;
+- evaluate objective or mode changes.
+
+### Investigation Operations
+
+- establish Investigation objective;
+- perform investigation activities;
+- record resulting Evidence/knowledge;
+- evaluate Investigation sufficiency;
+- close or continue Investigation according to its objective.
 
 ### Contribution Operations
 
-- submit observation;
-- submit Evidence;
+- submit Participant Input;
+- submit observation/analysis;
+- submit Evidence candidate;
 - submit Assumption;
-- submit analysis;
 - submit Candidate Solution;
 - submit Evaluation;
 - propose Engineering Decision;
@@ -905,9 +1084,11 @@ The operational model defines operation classes rather than implementation-speci
 ### Execution Operations
 
 - establish Execution Determination;
+- create/update Plan where applicable;
 - authorize/perform applicable Execution Action;
 - record Execution Result;
 - update Execution Context;
+- perform valid Transition;
 - record trace event.
 
 ### Reconsideration Operations
@@ -918,13 +1099,19 @@ The operational model defines operation classes rather than implementation-speci
 - record revised Decision;
 - preserve historical state.
 
-These operation classes will become concrete interface operations only in later artifacts.
+These operation classes become concrete interfaces only in later artifacts.
 
 ---
 
-# 24. Required Invariants
+# 27. Engineering and Operational Invariants
 
-A conforming operational implementation MUST preserve at least these invariants:
+## 27.1 Engineering Invariants
+
+Engineering Invariants are owned by EPM. The Operational Model MUST preserve and enforce them operationally but MUST NOT redefine them.
+
+## 27.2 Operational Invariants
+
+A conforming operational implementation MUST preserve at least:
 
 1. **EPM authority invariant** — engineering validity cannot be redefined by Runtime convenience or Agent output.
 2. **PEM execution invariant** — execution follows PEM semantics.
@@ -932,56 +1119,68 @@ A conforming operational implementation MUST preserve at least these invariants:
 4. **Agent boundary invariant** — Agent is not synonymous with Runtime.
 5. **Decision distinction invariant** — Engineering Decision and Execution Determination remain distinct.
 6. **Completion distinction invariant** — Engineering Completion and Runtime Termination remain distinct.
-7. **Knowledge distinction invariant** — Evidence, Assumptions, unknowns, and conclusions remain distinguishable.
-8. **Traceability invariant** — material changes remain reconstructable.
-9. **Continuity invariant** — execution can resume without conversational memory.
-10. **Environment independence invariant** — execution semantics do not depend on a specific IDE or tool environment.
-11. **Controlled mutation invariant** — raw participant or environment output does not silently become authoritative state.
-12. **Reconsideration invariant** — revised conclusions preserve prior history.
+7. **Knowledge distinction invariant** — Evidence, Assumptions, unknowns, contested information, and conclusions remain distinguishable.
+8. **Observation invariant** — observation does not itself mutate authoritative Process Instance state.
+9. **Traceability invariant** — material changes remain reconstructable.
+10. **Continuity invariant** — execution can resume without conversational memory.
+11. **Environment independence invariant** — execution semantics do not depend on a specific IDE or tool environment.
+12. **Controlled mutation invariant** — raw Participant, Agent, tool, or environment output does not silently become authoritative state.
+13. **Reconsideration invariant** — revised conclusions preserve prior history.
+14. **Condition-driven progression invariant** — activity completion alone does not establish engineering progression.
+15. **Objective integrity invariant** — Engineering Objective changes are explicit and traceable.
+16. **Requirement-resolution invariant** — Requirement resolution remains distinct from Requirement satisfaction.
 
 ---
 
-# 25. Machine-Readable Derivation Requirements
+# 28. Machine-Readable Derivation Requirements
 
-The later machine-readable model MUST faithfully represent the concepts defined here.
-
-It MUST provide, where applicable:
+The later machine-readable model MUST faithfully represent this model and MUST provide, where applicable:
 
 - stable entity identities;
 - typed relationships;
 - explicit lifecycle/status representation;
+- Requirement resolution distinct from satisfaction;
+- Investigation representation;
+- Execution Mode representation;
+- Transition Rule and Transition distinction;
 - references between current state and historical trace;
 - validation constraints;
-- representation of unknown/unresolved state;
-- representation of gate/progression evaluation;
-- representation of Agent-visible execution context;
+- unknown/unresolved/contested/invalidated state;
+- gate/progression evaluation;
+- Agent-visible execution context;
 - persistence-compatible serialization;
-- versioning sufficient to identify the applicable AESM model.
+- model version identification.
 
-Concrete serialization format is intentionally deferred until the machine-readable design phase.
+Concrete serialization format remains intentionally deferred.
 
 ---
 
-# 26. Agent Execution Contract Derivation Requirements
+# 29. Agent Execution Contract Derivation Requirements
 
 The later Agent Execution Contract MUST be derived from this model.
 
-At minimum it must specify:
-
 ### AESM → Agent
 
-- current execution context;
+It MUST be capable of providing, according to visibility and authority rules:
+
+- current Execution Context;
 - relevant engineering state;
+- applicable Process State;
+- Execution Mode;
 - applicable execution conditions;
 - permitted scope/capabilities;
 - required outputs or pending decisions;
-- continuity information needed for the current execution step.
+- continuity information required for the current execution step.
 
 ### Agent → AESM
 
-- structured observations and analysis;
-- Evidence and provenance/context where available;
+It MUST support structured contributions including, where applicable:
+
+- Participant Input;
+- observations and analysis;
+- Evidence candidates and provenance/context;
 - explicit Assumptions;
+- Investigation results;
 - Candidate Solutions;
 - Evaluations;
 - proposed Engineering Decisions;
@@ -994,7 +1193,7 @@ The Agent Contract MUST define how these contributions are distinguished from au
 
 ---
 
-# 27. Implementation Independence
+# 30. Implementation Independence
 
 This model intentionally does not prescribe:
 
@@ -1009,19 +1208,17 @@ This model intentionally does not prescribe:
 - message broker;
 - cloud platform.
 
-A conforming implementation may choose any of these while preserving the operational semantics.
+A conforming implementation MAY choose any of these while preserving operational semantics.
 
 ---
 
-# 28. Repository Boundary
+# 31. Repository Boundary
 
 AESM model artifacts and individual engineering execution data are separate concerns.
 
-The AESM repository stores the model, specifications, schemas, protocols, and conformance artifacts.
+The AESM repository stores system specifications, operational models, schemas, protocols, and conformance artifacts.
 
-An engineering project's execution environment stores its Process Instances, Execution Contexts, traces, and project-specific engineering artifacts according to the chosen Runtime implementation.
-
-Conceptually:
+An engineering project's execution environment stores Process Instances, Execution Contexts, traces, and project-specific engineering artifacts according to the Runtime implementation.
 
 ```text
 AESM Repository
@@ -1035,36 +1232,62 @@ The operational model MUST preserve this distinction.
 
 ---
 
-# 29. Open Items for Subsequent Phases
+# 32. Phase 2 Revision Scope
 
-The following items remain intentionally unresolved because they belong to later artifacts:
+This revision explicitly closes the following findings from the Phase 2 consistency review:
+
+- Investigation is now a first-class operational concept.
+- Transition Rule is separated from Transition.
+- Execution Mode is operationally defined.
+- Requirement resolution is explicitly distinguished from satisfaction.
+- Engineering Objective change is explicitly controlled and traceable.
+- Participant Input is distinguished from Participant Contribution and authoritative state.
+- Engineering Invariants are separated conceptually from Operational Invariants.
+- Evaluation explicitly includes Requirements and Risks.
+- Observation is explicitly non-mutating.
+- Planning is operationally represented without becoming a mandatory fixed workflow.
+- Runtime responsibilities are explicitly mapped.
+- `completed work` and `remaining work` are explicitly defined as continuity information rather than progression criteria.
+- Engineering Traceability is explicitly distinguished from Execution Trace.
+
+---
+
+# 33. Open Items for Subsequent Phases
+
+The following remain intentionally unresolved because they belong to later artifacts:
 
 1. exact field-level schema for every entity;
 2. canonical machine-readable serialization format;
-3. exact Agent message/request/response structures;
+3. exact Agent request/response structures;
 4. concrete protocol transport;
 5. Runtime API surface;
 6. environment capability interface;
 7. conformance test format;
-8. physical Process Instance storage layout.
+8. physical Process Instance storage layout;
+9. exact versioning and migration mechanism for operational state.
 
-These are not omissions from the operational model. They are deliberate implementation-level deferrals.
+These are deliberate implementation-level deferrals, not unresolved semantic gaps in the Operational Model.
 
 ---
 
-# 30. Phase 2 Completion Criteria
+# 34. Phase 2 Completion Criteria
 
-The AESM Operational Model is considered complete when:
+The AESM Operational Model may be frozen when a final review confirms that:
 
-- all operational requirement classes from the Phase 1 analysis have corresponding model treatment;
+- all Phase 1 operational requirement classes have corresponding treatment;
+- EPM concepts required for execution have not been omitted;
+- PEM execution semantics are represented without semantic drift;
 - Process Instance and Execution Context are operationally defined;
-- state and transition semantics are operationally represented without redefining EPM;
+- Process State, Transition Rule, Transition, Decision Gate, and Progression Condition are distinct and usable;
+- Investigation and Execution Mode are operationally represented;
 - engineering knowledge entities retain their semantic distinctions;
 - Agent/Participant and Runtime boundaries are explicit;
 - controlled state mutation is defined;
-- traceability, persistence, interruption, resumption, and reconsideration are operationally represented;
+- observation, planning, execution, verification, and context update have clear operational boundaries;
+- engineering traceability and execution trace are both supported;
+- persistence, interruption, resumption, reconsideration, objective changes, and termination are represented;
 - environment independence is preserved;
 - invariants are explicit;
 - the model provides sufficient normative detail to derive machine-readable schemas and the Agent Execution Contract without inventing core semantics.
 
-Upon satisfaction of these criteria, the next phase is **Phase 3 — Machine-Readable AESM Model**.
+If these criteria are satisfied, the next phase is **Phase 3 — Machine-Readable AESM Model**.
