@@ -1,0 +1,56 @@
+{
+  "validation": {
+    "phase": "Phase 3 Revision 1",
+    "status": "failed",
+    "repository": "tuanna2703/AI-Assisted-Engineering-System-Model",
+    "branch": "main",
+    "commit": "279947f54e9f71d588f9b26652bf1c6cba5f3f1d",
+    "executedAt": "2026-08-17T07:28:39Z",
+    "overallResult": "FAILED",
+    "freezeEligible": false
+  },
+  "environment": {
+    "os": "Darwin 21.6.0 x86_64",
+    "python": "3.13.5",
+    "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+    "schemaValidator": "jsonschema",
+    "schemaValidatorVersion": "4.24.1",
+    "schemaDraft": "Draft 2020-12"
+  },
+  "checks": {
+    "phase3SemanticValidator": {
+      "status": "failed",
+      "exitCode": 1,
+      "command": "python3 scripts/validate-phase3.py",
+      "stdout": "FAIL: missing entity kinds: OperationDefinition, TraceEvent",
+      "stderr": "",
+      "diagnosis": "The canonical model entityTypes array does not include OperationDefinition or TraceEvent, which are required by the validator's REQUIRED_KINDS set."
+    },
+    "jsonSchemaValidation": {
+      "status": "passed",
+      "exitCode": 0,
+      "command": "python3 -c 'from jsonschema import Draft202012Validator; ...'",
+      "stdout": "Validator: jsonschema 4.24.1\nDraft: 2020-12\nVALIDATION PASSED: Model validates against schema.",
+      "stderr": "",
+      "note": "The JSON Schema structurally validates the model. The schema does not enforce the specific entity vocabulary — that is the semantic validator's responsibility."
+    },
+    "additionalStructuralChecks": {
+      "A_validJSON_model": { "status": "passed", "evidence": "Parsed successfully" },
+      "B_validJSON_schema": { "status": "passed", "evidence": "Parsed successfully" },
+      "C_schemaDraft202012": { "status": "passed", "evidence": "$schema = https://json-schema.org/draft/2020-12/schema" },
+      "D_modelIdentity": { "status": "passed", "evidence": "modelId=aesm.operational-model, modelVersion=0.1.1" },
+      "E_entityVocabulary": { "status": "failed", "evidence": "Missing entity kinds: OperationDefinition, TraceEvent" },
+      "F_executionContextContinuation": { "status": "passed", "evidence": "Fields present: continuation, continuity, lastAuthoritativeUpdate" },
+      "G_completionVsTermination": { "status": "passed", "evidence": "Both engineeringCompletionStatus and runtimeLifecycleStatus present in ProcessInstance" },
+      "H_decisionVsDetermination": { "status": "passed", "evidence": "Both EngineeringDecision and ExecutionDetermination entity kinds present" },
+      "I_controlledAuthorityPath": { "status": "passed", "evidence": "authorityPath covers observation → candidate → validation → mutation → update → trace" },
+      "J_reconsiderationHistory": { "status": "passed", "evidence": "preservedHistoricalStateRefs field present in Reconsideration" },
+      "K_traceAndMutationRelationships": { "status": "passed", "evidence": "mutation.trace, mutation.context, validation.mutation relationships all present" }
+    }
+  },
+  "failureDiagnosis": {
+    "rootCause": "The canonical model (aesm-operational-model.json) does not define entity types for OperationDefinition and TraceEvent. The Phase 3 semantic validator (validate-phase3.py) requires these in REQUIRED_KINDS.",
+    "impact": "Phase 3 cannot be frozen until these entity types are added to the canonical model or the required vocabulary is revised.",
+    "recommendation": "Add OperationDefinition and TraceEvent entity type definitions to the semanticModel.entityTypes array in the canonical model, or if these are intentionally excluded, update the validator's REQUIRED_KINDS to reflect the authoritative vocabulary."
+  }
+}
