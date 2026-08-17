@@ -18,7 +18,7 @@ The Process Execution Model exists to ensure that a single Engineering Process M
 
 This specification intentionally separates execution semantics from process definition.
 
-The Engineering Process Model remains the authoritative description of engineering work, while the Process Execution Model defines the rules governing its execution.
+The Engineering Process Model is the authoritative definition of engineering meaning and validity, while the Process Execution Model is the authoritative definition of execution semantics. A Runtime shall satisfy both models and shall not use execution semantics to redefine engineering validity.
 
 ---
 
@@ -58,7 +58,7 @@ Equivalent engineering tasks should follow equivalent execution behavior regardl
 
 ### Predictability
 
-Participants should understand how execution progresses, why decisions are made, and what conditions govern execution and state transitions.
+Participants should understand how execution progresses, why determinations are made, and what conditions govern execution and state transitions.
 
 ### Portability
 
@@ -109,9 +109,9 @@ The Process Execution Model specifies:
 
 Neither model replaces the other.
 
-The Engineering Process Model defines the structure and semantics of engineering work.
+The Engineering Process Model defines the structure, meaning, and validity conditions of engineering work.
 
-The Process Execution Model defines how that structure is executed.
+The Process Execution Model defines how those conditions are executed.
 
 ---
 
@@ -129,7 +129,7 @@ This specification is intended for:
 
 ## 1.6 Conformance
 
-A Runtime implementation claiming conformance to this specification shall execute an Engineering Process Model according to the execution semantics defined herein.
+A Runtime implementation claiming conformance to this specification shall execute an Engineering Process Model according to the execution semantics defined herein and shall preserve the engineering validity conditions defined by the applicable Engineering Process Model.
 
 Conformance does not require a specific implementation technology.
 
@@ -165,11 +165,11 @@ The Process Execution Model consists of the following primary concepts:
 ```text
 Engineering Process Model
         │
-        │ defines
+        │ defines engineering meaning and validity
         ▼
 Process Execution Model
         │
-        │ implemented by
+        │ defines execution semantics
         ▼
 Runtime
         │
@@ -177,7 +177,7 @@ Runtime
         ▼
 Process Instance
         │
-        │ maintains
+        │ operational state represented by
         ▼
 Execution Context
 ```
@@ -197,7 +197,7 @@ AI Agent ───────────┤
 
 These concepts are independent but closely related.
 
-The Engineering Process Model defines engineering behavior.
+The Engineering Process Model defines engineering behavior and validity.
 
 The Process Execution Model defines execution semantics.
 
@@ -205,7 +205,7 @@ Runtime implementations realize those semantics.
 
 Process Instances represent individual executions.
 
-Execution Context preserves the operational state of each execution.
+Execution Context represents the authoritative operational state of each execution.
 
 Participants contribute to execution.
 
@@ -227,7 +227,7 @@ It specifies concepts such as:
 - Artifact definitions;
 - cross-cutting engineering disciplines.
 
-The Engineering Process Model defines **what engineering work shall occur**.
+The Engineering Process Model defines **what engineering work shall occur** and the engineering conditions under which that work is valid.
 
 It does not define how execution is performed.
 
@@ -254,7 +254,7 @@ It specifies:
 
 The Process Execution Model defines **how engineering work is executed**.
 
-It does not redefine the Engineering Process Model.
+It does not redefine the Engineering Process Model or its engineering validity conditions.
 
 ---
 
@@ -270,7 +270,7 @@ A Runtime is an implementation concept rather than an independent source of engi
 
 The Runtime shall conform to the Engineering Process Model and the Process Execution Model.
 
-It shall not silently modify either specification.
+It shall not silently modify either specification or substitute its own engineering validity criteria.
 
 ### Responsibilities
 
@@ -324,7 +324,7 @@ A Process State defines, through the Engineering Process Model:
 - expected outputs;
 - completion conditions.
 
-The Engineering Process Model defines Process States.
+The Engineering Process Model defines Process States and their engineering semantics.
 
 The Process Execution Model governs how those states are executed.
 
@@ -339,6 +339,8 @@ The **Execution Context** is the authoritative operational state required to con
 It represents the minimum authoritative information required for a conforming Runtime to resume execution without altering engineering intent or execution semantics.
 
 Execution Context is a logical model rather than a storage mechanism.
+
+The Execution Context is authoritative for the **operational state of the Process Instance**. It does not override the engineering meaning or validity conditions defined by the Engineering Process Model.
 
 ### Characteristics
 
@@ -360,7 +362,7 @@ Execution Context logically contains:
 
 - Process Instance identity;
 - active Process State;
-- execution objective;
+- Engineering Objective;
 - execution mode.
 
 #### Engineering State
@@ -458,6 +460,8 @@ Artifacts exist independently of Runtime implementations.
 
 Artifacts are governed by the Engineering Process Model and manipulated through execution defined by the Process Execution Model.
 
+The Runtime does not independently determine whether an Artifact is engineering-valid or verified.
+
 ---
 
 ## 2.12 Evidence
@@ -488,9 +492,9 @@ Execution should seek to replace Assumptions with Evidence whenever practical.
 
 ### Definition
 
-A **Decision** is an accepted engineering conclusion or commitment that affects Process Execution.
+An **Engineering Decision** is an accepted engineering conclusion or commitment that affects engineering direction or Process Execution.
 
-Decisions may determine:
+Engineering Decisions may determine:
 
 - selected Solutions;
 - accepted trade-offs;
@@ -498,7 +502,7 @@ Decisions may determine:
 - process direction;
 - resolution of material uncertainty.
 
-Decisions shall remain distinguishable from proposals or unaccepted alternatives.
+Engineering Decisions shall remain distinguishable from proposals, Execution Determinations, or unaccepted alternatives.
 
 ---
 
@@ -520,6 +524,7 @@ The principal relationships are:
 
 ```text
 Engineering Process Model
+    ├── defines engineering validity
     ├── defines Process States
     ├── defines Artifacts
     ├── defines Decision Gates
@@ -543,7 +548,7 @@ Runtime
 Process Instance
     ├── has Process State
     ├── has Execution Context
-    ├── contains Decisions
+    ├── contains Engineering Decisions
     ├── contains Evidence
     └── evolves over time
 ```
@@ -638,7 +643,9 @@ Evaluation determines, as applicable:
 - whether a Decision Gate must be addressed;
 - whether Participant Input materially affects execution.
 
-Evaluation produces an execution decision or identifies the condition preventing reliable progression.
+Evaluation produces an **Execution Determination** or identifies the condition preventing reliable progression.
+
+An Execution Determination is an execution-level determination of what action or condition is permissible next. It is not an Engineering Decision unless the applicable engineering process explicitly establishes and recognizes an Engineering Decision.
 
 ---
 
@@ -707,7 +714,7 @@ Execution results are incorporated into the Execution Context.
 Updates may include:
 
 - Artifact changes;
-- Decision records;
+- Engineering Decision records;
 - Evidence;
 - Assumptions;
 - risks;
@@ -758,9 +765,13 @@ Resumption begins with the **Observe** phase.
 
 ## 3.6 Completion
 
-Execution terminates when the applicable Engineering Process Model conditions indicate completion or when execution is explicitly terminated or abandoned according to applicable process conditions.
+Execution becomes eligible for termination when the applicable **Engineering Process Completion** conditions defined by the Engineering Process Model have been satisfied, or when execution is explicitly terminated or abandoned according to applicable process conditions.
+
+Termination mechanics are governed by the Process Execution Model.
 
 Termination shall preserve the final Execution Context and required Artifacts.
+
+Runtime termination without Engineering Process Completion shall not be represented as successful engineering completion.
 
 ---
 
@@ -793,9 +804,9 @@ The Process Execution Model defines how those semantics are applied during execu
 
 A Runtime does not independently determine what constitutes valid engineering work.
 
-Its execution decisions are constrained by the models and state governing the Process Instance.
+Its Execution Determinations are constrained by the models and state governing the Process Instance.
 
-The Runtime must therefore determine its next action according to the following authority sequence:
+The Runtime must therefore determine its next action according to the following execution-control sequence:
 
 ```text
 Engineering Process Model
@@ -811,15 +822,19 @@ Participant Input
 Runtime Heuristics
 ```
 
-Each level constrains the levels below it.
+The sequence describes increasing execution specificity, not competing sources of engineering authority.
 
-Runtime heuristics may assist execution, but they must not override requirements established by the Engineering Process Model, current Process State, Execution Context, applicable Decision Gates, or valid Participant Input.
+The Engineering Process Model is authoritative for engineering meaning and validity.
+
+The Execution Context is authoritative for the recorded operational state of the Process Instance, but it shall remain consistent with the Engineering Process Model.
+
+Runtime heuristics may assist execution, but they must not override requirements established by the Engineering Process Model, current Process State, applicable Decision Gates, or recognized authoritative execution information.
 
 ---
 
-## 4.3 Engineering Process Model as the Highest Execution Constraint
+## 4.3 Engineering Process Model as Engineering Authority
 
-The Engineering Process Model defines the engineering process that the Runtime is executing.
+The Engineering Process Model defines the engineering process that the Runtime is executing and is the highest authority for engineering validity.
 
 The Runtime must therefore execute according to the applicable process definition.
 
@@ -829,9 +844,9 @@ The Runtime must not:
 - silently alter process rules;
 - bypass required process conditions;
 - replace process-defined requirements with implementation preferences;
-- treat its own heuristics as authoritative process rules.
+- treat its own heuristics as authoritative engineering rules.
 
-If the Runtime encounters a situation that cannot be resolved within the applicable process definition, it must not silently invent a new process rule.
+If the Runtime encounters a situation that cannot be resolved within the applicable process definition, it must not silently invent a new engineering rule.
 
 The situation must instead be surfaced for appropriate resolution.
 
@@ -849,6 +864,8 @@ The Runtime must not treat the Process Instance as an unconstrained collection o
 
 Execution remains governed by the current Process State.
 
+The complete Process State semantics and schema are defined by the Engineering Process Model. The PEM governs their execution rather than redefining them.
+
 ---
 
 ## 4.5 Execution Context as Operational Authority
@@ -861,12 +878,12 @@ Relevant information includes:
 
 - Process Instance identity;
 - current Process State;
-- execution objective;
+- Engineering Objective;
 - execution mode;
 - completed work;
 - remaining work;
 - Artifacts and their status;
-- accepted Decisions;
+- accepted Engineering Decisions;
 - pending Decisions;
 - Decision Gates;
 - Evidence;
@@ -879,13 +896,15 @@ Relevant information includes:
 
 Where conflicting information exists, the Runtime must identify and resolve the inconsistency rather than silently choosing a value.
 
+An Execution Context inconsistency shall not be resolved by overriding an applicable EPM engineering validity condition with an operational value.
+
 ---
 
 ## 4.6 Decision Gates
 
 Decision Gates constrain progression through the engineering process.
 
-A Decision Gate represents a point at which execution must establish whether the conditions for a relevant Decision or progression have been satisfied.
+A Decision Gate represents a point at which execution must establish whether the conditions for a relevant Engineering Decision or progression have been satisfied.
 
 The Runtime must recognize applicable Decision Gates when determining whether execution may continue or transition.
 
@@ -901,7 +920,7 @@ It must instead take an appropriate controlled action, such as:
 - record an explicit Assumption where permitted;
 - suspend execution.
 
-The detailed semantics of individual Decision Gates are defined by the Engineering Process Model and applicable execution rules.
+The detailed semantics and acceptance conditions of individual Decision Gates are defined by the Engineering Process Model and applicable execution rules.
 
 ---
 
@@ -943,7 +962,7 @@ They must not be used to:
 - bypass Decision Gates;
 - alter authoritative Execution Context without justification;
 - fabricate missing information;
-- silently resolve unresolved engineering Decisions.
+- silently resolve unresolved Engineering Decisions.
 
 Heuristics determine **how to execute within permitted boundaries**, not **what those boundaries are**.
 
@@ -961,13 +980,15 @@ Subject to applicable constraints, a Runtime may perform or initiate actions inc
 - update an Artifact;
 - perform verification;
 - resolve an Assumption where sufficient Evidence exists;
-- record a Decision;
+- record a recognized Engineering Decision;
 - initiate a process transition;
 - suspend execution;
 - resume execution;
 - terminate execution.
 
 The availability and conditions of these actions are determined by the applicable Engineering Process Model and Process Execution Model semantics.
+
+Recording a recognized Engineering Decision does not mean that the Runtime independently possesses authority to create that Decision.
 
 ---
 
@@ -999,7 +1020,11 @@ Instead, it may:
 
 ## 4.11 Controlled Progression
 
-Execution progress must be based on sufficient Evidence and valid process conditions rather than on the desire to maintain forward movement.
+Execution progress shall occur only when the applicable EPM-defined progression conditions have been sufficiently established.
+
+Those conditions may require Evidence, verification, recognized Engineering Decisions, satisfied Decision Gates, resolved Requirements, acceptable Assumptions, or other state-specific conditions.
+
+Evidence is therefore required when the applicable progression condition requires Evidence; it is not an unconditional execution prerequisite independent of the EPM-defined conditions.
 
 An action may be technically possible while still being inappropriate because required conditions have not been established.
 
@@ -1068,7 +1093,7 @@ Relevant changes may include:
 - new Evidence;
 - changed Assumptions;
 - newly identified risks;
-- Decisions;
+- Engineering Decisions;
 - changed Decision Gate status;
 - changed Process State;
 - newly identified unresolved questions;
@@ -1104,6 +1129,8 @@ A suspended Process Instance retains its Execution Context so that execution may
 
 The Runtime may terminate execution when termination is permitted by the applicable process conditions.
 
+Engineering Process Completion is determined by the applicable Engineering Process Model conditions. Runtime termination is an execution outcome and does not by itself establish Engineering Process Completion.
+
 Termination must not be used merely as a substitute for handling uncertainty.
 
 Where continued execution is possible but temporarily blocked, suspension is distinct from termination.
@@ -1118,7 +1145,7 @@ The Runtime must execute the Engineering Process Model rather than silently rede
 
 ### Invariant 2 — Context Integrity
 
-The Runtime must preserve the consistency and authority of the Execution Context.
+The Runtime must preserve the consistency and authority of the Execution Context as the operational state of the Process Instance.
 
 ### Invariant 3 — Gate Integrity
 
@@ -1134,11 +1161,11 @@ The Runtime must not conceal material uncertainty merely to continue execution.
 
 ### Invariant 6 — Heuristic Subordination
 
-Runtime heuristics must remain subordinate to higher-level execution constraints.
+Runtime heuristics must remain subordinate to higher-level execution constraints and EPM-defined engineering validity.
 
 ### Invariant 7 — Controlled Progression
 
-Execution must progress only when the conditions for progression have been sufficiently established.
+Execution must progress only when the applicable EPM-defined conditions for progression have been sufficiently established.
 
 ### Invariant 8 — Context Continuity
 
@@ -1148,7 +1175,7 @@ Changes to execution must be reflected in the Execution Context sufficiently for
 
 ## 4.17 Execution Control Decision Model
 
-The Runtime's control decision can be represented conceptually as:
+The Runtime's execution determination can be represented conceptually as:
 
 ```text
                   Observe
@@ -1221,7 +1248,7 @@ These subjects are addressed only where required by the present specification.
 
 Execution Control defines how a Runtime determines and governs its next action during Process Execution.
 
-The Runtime operates under a hierarchy of constraints:
+The Runtime operates under a hierarchy of execution constraints:
 
 ```text
 Engineering Process Model
@@ -1237,7 +1264,7 @@ Participant Input
 Runtime Heuristics
 ```
 
-The Runtime may use heuristics to select among permissible actions, but heuristics cannot override higher-level process constraints.
+The Engineering Process Model defines engineering meaning and validity. The Execution Context records the authoritative operational state. Runtime heuristics may select among permissible actions but cannot redefine either authority.
 
 When sufficient information exists, the Runtime executes an appropriate action, verifies its result, and updates the Execution Context.
 
@@ -1245,7 +1272,7 @@ When reliable execution is not possible, the Runtime must not fabricate informat
 
 The fundamental principle of Execution Control is:
 
-> **The Runtime is responsible for controlling execution, but it is not free to redefine what valid execution means.**
+> **The Runtime is responsible for controlling execution, but it is not free to redefine what valid engineering execution means.**
 
 ---
 
@@ -1397,7 +1424,7 @@ The Runtime may:
 - continue execution where participant involvement is not required;
 - suspend execution when required Participant Input is unavailable.
 
-The Runtime must not silently convert participant suggestions into authoritative process Decisions when the applicable process requires further validation or authorization.
+The Runtime must not silently convert participant suggestions into authoritative Engineering Decisions when the applicable process requires further validation or authorization.
 
 ---
 
@@ -1407,14 +1434,14 @@ Participants may initiate interaction with the Runtime when they have relevant i
 
 Examples include:
 
-- providing missing requirements;
+- providing missing Requirements;
 - correcting an inaccurate Assumption;
 - supplying new Evidence;
 - challenging an Artifact;
 - requesting investigation;
 - proposing an alternative;
 - approving or rejecting a Decision when authorized;
-- indicating that the current execution objective has changed.
+- indicating that the current Engineering Objective has changed.
 
 The Runtime must evaluate such input against the current Process Instance and Execution Context.
 
@@ -1424,7 +1451,7 @@ The Runtime must determine whether the input:
 
 1. changes the Execution Context;
 2. requires verification;
-3. requires a new Decision;
+3. requires a new Engineering Decision;
 4. invalidates an existing Assumption;
 5. affects a Decision Gate;
 6. requires a Process State transition;
@@ -1455,7 +1482,7 @@ Participant interaction should remain proportional to the needs of the Process I
 
 ## 5.9 Participant Decisions
 
-Participants may contribute Decisions to Process Execution.
+Participants may contribute Engineering Decisions to Process Execution.
 
 A participant Decision may include:
 
@@ -1466,11 +1493,11 @@ A participant Decision may include:
 - declining progression;
 - resolving an issue within the Participant's authority.
 
-A participant Decision becomes part of the authoritative execution state only when the applicable process conditions for recognizing that Decision have been satisfied.
+A participant Decision becomes part of the authoritative execution state only when the applicable process conditions for recognizing that Engineering Decision have been satisfied.
 
-The Runtime is responsible for incorporating recognized Decisions into the Execution Context.
+The Runtime is responsible for incorporating recognized Engineering Decisions into the Execution Context.
 
-The Runtime must not treat an informal statement as a formal process Decision when the process requires a defined Decision or approval condition.
+The Runtime must not treat an informal statement as a formal Engineering Decision when the process requires a defined Decision or approval condition.
 
 ---
 
@@ -1480,7 +1507,7 @@ Participants may challenge:
 
 - Assumptions;
 - Evidence;
-- Decisions;
+- Engineering Decisions;
 - Artifacts;
 - verification results;
 - proposed transitions;
@@ -1516,14 +1543,14 @@ An AI Agent may:
 - propose Solutions;
 - generate or modify Artifacts;
 - identify risks;
-- propose Decisions;
+- propose Engineering Decisions;
 - perform investigation;
 - perform verification activities;
 - identify contradictions;
 - request information;
 - recommend actions.
 
-AI-generated output is Participant Input unless and until it satisfies the applicable conditions for becoming authoritative process information, a recognized Decision, or another authoritative element of the Execution Context.
+AI-generated output is Participant Input unless and until it satisfies the applicable conditions for becoming authoritative process information, a recognized Engineering Decision, or another authoritative element of the Execution Context.
 
 Conceptually:
 
@@ -1567,11 +1594,11 @@ Examples include:
 
 - newly established Requirements;
 - newly supplied Evidence;
-- accepted Decisions;
+- accepted Engineering Decisions;
 - changed Assumptions;
 - identified risks;
 - rejected conclusions;
-- changed objectives;
+- changed Engineering Objectives;
 - new unresolved questions;
 - participant-approved progression.
 
