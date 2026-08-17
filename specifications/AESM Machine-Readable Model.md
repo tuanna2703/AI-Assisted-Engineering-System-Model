@@ -2,8 +2,8 @@
 
 **Project:** AI-Assisted Engineering System Model (AESM)  
 **Phase:** Phase 3 — Machine-Readable AESM Model  
-**Status:** Candidate — Implementation Baseline  
-**Version:** 0.1.0  
+**Status:** Candidate — Revision 1  
+**Version:** 0.1.1  
 **Derived from:** `specifications/AESM Operational Model.md`
 
 ---
@@ -14,7 +14,7 @@ The AESM Machine-Readable Model defines the canonical software-consumable repres
 
 Its purpose is to make the operational semantics explicit to software without requiring software to interpret the Markdown specification directly.
 
-The Machine-Readable Model is a **model definition**, not an engineering Process Instance. It defines the operational entity vocabulary, field semantics, relationships, operation classes, and operational invariants from which later Runtime data schemas and interfaces can be derived.
+The Machine-Readable Model is a **model definition**, not an engineering Process Instance. It represents the operational entity vocabulary, state, conditions, relationships, operation semantics, authority boundaries, controlled mutation path, continuity requirements, traceability requirements, and operational invariants from which later Runtime data schemas and interfaces can be derived.
 
 It MUST preserve the semantic authority of the EPM and PEM and MUST NOT introduce implementation-specific Runtime, Agent, protocol, database, or environment semantics.
 
@@ -25,16 +25,23 @@ It MUST preserve the semantic authority of the EPM and PEM and MUST NOT introduc
 Phase 3 covers:
 
 1. canonical machine-readable model identity and versioning;
-2. serialization rules;
-3. entity vocabulary;
+2. JSON/UTF-8 serialization;
+3. complete operational entity and record vocabulary;
 4. entity identity strategy;
-5. field/type/cardinality representation;
-6. typed relationships;
-7. operation-class representation;
-8. operational invariant representation;
-9. extension boundaries;
-10. structural validation of the machine-readable model itself;
-11. repository artifact organization.
+5. property and type representation;
+6. explicit relationships and cardinality;
+7. Process, Engineering, Decision, Knowledge, Execution, Continuity, Artifact, and Lifecycle state categories;
+8. explicit condition categories and evaluation representation;
+9. semantic operation representation without defining API transport;
+10. EPM/PEM/Operational Model authority representation;
+11. controlled mutation representation;
+12. continuity and Execution Context representation;
+13. traceability representation;
+14. reconsideration and historical-state representation;
+15. operational invariant representation;
+16. structural validation of the machine-readable model itself;
+17. extension boundaries;
+18. repository artifact organization.
 
 Phase 3 does **not** define:
 
@@ -44,14 +51,14 @@ Phase 3 does **not** define:
 - Runtime API;
 - environment capability API;
 - physical Process Instance storage;
-- conformance test implementation;
+- conformance-test implementation;
 - IDE integration.
 
 Those belong to later phases.
 
 ---
 
-## 3. Relationship to the Operational Model
+## 3. Authority Chain
 
 The authority chain is:
 
@@ -73,47 +80,67 @@ The Machine-Readable Model therefore has a **representation authority**, not an 
 
 ---
 
-## 4. What Constitutes the Machine-Readable AESM Model
+## 4. Canonical Model Structure
 
-The Phase 3 model consists of two normative artifact classes:
+The canonical model contains these semantic layers:
 
-### 4.1 Model Schema
+```text
+Entity vocabulary
+      +
+State categories
+      +
+Condition categories
+      +
+Relationships
+      +
+Operation semantics
+      +
+Authority rules
+      +
+Controlled mutation
+      +
+Continuity
+      +
+Traceability
+      +
+Invariants
+```
 
-The model schema defines the structure of a valid Machine-Readable AESM Model document.
+This is intentionally broader than an entity/field catalog. A machine-readable representation that omits state, conditions, authority, mutation, continuity, or traceability is semantically incomplete even if its JSON is structurally valid.
 
-Artifact:
+---
+
+## 5. Normative Artifacts
+
+### 5.1 Model Schema
 
 `schemas/aesm-machine-readable-model.schema.json`
 
-The schema uses JSON Schema Draft 2020-12.
+The schema uses JSON Schema Draft 2020-12 and validates the structure of the canonical model definition.
 
-### 4.2 Canonical Model Definition
-
-The canonical model definition is the machine-readable representation of the current AESM Operational Model.
-
-Artifact:
+### 5.2 Canonical Model Definition
 
 `model/aesm-operational-model.json`
 
-It defines the entities, relationships, operation classes, and invariants that software must understand to consume the operational model.
+The canonical model definition is the machine-readable representation of the current AESM Operational Model.
 
-These two artifacts have different responsibilities:
+These artifacts have different responsibilities:
 
 ```text
 Model Schema
-= validates the shape of the machine-readable model
+= validates machine-readable model structure
 
 Canonical Model Definition
-= represents AESM operational semantics in machine-readable form
+= represents AESM operational semantics
 ```
 
 ---
 
-## 5. One Model, Multiple Schemas
+## 6. One Canonical Semantic Model
 
 AESM uses **one canonical operational model definition** rather than multiple competing model definitions.
 
-The canonical model is decomposed into entity definitions internally, but those definitions remain members of one coherent model identified by:
+The canonical model is decomposed into entity definitions internally, but all definitions remain members of one coherent model identified by:
 
 ```text
 modelId = aesm.operational-model
@@ -122,80 +149,23 @@ modelVersion = MAJOR.MINOR.PATCH
 
 Later Runtime data schemas MAY be split into multiple files for maintainability or implementation purposes. Such schemas MUST derive from this canonical model and MUST NOT become independent semantic authorities.
 
-This establishes:
-
-```text
-One canonical semantic model
-        ↓
-Multiple derived implementation schemas, where useful
-```
-
 ---
 
-## 6. Serialization Strategy
+## 7. Serialization
 
-### 6.1 Canonical Format
-
-The Phase 3 canonical serialization format is **JSON encoded as UTF-8**.
-
-JSON is selected because it provides:
-
-- broad software support;
-- deterministic machine-readable structure;
-- direct compatibility with JSON Schema;
-- straightforward interchange;
-- suitability for later protocol and Runtime layers.
-
-The choice of JSON is a serialization decision for Phase 3. It does not require a specific Runtime architecture.
-
-### 6.2 Schema Dialect
+The canonical serialization format is **JSON encoded as UTF-8**.
 
 The normative schema dialect is:
 
 `https://json-schema.org/draft/2020-12/schema`
 
-### 6.3 Human-Readable Specifications
-
-Markdown remains the normative human-readable specification format.
-
-The relationship is therefore:
-
-```text
-Markdown specification
-        ↓
-Machine-readable representation
-```
-
-Neither format silently supersedes the other.
+Markdown remains the normative human-readable specification format. JSON is its machine-readable semantic representation.
 
 ---
 
-## 7. Identity and Versioning
+## 8. Identity and Versioning
 
-### 7.1 Model Identity
-
-The canonical model has the stable identifier:
-
-`aesm.operational-model`
-
-Entity kinds use stable symbolic names such as:
-
-- `ProcessInstance`
-- `ExecutionContext`
-- `Requirement`
-- `EngineeringDecision`
-- `ExecutionAction`
-- `ExecutionTrace`
-
-### 7.2 Entity Identity
-
-Operational entities MUST use stable opaque identities.
-
-The identity strategy MUST NOT require database-generated numeric IDs, filesystem paths, IDE identifiers, or Runtime-local object addresses.
-
-An implementation MAY encode identities differently internally provided the externally represented identity remains stable within its intended scope.
-
-### 7.3 Versioning
+Operational entities MUST use stable opaque identities. The identity strategy MUST NOT require database-generated IDs, filesystem paths, IDE identifiers, or Runtime-local object addresses.
 
 The model and schema use semantic versioning:
 
@@ -203,101 +173,292 @@ The model and schema use semantic versioning:
 MAJOR.MINOR.PATCH
 ```
 
-A change that breaks the meaning or compatibility of existing machine-readable consumers requires a MAJOR version change.
+A breaking semantic/compatibility change requires MAJOR; a backward-compatible addition requires MINOR; a non-semantic correction requires PATCH.
 
-A backward-compatible addition requires a MINOR version change.
-
-A correction that does not change the intended model semantics or compatibility contract requires a PATCH version change.
-
-### 7.4 Specification References
-
-The machine-readable model MUST identify the source specifications from which it is derived, including the EPM, PEM, and AESM Operational Model.
+The canonical model MUST identify the EPM, PEM, and AESM Operational Model from which it is derived.
 
 ---
 
-## 8. Entity Representation
+## 9. Entity and Record Representation
 
 Each entity definition MUST identify:
 
 - entity kind;
-- identity field and identity strategy;
-- fields;
-- field types;
+- identity;
+- fields and their semantic type;
 - required/optional status;
-- cardinality where relevant;
-- reference targets where relevant;
+- reference targets where applicable;
 - controlled vocabularies where required.
 
-The machine-readable model MUST retain the semantic identity of AESM entities.
+Phase 3 Revision 1 explicitly represents the following primary operational concepts:
 
-It MUST NOT collapse distinct concepts into generic structures merely for implementation convenience.
+- ProcessInstance;
+- EngineeringObjective;
+- ExecutionContext;
+- ProcessState and ProcessStateDefinition;
+- TransitionRule and Transition;
+- DecisionGate and ProgressionCondition;
+- Condition;
+- ExecutionMode;
+- Requirement and Constraint;
+- Investigation and Evidence;
+- Assumption and Risk;
+- CandidateSolution and Evaluation;
+- EngineeringDecision;
+- VerificationResult and Artifact;
+- ExecutionDetermination, Plan, ExecutionAction, and ExecutionResult;
+- Participant, ParticipantInput, ParticipantContribution, and Observation;
+- ValidationAssessment and StateMutation;
+- Reconsideration;
+- ExecutionTrace.
 
-For example:
+The following MUST remain distinct:
 
 ```text
-EngineeringDecision
-≠ ExecutionDetermination
-
-ParticipantInput
-≠ ParticipantContribution
-
-TransitionRule
-≠ Transition
-
-EngineeringTraceability
-≠ ExecutionTrace
+EngineeringDecision ≠ ExecutionDetermination
+ParticipantInput ≠ ParticipantContribution
+ParticipantContribution ≠ ValidationAssessment
+ValidationAssessment ≠ StateMutation
+TransitionRule ≠ Transition
+Engineering Completion ≠ Runtime Termination
+Requirement Resolution ≠ Requirement Satisfaction
 ```
+
+`Condition`, `Observation`, `ParticipantInput`, `ParticipantContribution`, `ValidationAssessment`, and `StateMutation` are operationally necessary records/types. They MUST NOT replace or redefine EPM engineering entities.
 
 ---
 
-## 9. Relationship Representation
+## 10. Execution Context
 
-Relationships are represented explicitly rather than inferred solely from arbitrary field names.
+Execution Context is the authoritative operational continuation state.
 
-Each relationship definition identifies:
+The machine-readable representation MUST be capable of representing:
 
-- relationship type;
-- source entity;
-- target entity;
-- cardinality;
-- whether the relationship is required.
+- current Process State;
+- current Execution Mode;
+- current Engineering Objective;
+- Requirement state;
+- Constraint state;
+- Investigation state;
+- Evidence and provenance/status;
+- Assumptions;
+- Risks;
+- Candidate Solutions;
+- Evaluations;
+- unresolved/contested matters;
+- Artifacts;
+- accepted/pending Engineering Decisions;
+- Decision Gates and current evaluations;
+- Verification Results;
+- continuity state;
+- pending execution condition/activity;
+- current/pending Plan;
+- last authoritative update;
+- interruption/resumption information;
+- continuation information.
 
-This allows software to distinguish entity existence from relationship semantics.
+The representation MUST contain enough authoritative state to resume execution without conversational memory.
 
-Examples include:
+---
+
+## 11. State and Condition Representation
+
+AESM distinguishes state from conditions used to evaluate state progression.
+
+### State categories
+
+- Process State
+- Engineering State
+- Decision State
+- Knowledge State
+- Execution State
+- Continuity State
+- Artifact State
+- Lifecycle State
+
+### Condition categories
+
+- Entry
+- Progression
+- Completion
+- Exit
+- Decision Gate
+- Verification
+- Execution Precondition
+- Execution Postcondition
+- Reconsideration
+- Objective Change
+- Mode Change
+
+A condition representation MUST support identity, statement/expression, subject/scope, evaluation status, evaluation result, evaluation basis, and material evaluation history.
+
+Activity completion MUST NOT be treated as sufficient evidence that a progression condition is satisfied.
+
+---
+
+## 12. Relationship Representation
+
+Relationships are explicit and include source, target, cardinality, and required/optional status.
+
+The canonical model includes, among others:
 
 ```text
-ProcessInstance → ExecutionContext
 ProcessInstance → EngineeringObjective
-ProcessState → TransitionRule
+ProcessInstance → ExecutionContext
+ProcessInstance → ExecutionTrace
+ExecutionContext → ProcessState
+ExecutionContext → Requirement
+ExecutionContext → EngineeringDecision
+ProcessStateDefinition → TransitionRule
 Transition → TransitionRule
+Transition → ExecutionTrace
+Requirement → Evidence
+Requirement → EngineeringDecision
+Investigation → Evidence
 Evidence → EngineeringDecision
+CandidateSolution → Evaluation
+Evaluation → EngineeringDecision
+Plan → ExecutionAction
 ExecutionAction → ExecutionResult
+Participant → ParticipantInput
 Participant → ParticipantContribution
-ExecutionTrace → ProcessInstance
+ParticipantContribution → ValidationAssessment
+ValidationAssessment → StateMutation
+StateMutation → ExecutionContext
+StateMutation → ExecutionTrace
+Reconsideration → EngineeringDecision
 ```
 
-A Runtime MAY store these relationships using references, embedded objects, database relations, or another physical representation, provided the semantic relationships remain recoverable.
+A Runtime MAY physically store relationships using references, embedded objects, database relations, or another mechanism, provided the semantic relationships remain recoverable.
 
 ---
 
-## 10. Validation Representation
+## 13. Operation Semantics
+
+Operations are semantic operations, not API endpoints.
+
+Each operation MUST be representable with:
+
+- identity;
+- operation class;
+- authority layer;
+- mutation classification;
+- semantic subject/inputs/outputs where applicable;
+- preconditions/postconditions where applicable;
+- trace requirement.
+
+The canonical operation classes are:
+
+1. Observation
+2. Evaluation
+3. Investigation
+4. Contribution
+5. Execution
+6. Reconsideration
+
+An evaluation operation MUST NOT silently mutate authoritative engineering state merely by producing an evaluation result.
+
+A contribution operation creates candidate information and does not automatically create authoritative state.
+
+Execution mutations remain governed by PEM semantics.
+
+Engineering-state reconsideration remains governed by EPM semantics.
+
+---
+
+## 14. Authority and Controlled Mutation
+
+The canonical authority path is:
+
+```text
+Participant / Agent / Tool / Environment output
+                 ↓
+             Observation
+                 ↓
+       Candidate contribution
+                 ↓
+       Validation / evaluation
+                 ↓
+      Authorized state mutation
+                 ↓
+       Updated Execution Context
+                 ↓
+               Trace
+```
+
+The machine-readable model MUST preserve the distinctions between the stages in this path.
+
+In particular:
+
+- AI Agent output has no implicit authority to mutate engineering state;
+- tool output has no implicit authority to mutate engineering state;
+- environment events have no implicit authority to mutate engineering state;
+- Participant input is not automatically a validated contribution;
+- a contribution is not automatically authoritative state;
+- validation is distinct from mutation;
+- authoritative mutation MUST be attributable to an authority path and trace.
+
+The Runtime may implement the mutation mechanism, but the semantic distinction belongs to the operational model.
+
+---
+
+## 15. Reconsideration and Historical State
+
+Reconsideration is an explicit operational record/process.
+
+It MUST be able to identify:
+
+- trigger condition;
+- affected conclusions;
+- affected engineering state;
+- affected Requirements/Constraints/Risks/Solutions where applicable;
+- evaluation process;
+- revised conclusions;
+- preserved historical state;
+- status;
+- traceability.
+
+Reconsideration MUST NOT silently overwrite historical engineering conclusions.
+
+---
+
+## 16. Traceability and Continuity
+
+The canonical model MUST support reconstruction of the material engineering/execution chain:
+
+```text
+Requirement / Objective
+       ↓
+Investigation
+       ↓
+Evidence
+       ↓
+Evaluation
+       ↓
+Engineering Decision
+       ↓
+Verification
+       ↓
+Execution Determination / Plan
+       ↓
+Execution Action
+       ↓
+Execution Result
+       ↓
+Authoritative State Mutation
+       ↓
+Execution Context
+       ↓
+Execution Trace
+```
+
+Material changes MUST remain attributable to the Process Instance, ordering/timestamp, actor where relevant, source operation, affected entity, prior state where required, resulting state, supporting basis, and trace event.
+
+---
+
+## 17. Validation Separation
 
 Phase 3 separates three concerns:
-
-### Structural Model Validation
-
-The model schema determines whether the machine-readable model document has valid structure, types, required properties, and controlled vocabularies.
-
-### Semantic Validation
-
-The model definition identifies semantic relationships and invariants that later Runtime validation must preserve.
-
-### Execution Validation
-
-PEM-derived execution validation remains a Runtime responsibility and is not replaced by JSON Schema.
-
-Therefore:
 
 ```text
 JSON Schema
@@ -312,59 +473,50 @@ PEM Runtime
 
 JSON Schema MUST NOT be treated as sufficient to establish engineering validity.
 
+A structurally valid machine-readable model can still be semantically non-conforming; semantic conformance must be reviewed against the Operational Model.
+
 ---
 
-## 11. Operational Invariants
+## 18. Operational Invariants
 
-The canonical machine-readable model explicitly represents the Operational Model invariants.
+The canonical model explicitly represents the Phase 2 invariants, including:
 
-Each invariant has:
-
-- stable invariant identity;
-- normative statement;
-- ownership layer;
-- enforcement classification.
-
-The model includes the distinctions established by Phase 2, including:
-
-- EPM authority;
+- EPM engineering authority;
 - PEM execution authority;
 - Execution Context authority;
 - Agent/Runtime separation;
 - Engineering Decision/Execution Determination separation;
 - Engineering Completion/Runtime Termination separation;
 - knowledge-state distinctions;
-- non-mutating observation;
+- observation non-mutation;
+- controlled mutation;
 - traceability;
 - continuity;
-- controlled mutation;
 - reconsideration history;
 - condition-driven progression;
 - objective integrity;
 - Requirement resolution versus satisfaction.
 
+Each invariant has a stable identity, owner, statement, and enforcement classification.
+
 ---
 
-## 12. Extension Rules
-
-The model supports explicit extensions without allowing extensions to silently redefine core semantics.
+## 19. Extension Rules
 
 An extension MUST:
 
-1. have a stable extension identifier;
+1. have a stable identifier;
 2. declare its purpose;
 3. use an identifiable namespace where appropriate;
 4. avoid redefining a core entity, relationship, or invariant;
 5. remain distinguishable from the canonical model;
 6. preserve forward compatibility where possible.
 
-Extensions MAY add implementation-specific properties or domain-specific entities, but MUST NOT change the meaning of a core AESM entity.
+Extensions MUST NOT change the meaning of a core AESM entity.
 
 ---
 
-## 13. Repository Artifact Structure
-
-Phase 3 establishes the following structure:
+## 20. Repository Artifacts
 
 ```text
 specifications/
@@ -380,80 +532,35 @@ model/
 The separation is intentional:
 
 ```text
-specifications/
-= normative human-readable semantics
-
-schemas/
-= machine validation structures
-
-model/
-= canonical machine-readable semantic model
+specifications/ = normative human-readable semantics
+schemas/        = structural machine validation
+model/          = canonical machine-readable semantic model
 ```
-
-This structure does not prescribe how an eventual Runtime stores engineering Process Instances.
 
 ---
 
-## 14. Derivation of Later Runtime Data Schemas
+## 21. Phase 3 Revision 1 Conformance Gate
 
-Phase 3 establishes the semantic source from which later implementation schemas can be derived.
-
-The intended derivation is:
-
-```text
-Canonical Operational Model
-        ↓
-Entity definitions + relationships + invariants
-        ↓
-Runtime data schemas
-        ↓
-Agent Execution Contract
-        ↓
-Agent Protocol
-```
-
-Later schemas MAY separate entities into individual files, but they MUST remain derivable from the canonical model.
-
-The Runtime MUST NOT introduce a second, conflicting definition of AESM operational entities.
-
----
-
-## 15. Conformance Expectations for Phase 3
-
-A Phase 3 implementation is conforming when:
+Revision 1 is ready for final conformance review when:
 
 1. the canonical model is valid JSON;
-2. the canonical model validates against the Phase 3 model schema;
-3. the model identifies EPM, PEM, and Operational Model sources;
-4. all primary Operational Model entity classes are represented;
-5. entity identity is explicit and stable;
-6. relationships are explicitly represented;
-7. operation classes are represented without becoming API definitions;
-8. Operational Model invariants are represented;
-9. JSON Schema is used only for structural validation;
-10. engineering validity remains owned by EPM;
-11. execution semantics remain owned by PEM;
-12. the Agent/Runtime boundary is preserved;
-13. the model is implementation-independent;
-14. extensions cannot silently redefine core semantics;
-15. the model can serve as the machine-readable semantic source for Phase 4.
+2. the canonical model conforms to the Phase 3 structural schema;
+3. all reconstruction-matrix entity classes are represented;
+4. required semantic properties are represented;
+5. required relationships are explicit;
+6. state and condition categories are represented;
+7. operation semantics are represented without becoming API definitions;
+8. the authority/mutation path is represented;
+9. continuity and traceability are represented;
+10. reconsideration and historical state are represented;
+11. EPM/PEM authority boundaries remain intact;
+12. no core distinction has been collapsed;
+13. the model remains implementation-independent.
+
+Passing this gate permits a final Phase 3 freeze review. It does not itself authorize Phase 4.
 
 ---
 
-## 16. Phase 3 Freeze Criteria
+## 22. Phase 3 Freeze Criteria
 
-Phase 3 may be frozen when review confirms that:
-
-- the machine-readable model faithfully represents the frozen Operational Model;
-- no core operational entity has been omitted;
-- no critical distinction has been collapsed;
-- relationships required for operational interpretation are explicit;
-- identity and versioning are stable and documented;
-- serialization and validation strategy are explicit;
-- the canonical model validates structurally;
-- later Runtime schemas can be derived without inventing core operational semantics;
-- the model does not prematurely define the Agent Execution Contract or protocol;
-- the repository structure clearly separates specifications, schemas, and the canonical model;
-- the resulting artifacts provide a sufficient machine-readable foundation for Phase 4.
-
-If these criteria are satisfied, the project may proceed to **Phase 4 — Agent Execution Contract**.
+Phase 3 may be frozen only after the final conformance review confirms that the machine-readable model faithfully represents the frozen Operational Model and that later Runtime/Agent layers can derive their schemas without inventing or redefining core operational semantics.
