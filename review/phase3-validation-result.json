@@ -1,56 +1,124 @@
 {
   "validation": {
     "phase": "Phase 3 Revision 1",
-    "status": "failed",
     "repository": "tuanna2703/AI-Assisted-Engineering-System-Model",
-    "branch": "main",
-    "commit": "279947f54e9f71d588f9b26652bf1c6cba5f3f1d",
-    "executedAt": "2026-08-17T07:28:39Z",
-    "overallResult": "FAILED",
-    "freezeEligible": false
-  },
-  "environment": {
-    "os": "Darwin 21.6.0 x86_64",
-    "python": "3.13.5",
-    "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
-    "schemaValidator": "jsonschema",
-    "schemaValidatorVersion": "4.24.1",
-    "schemaDraft": "Draft 2020-12"
-  },
-  "checks": {
-    "phase3SemanticValidator": {
-      "status": "failed",
-      "exitCode": 1,
-      "command": "python3 scripts/validate-phase3.py",
-      "stdout": "FAIL: missing entity kinds: OperationDefinition, TraceEvent",
-      "stderr": "",
-      "diagnosis": "The canonical model entityTypes array does not include OperationDefinition or TraceEvent, which are required by the validator's REQUIRED_KINDS set."
-    },
-    "jsonSchemaValidation": {
-      "status": "passed",
-      "exitCode": 0,
-      "command": "python3 -c 'from jsonschema import Draft202012Validator; ...'",
-      "stdout": "Validator: jsonschema 4.24.1\nDraft: 2020-12\nVALIDATION PASSED: Model validates against schema.",
-      "stderr": "",
-      "note": "The JSON Schema structurally validates the model. The schema does not enforce the specific entity vocabulary — that is the semantic validator's responsibility."
-    },
-    "additionalStructuralChecks": {
-      "A_validJSON_model": { "status": "passed", "evidence": "Parsed successfully" },
-      "B_validJSON_schema": { "status": "passed", "evidence": "Parsed successfully" },
-      "C_schemaDraft202012": { "status": "passed", "evidence": "$schema = https://json-schema.org/draft/2020-12/schema" },
-      "D_modelIdentity": { "status": "passed", "evidence": "modelId=aesm.operational-model, modelVersion=0.1.1" },
-      "E_entityVocabulary": { "status": "failed", "evidence": "Missing entity kinds: OperationDefinition, TraceEvent" },
-      "F_executionContextContinuation": { "status": "passed", "evidence": "Fields present: continuation, continuity, lastAuthoritativeUpdate" },
-      "G_completionVsTermination": { "status": "passed", "evidence": "Both engineeringCompletionStatus and runtimeLifecycleStatus present in ProcessInstance" },
-      "H_decisionVsDetermination": { "status": "passed", "evidence": "Both EngineeringDecision and ExecutionDetermination entity kinds present" },
-      "I_controlledAuthorityPath": { "status": "passed", "evidence": "authorityPath covers observation → candidate → validation → mutation → update → trace" },
-      "J_reconsiderationHistory": { "status": "passed", "evidence": "preservedHistoricalStateRefs field present in Reconsideration" },
-      "K_traceAndMutationRelationships": { "status": "passed", "evidence": "mutation.trace, mutation.context, validation.mutation relationships all present" }
-    }
-  },
-  "failureDiagnosis": {
-    "rootCause": "The canonical model (aesm-operational-model.json) does not define entity types for OperationDefinition and TraceEvent. The Phase 3 semantic validator (validate-phase3.py) requires these in REQUIRED_KINDS.",
-    "impact": "Phase 3 cannot be frozen until these entity types are added to the canonical model or the required vocabulary is revised.",
-    "recommendation": "Add OperationDefinition and TraceEvent entity type definitions to the semanticModel.entityTypes array in the canonical model, or if these are intentionally excluded, update the validator's REQUIRED_KINDS to reflect the authoritative vocabulary."
+    "latestExecution": "phase3-validation-002",
+    "latestStatus": "failed",
+    "freezeEligible": false,
+    "executions": [
+      {
+        "executionId": "phase3-validation-001",
+        "commit": "279947f54e9f71d588f9b26652bf1c6cba5f3f1d",
+        "branch": "main",
+        "executedAt": "2026-08-17T07:28:39Z",
+        "status": "failed",
+        "overallResult": "FAILED",
+        "freezeEligible": false,
+        "environment": {
+          "os": "Darwin 21.6.0 x86_64",
+          "python": "3.13.5",
+          "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+          "schemaValidator": "jsonschema",
+          "schemaValidatorVersion": "4.24.1",
+          "schemaDraft": "Draft 2020-12"
+        },
+        "checks": {
+          "phase3SemanticValidator": {
+            "status": "failed",
+            "exitCode": 1,
+            "command": "python3 scripts/validate-phase3.py",
+            "stdout": "FAIL: missing entity kinds: OperationDefinition, TraceEvent",
+            "stderr": "",
+            "diagnosis": "The canonical model entityTypes array does not include OperationDefinition or TraceEvent, which are required by the validator's REQUIRED_KINDS set."
+          },
+          "jsonSchemaValidation": {
+            "status": "passed",
+            "exitCode": 0,
+            "command": "python3 -c 'from jsonschema import Draft202012Validator; ...'",
+            "stdout": "Validator: jsonschema 4.24.1\nDraft: 2020-12\nVALIDATION PASSED: Model validates against schema.",
+            "stderr": ""
+          },
+          "additionalStructuralChecks": {
+            "summary": "10 PASS, 1 FAIL out of 11 checks",
+            "failingCheck": "E_entityVocabulary: Missing entity kinds OperationDefinition, TraceEvent"
+          }
+        },
+        "failureDiagnosis": {
+          "rootCause": "Validator REQUIRED_KINDS included OperationDefinition and TraceEvent, which are not top-level entity kinds.",
+          "resolution": "Vocabulary reconciliation — see review/Phase 3 Revision 1 — Vocabulary Reconciliation.md"
+        }
+      },
+      {
+        "executionId": "phase3-validation-002",
+        "commit": "1ddc31b4503ba2c5e07cd3962933211cb922c1c0",
+        "branch": "main",
+        "executedAt": "2026-08-17T08:04:59Z",
+        "status": "failed",
+        "overallResult": "FAILED",
+        "freezeEligible": false,
+        "context": "Re-validation after vocabulary correction (commit 1255bac)",
+        "environment": {
+          "os": "Darwin 21.6.0 x86_64",
+          "python": "3.13.5",
+          "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+          "schemaValidator": "jsonschema",
+          "schemaValidatorVersion": "4.24.1",
+          "schemaDraft": "Draft 2020-12"
+        },
+        "checks": {
+          "phase3SemanticValidator": {
+            "status": "failed",
+            "exitCode": 1,
+            "command": "python3 scripts/validate-phase3.py",
+            "stdout": "FAIL: Phase 3 semantic validation\nFAIL: engineering completion/runtime termination distinction is not represented\nFAIL: controlled-mutation invariant missing: arbitrary Agent output\nFAIL: controlled-mutation invariant missing: tool output",
+            "stderr": "",
+            "diagnosis": "Three validator token-matching errors. The validator searches for literal substrings that do not appear in the canonical model's text representation, even though the model correctly represents all three semantic concepts.",
+            "failures": [
+              {
+                "validatorCheck": "EngineeringCompletion/RuntimeTermination substring search (line 84-85)",
+                "expected": "Literal strings 'EngineeringCompletion' and 'RuntimeTermination' in model JSON text",
+                "actual": "Model uses field names 'engineeringCompletionStatus'/'runtimeLifecycleStatus' and invariant text 'Engineering completion'/'Runtime termination'",
+                "semanticCoverage": "CORRECT — ProcessInstance has both fields, invariant completion-termination-separation enforces distinction"
+              },
+              {
+                "validatorCheck": "controlled-mutation invariant: 'arbitrary Agent output' (line 108)",
+                "expected": "Literal substring 'arbitrary Agent output' in invariant text",
+                "actual": "Invariant states: 'Participant, Agent, tool, and environment output does not silently become authoritative state.' — word 'arbitrary' not present",
+                "semanticCoverage": "CORRECT — invariant controlled-mutation covers Agent output explicitly"
+              },
+              {
+                "validatorCheck": "controlled-mutation invariant: 'tool output' (line 108)",
+                "expected": "Literal substring 'tool output' in invariant text",
+                "actual": "Invariant text contains 'tool, and environment output' — comma intervenes preventing substring match",
+                "semanticCoverage": "CORRECT — invariant controlled-mutation covers tool output explicitly"
+              }
+            ]
+          },
+          "jsonSchemaValidation": {
+            "status": "passed",
+            "exitCode": 0,
+            "command": "python3 -c 'from jsonschema import Draft202012Validator; ...'",
+            "stdout": "Validator: jsonschema 4.24.1\nDraft: 2020-12\nVALIDATION PASSED: Model validates against schema.",
+            "stderr": ""
+          },
+          "additionalStructuralChecks": {
+            "summary": "32 PASS, 0 FAIL, 0 NOT EXECUTED out of 32 checks",
+            "categories": {
+              "G_structural": "10 PASS, 0 FAIL",
+              "H_semantic": "6 PASS, 0 FAIL",
+              "I_authorityMutation": "4 PASS, 0 FAIL",
+              "J_reconstructionMatrix": "10 PASS, 0 FAIL"
+            },
+            "note": "All semantic properties that the validator fails to match by substring are independently confirmed PASS by direct structural inspection."
+          }
+        },
+        "failureDiagnosis": {
+          "rootCause": "The corrected validator (commit 1255bac) still uses fragile literal-substring matching for three checks. The canonical model correctly represents all three semantic concepts but uses different wording than the validator expects.",
+          "impact": "Validator token-matching must be aligned with actual model text before the semantic validator can pass.",
+          "recommendation": "Correct the three token-matching patterns in validate-phase3.py to match the actual canonical model text: (1) use field names or invariant text for completion/termination check; (2) remove 'arbitrary' from the Agent output token; (3) adjust 'tool output' matching to handle comma-separated list format.",
+          "modelChange": "NONE REQUIRED — the canonical model correctly represents all three semantic concepts."
+        }
+      }
+    ]
   }
 }
