@@ -81,33 +81,76 @@ def main():
             if missing_fields:
                 collect_error(errors, f"{kind} missing fields: {', '.join(sorted(missing_fields))}")
 
-    model_text = json.dumps(model)
-    if "EngineeringCompletion" not in model_text or "RuntimeTermination" not in model_text:
-        collect_error(errors, "engineering completion/runtime termination distinction is not represented")
+    # --- Engineering Completion vs Runtime Termination (structured) ---
+    # Validate via ProcessInstance field presence and the dedicated invariant,
+    # NOT by serializing the model to a string and searching for tokens.
+    pi = by_kind.get("ProcessInstance")
+    if pi is not None:
+        pi_fields = {f.get("name") for f in pi.get("fields", [])}
+        if "engineeringCompletionStatus" not in pi_fields:
+            collect_error(errors, "ProcessInstance missing structured field: engineeringCompletionStatus")
+        if "runtimeLifecycleStatus" not in pi_fields:
+            collect_error(errors, "ProcessInstance missing structured field: runtimeLifecycleStatus")
+    else:
+        collect_error(errors, "ProcessInstance entity not found — cannot verify completion/termination separation")
+
+    invariants = model.get("invariants", [])
+    invariant_by_id = {inv.get("id"): inv for inv in invariants}
+
+    ct_inv = invariant_by_id.get("completion-termination-separation")
+    if ct_inv is None:
+        collect_error(errors, "missing invariant: completion-termination-separation")
+    else:
+        ct_stmt = ct_inv.get("statement", "").lower()
+        if "completion" not in ct_stmt or "termination" not in ct_stmt:
+            collect_error(errors, "completion-termination-separation invariant does not reference both completion and termination")
 
     for a, b in REQUIRED_DISTINCTIONS:
         if a not in by_kind or b not in by_kind:
             collect_error(errors, f"required distinction missing: {a} != {b}")
 
     relationships = semantic.get("relationships", [])
-    rel_text = json.dumps(relationships)
+    rel_by_src_tgt = set()
+    for r in relationships:
+        rel_by_src_tgt.add(r.get("source", ""))
+        rel_by_src_tgt.add(r.get("target", ""))
     for token in ["ValidationAssessment", "StateMutation", "ExecutionTrace", "Reconsideration"]:
-        if token not in rel_text:
+        if token not in rel_by_src_tgt:
             collect_error(errors, f"relationship coverage missing for {token}")
 
     # Operation semantics are represented by the top-level operationClasses
     # structure, not by a semanticModel.operations entity collection.
     operation_classes = model.get("operationClasses", [])
-    operation_text = json.dumps(operation_classes)
-    for token in ["observe", "evaluate", "contribution", "execution", "reconsideration"]:
-        if token.lower() not in operation_text.lower():
+    op_class_ids = {oc.get("id", "").lower() for oc in operation_classes}
+    for token in ["observation", "evaluation", "contribution", "execution", "reconsideration"]:
+        if token not in op_class_ids:
             collect_error(errors, f"operation-class coverage missing for {token}")
 
-    invariants = model.get("invariants", [])
-    invariant_text = json.dumps(invariants)
-    for token in ["arbitrary Agent output", "tool output", "authoritative state"]:
-        if token.lower() not in invariant_text.lower():
-            collect_error(errors, f"controlled-mutation invariant missing: {token}")
+    # --- Controlled-mutation invariant (structured) ---
+    # Validate by looking up the invariant by its structured `id` field and
+    # checking that its statement covers the required semantic concepts.
+    # Do NOT search for exact literal phrases like "arbitrary Agent output"
+    # or "tool output" because punctuation and phrasing may vary.
+    cm_inv = invariant_by_id.get("controlled-mutation")
+    if cm_inv is None:
+        collect_error(errors, "missing invariant: controlled-mutation")
+    else:
+        cm_stmt = cm_inv.get("statement", "").lower()
+        # The controlled-mutation invariant must semantically cover:
+        # Participant, Agent, tool, environment, and output.
+        required_concepts = ["participant", "agent", "tool", "environment", "output"]
+        missing_concepts = [c for c in required_concepts if c not in cm_stmt]
+        if missing_concepts:
+            collect_error(errors, f"controlled-mutation invariant missing concepts: {', '.join(missing_concepts)}")
+
+    # Authoritative-state representation: validate via structured invariant lookup.
+    ec_inv = invariant_by_id.get("execution-context-authority")
+    if ec_inv is None:
+        collect_error(errors, "missing invariant: execution-context-authority")
+    else:
+        ec_stmt = ec_inv.get("statement", "").lower()
+        if "authoritative" not in ec_stmt:
+            collect_error(errors, "execution-context-authority invariant does not reference authoritative state")
 
     # TraceEvent is a structural type contained by ExecutionTrace rather than
     # a primary entity kind. Validate that the ExecutionTrace definition has
