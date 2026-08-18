@@ -2,134 +2,293 @@
 
 **System:** AI-Assisted Engineering System Model (AESM)  
 **Phase:** Phase 4  
-**Status:** Draft Normative Specification  
-**Baseline:** Phase 4 Contract Boundary Matrix Revision 2  
+**Status:** FROZEN — Phase 4 Contract Baseline  
+**Authority:** Derived from the frozen Phase 4 Contract Boundary Matrix and subordinate to the frozen AESM Operational Model, EPM, and PEM
 
 ## 1. Purpose
 
-The Agent Execution Contract defines the semantic contract between an AESM Runtime and an AI Agent participating in an engineering Process Instance.
+The Agent Execution Contract defines the semantic contract governing interaction between an AESM Runtime and an AI Agent participating in an engineering Process Instance.
 
-It specifies what the Agent may receive, inspect, contribute, propose, perform, and return, and it preserves the authority boundaries between EPM, PEM, the AESM Operational Model, the Runtime, and the Agent.
+It specifies what an Agent may receive, inspect, contribute, propose, perform, and return within a Process Instance. It does not define a transport protocol, serialization format, API, tool-call format, authentication mechanism, or implementation-specific interface.
 
-This specification is implementation-independent. It does not define transport, API, serialization, tool-call syntax, model-specific prompting, or other protocol mechanisms.
+The terms **receive** and **return** describe semantic information flow only; they do not prescribe message structures or transport operations.
 
-## 2. Normative Authority
-
-The contract is subordinate to:
-
-1. Engineering Process Model (EPM) for engineering meaning and validity.
-2. Process Execution Model (PEM) for execution semantics and control.
-3. AESM Operational Model for authoritative operational representation.
-
-The Agent does not redefine any of these authorities.
-
-## 3. Agent Role
-
-An Agent is a Participant in a Process Instance.
-
-An Agent:
-
-- may analyze, investigate, generate or modify artifacts, evaluate information, verify results, recommend decisions, and perform authorized engineering work;
-- does not become the Runtime by performing engineering work;
-- does not own the authoritative Execution Context;
-- does not independently define EPM or PEM semantics;
-- does not convert its own output into authoritative state without the applicable validation and authorization path.
-
-## 4. Contract Interaction Model
-
-The semantic interaction model is:
+The contract preserves the authority hierarchy established by the frozen Operational Model, EPM, and PEM:
 
 ```text
-Runtime
-  │
-  ├── provides authoritative context
-  ├── provides applicable execution conditions
-  └── requests / authorizes permitted work
-          │
-          ▼
-        Agent
-          │
-          ├── observes
-          ├── analyzes
-          ├── investigates
-          ├── proposes
-          ├── performs authorized work
-          └── reports results
-          │
-          ▼
-Runtime / EPM / PEM controlled recognition
-          │
-          ▼
-Authorized state mutation
+EPM
+  ↓ engineering meaning and validity
+PEM
+  ↓ execution semantics and control
+AESM Operational Model
+  ↓ authoritative operational representation
+Agent Execution Contract
+  ↓ interaction boundary
+Agent
 ```
 
-## 5. Agent Input Contract
+## 2. Foundational Contract Rules
 
-The Runtime may provide the Agent with the authoritative operational information required for the current interaction, subject to applicable scope and authority.
+### 2.1 Agent is a Participant
 
-Relevant input may include:
+An Agent is a Participant in a Process Instance. It is not the Runtime.
 
-- Process Instance identity and status;
-- Engineering Objective;
-- Requirements;
-- Constraints;
-- current Process State;
-- Execution Context;
-- Investigations and investigation status;
-- Evidence and provenance;
-- Assumptions;
-- Risks;
-- Candidate Solutions;
-- Evaluations;
-- Engineering Decisions and decision history;
-- Decision Gates and their evaluation status;
-- Verification Requirements and Verification Results;
-- Artifacts and artifact status;
-- execution conditions;
-- applicable plan or Execution Action context;
-- continuity information;
-- relevant prior trace information;
-- unresolved matters and blocking conditions.
+Performing engineering work does not make the Agent the Runtime or transfer Runtime authority to the Agent.
 
-The Runtime must distinguish authoritative state from candidate, proposed, unresolved, or observational information where that distinction is semantically relevant.
+### 2.2 EPM and PEM remain authoritative
 
-## 6. Inspection Contract
+The Agent does not define, redefine, or override:
 
-The Agent may inspect supplied operational state and may perform non-mutating analysis.
+- EPM engineering semantics;
+- PEM execution semantics;
+- authoritative Execution Context;
+- applicable process constraints;
+- Decision Gates;
+- authoritative state-recognition rules.
 
-Inspection includes, where authorized:
+### 2.3 Capability does not imply authority
 
-- inspecting the Execution Context;
-- inspecting Process State;
-- inspecting engineering knowledge represented in the context;
-- inspecting applicable Conditions and Decision Gates;
-- observing relevant environment information.
+The Agent's capability to perform an action does not by itself grant authority to establish an engineering or execution outcome.
 
-Inspection and Observation do not themselves mutate authoritative state.
+### 2.4 Agent output is not automatically authoritative
 
-## 7. Participant Input and Contribution
+An Agent-generated output is not authoritative merely because it was generated by an Agent.
 
-The Agent may provide Participant Input, including information, clarification, challenge, approval or rejection where authorized, proposed actions, analysis, proposed decisions, or requests for investigation.
+Candidate contributions, observations, participant inputs, recommendations, proposed decisions, verification results, and execution results become authoritative only through the applicable recognition, validation, and state-mutation semantics governed by the EPM, PEM, Operational Model, and Runtime.
 
-The Agent may also provide Candidate Contributions such as:
+### 2.5 Proposal is not authorization
 
-- Evidence Candidate;
-- Assumption;
-- Candidate Solution;
-- Evaluation;
-- proposed Engineering Decision;
-- Verification Result;
-- Artifact Result;
-- Investigation Result;
-- other contributions permitted by the applicable EPM/PEM semantics.
+A proposal, recommendation, request, or candidate action does not constitute authorization merely by being expressed by an Agent or other Participant.
 
-Participant Input, Observation, and Candidate Contribution are distinct semantic categories and must not be collapsed by the contract.
+Where authorization is an applicable process condition, the Runtime determines whether the relevant execution conditions are satisfied under the governing EPM/PEM semantics. This contract does not define an independent authorization or security protocol.
 
-## 8. Controlled Mutation
+### 2.6 Authoritative state is controlled
 
-Agent output is not authoritative merely because it was generated by an Agent.
+The Agent must not silently mutate authoritative Execution Context or other authoritative engineering state.
 
-The general recognition path is:
+### 2.7 Historical state is preserved
+
+The Agent must not erase or silently overwrite material historical state. Reconsideration must preserve reconstructability of prior state and its basis.
+
+## 3. Agent Interaction Boundary
+
+The Runtime may make available to the Agent information relevant to the current interaction, subject to the applicable Execution Context and process conditions.
+
+The Agent may:
+
+- inspect supplied Execution Context information;
+- analyze engineering information;
+- clarify or challenge information;
+- perform authorized engineering work;
+- propose changes, decisions, plans, actions, or solutions;
+- perform investigation and verification activities when permitted;
+- report observations, results, uncertainty, contradictions, or inability to continue;
+- contribute evidence, assumptions, risks, artifacts, and other engineering information through permitted contribution pathways.
+
+The Agent may not treat its own contribution as authoritative merely because it produced that contribution.
+
+## 4. Execution Context
+
+The Agent may inspect and use the Execution Context supplied for the interaction.
+
+The Agent does not own authoritative Execution Context.
+
+Conversational memory, internal Agent state, or an Agent's reconstruction of prior interaction is not authoritative merely because the Agent retains it.
+
+Authoritative continuation state remains the responsibility of the AESM execution system.
+
+## 5. Engineering Objective
+
+The Agent may:
+
+- analyze the current Engineering Objective;
+- identify implications or conflicts;
+- propose clarification or change;
+- provide evidence relevant to an objective change.
+
+The Agent may not silently alter the Engineering Objective.
+
+Any objective change remains explicit, traceable, and subject to the applicable EPM semantics.
+
+## 6. Requirements
+
+The Agent may:
+
+- analyze applicable Requirements;
+- identify ambiguity, conflict, or insufficiency;
+- request clarification;
+- challenge an interpretation;
+- propose a requirement or requirement change;
+- provide evidence relevant to requirement resolution or satisfaction.
+
+Requirements and, where applicable, their **resolution state** and **satisfaction state** remain governed by the EPM.
+
+The Agent may not silently redefine requirement semantics or declare a requirement resolved or satisfied outside the applicable process rules.
+
+## 7. Constraints
+
+The Agent may inspect and analyze applicable execution and process constraints and identify their implications or conflicts.
+
+The Agent may not silently override constraints or treat a requested action as permissible when applicable constraints prohibit it.
+
+## 8. Investigations and Evidence
+
+The Agent may perform or recommend investigation activities whose objectives and scope are supplied or established through the applicable process.
+
+The Agent may return investigation results, evidence candidates, assessments, or recommendations.
+
+Candidate evidence is not established evidence until recognized through the applicable EPM process.
+
+The Agent must not fabricate evidence, provenance, investigation results, or investigative completion.
+
+## 9. Assumptions and Risks
+
+The Agent may:
+
+- identify assumptions;
+- challenge existing assumptions;
+- evaluate assumptions;
+- identify risks;
+- assess risks;
+- propose treatments or mitigations.
+
+Recognition and resolution of assumptions and risks remain subject to the applicable EPM semantics.
+
+## 10. Candidate Solutions and Engineering Decisions
+
+The Agent may generate, compare, evaluate, or challenge candidate solutions.
+
+The Agent may analyze or propose Engineering Decisions and may challenge recognized decisions when new information or reasoning warrants reconsideration.
+
+An Agent-generated proposed decision is not an authoritative Engineering Decision merely because the Agent generated it.
+
+Engineering Decision validity and recognition remain governed by the EPM.
+
+Engineering Decision remains distinct from Execution Determination.
+
+## 11. Verification
+
+The Agent may perform or propose verification activities when permitted by the applicable process conditions.
+
+The Agent may return verification results and supporting information.
+
+A verification result returned by an Agent remains subject to the applicable verification requirements and recognition rules.
+
+The Agent may not fabricate verification completion or declare a result authoritative outside those rules.
+
+## 12. Artifacts
+
+The Agent may create, inspect, modify, or verify artifacts when authorized to perform the relevant engineering work.
+
+An Agent-generated or Agent-modified artifact is not authoritative merely because it exists or was returned by the Agent.
+
+Artifact state becomes authoritative only through the applicable controlled update and recognition path.
+
+## 13. Process State
+
+The Agent may inspect the supplied Process State and identify conditions that may affect progression.
+
+The Agent may provide observations, analysis, evidence, or recommendations concerning possible progression.
+
+The Agent does not independently establish Process State or process progression where PEM authority is required.
+
+## 14. Decision Gates
+
+The Agent may evaluate supplied information and provide contributions required for a Decision Gate.
+
+The Agent may not:
+
+- bypass a Decision Gate;
+- fabricate gate satisfaction;
+- represent a recommendation as an established gate outcome;
+- independently establish a gate outcome where the applicable process requires Runtime or other authorized recognition.
+
+Decision Gate semantics remain governed by the EPM and execution handling by the PEM/Runtime.
+
+## 15. Observation
+
+The Agent may observe and analyze the supplied context or environment when such observation is permitted.
+
+Observation is distinct from Participant Input and Candidate Contribution.
+
+Observation does not itself mutate authoritative state.
+
+An observed fact or condition becomes part of authoritative state only through the applicable recognition and mutation semantics.
+
+## 16. Participant Input
+
+The Agent, as a Participant, may provide legitimate Participant Input, including:
+
+- information;
+- clarification;
+- approval or rejection where such participation is applicable;
+- challenge;
+- proposed action;
+- other legitimate input permitted by the process.
+
+Participant Input is not authoritative solely because of its origin. The Runtime evaluates it under the applicable process conditions.
+
+The Agent must not fabricate another Participant's approval, rejection, or other input.
+
+## 17. Candidate Contribution
+
+The Agent may submit Candidate Contributions through permitted contribution pathways.
+
+A Candidate Contribution is distinct from Observation and Participant Input.
+
+Candidate Contributions require the applicable validation, evaluation, recognition, or state-mutation process before they become authoritative state.
+
+## 18. Planning
+
+The Agent may propose or assist with plans using the applicable execution conditions, requirements, constraints, and other supplied information.
+
+A plan proposal is not itself an Execution Determination.
+
+PEM/Runtime semantics control execution planning and determine whether and how a proposed plan may be executed.
+
+## 19. Execution Determination
+
+The Agent may recommend or request an execution action.
+
+The Agent does not independently establish an Execution Determination where PEM authority is required.
+
+Execution Determination remains governed by the PEM and Runtime under the applicable Execution Context and process conditions.
+
+## 20. Execution Action
+
+An Agent may perform authorized engineering work within the Runtime-controlled execution boundary.
+
+The semantic execution path is:
+
+```text
+Agent
+  ↓
+requested / permitted work
+  ↓
+Runtime
+  ↓
+PEM-controlled execution
+  ↓
+Execution Result
+  ↓
+Verification / Context Update
+```
+
+The Agent does not become the Runtime by performing an execution activity.
+
+Capability to perform work does not imply authority to determine process-level execution outcomes.
+
+## 21. Execution Result
+
+The Agent may report observed outputs and effects resulting from work it performed.
+
+An Execution Result is incorporated into authoritative process state through the applicable PEM-controlled execution semantics.
+
+The Agent must not fabricate execution results or silently convert reported effects into authoritative state.
+
+## 22. Controlled State Mutation
+
+The general semantic path is:
 
 ```text
 Agent / Participant / Tool / Environment
@@ -139,7 +298,8 @@ Agent / Participant / Tool / Environment
                  └── Candidate Contribution
                          │
                          ▼
-                Evaluation / Validation
+                Runtime-controlled recognition
+              under applicable EPM/PEM semantics
                          │
                          ▼
               Authorized State Mutation
@@ -151,180 +311,98 @@ Agent / Participant / Tool / Environment
                   Execution Trace
 ```
 
-The applicable validation and authorization path depends on the type of contribution and the governing EPM/PEM semantics.
+These categories remain intentionally distinct. The applicable recognition and mutation path depends on the type of contribution and the governing EPM/PEM semantics.
 
-## 9. Engineering Decision Contract
+The Contract does not prescribe the transport, serialization, API, or implementation used to perform these operations.
 
-An Agent may analyze or propose an Engineering Decision.
+## 23. Reconsideration
 
-An Agent-generated proposal does not by itself establish an authoritative Engineering Decision.
+The Agent may identify information that warrants reconsideration of current or historical conclusions.
 
-Engineering Decision recognition remains subject to EPM semantics, applicable requirements, evidence, constraints, evaluations, decision gates, and other required conditions.
+The Agent may analyze alternatives and propose revisions.
 
-Engineering Decision remains distinct from Execution Determination.
+Reconsideration does not authorize erasure of historical state. Material historical state and its basis remain reconstructable.
 
-## 10. Execution Contract
+## 24. Traceability
 
-An Agent may perform authorized engineering work through Runtime-controlled execution.
+The Agent must provide trace-relevant information necessary to make material contributions and execution results reconstructable where required by the applicable process.
 
-The semantic sequence is:
+The Contract does not prescribe a particular trace storage format or implementation.
 
-```text
-Agent
-  ↓
-requested / authorized work
-  ↓
-Runtime
-  ↓
-PEM-controlled execution
-  ↓
-Execution Result
-  ↓
-verification / context update
-```
+## 25. Failure and Uncertainty
 
-The Agent does not independently execute the Process Execution Model and does not independently establish Runtime-level execution outcomes.
+The Agent must explicitly report material:
 
-The Agent must respect the execution conditions, authorization basis, preconditions, and other restrictions supplied by the Runtime.
-
-## 11. Execution Results
-
-An Agent performing authorized work may return information sufficient to establish an Execution Result, including:
-
-- produced outputs;
-- observed effects;
-- execution status;
-- validation status;
-- relevant failures;
-- relevant evidence;
-- references to artifacts or other resulting records.
-
-The Runtime remains responsible for incorporating execution results according to PEM semantics.
-
-## 12. Verification Contract
-
-The Agent may perform or assist with verification when authorized.
-
-A Verification Result returned by an Agent remains subject to the applicable verification requirements and recognition rules.
-
-The Agent must not represent an unverified result as verified merely because the Agent generated or observed it.
-
-## 13. Failure and Uncertainty Contract
-
-The Agent must explicitly report material uncertainty, insufficiency, contradiction, inability to proceed, or failed verification when such conditions affect engineering or execution validity.
-
-Examples include:
-
-- insufficient evidence;
-- ambiguous requirement;
-- conflicting evidence;
-- unresolved engineering decision;
-- blocked execution;
+- uncertainty;
+- insufficiency of evidence;
+- contradiction;
+- blocked conditions;
 - failed verification;
-- unmet condition;
-- reconsideration required;
-- inability to continue safely.
+- unmet preconditions;
+- inability to continue;
+- information that may require reconsideration.
 
-The Agent must not fabricate information or silently suppress material uncertainty merely to preserve forward progress.
+The Agent must not fabricate information or silently resolve material uncertainty merely to preserve forward progress.
 
-## 14. Reconsideration Contract
+## 26. Continuity
 
-When the Agent identifies evidence, requirements, constraints, risks, verification results, or other conditions that may invalidate an established conclusion, it may report the potential impact and propose reconsideration.
+The Agent may resume work from authoritative Execution Context supplied by the AESM execution system.
 
-The Agent may identify affected decisions, requirements, risks, solutions, or state and may propose revised conclusions.
+Continuity does not depend on conversational memory being authoritative.
 
-Reconsideration remains governed by EPM semantics. Historical state must be preserved and revised state must remain traceable.
+The Agent must treat supplied authoritative continuation state as the basis for continued work rather than assuming that its own retained conversational state is authoritative.
 
-## 15. Continuity Contract
+## 27. Authority-Preservation Invariants
 
-The Agent must treat the authoritative Execution Context as the source of operational continuation state.
+The following invariants are normative:
 
-Conversational memory, transient Agent memory, or prior prompt content is not authoritative merely because it is available to the Agent.
+1. The Agent is a Participant, not the Runtime.
+2. The Agent does not redefine EPM semantics.
+3. The Agent does not redefine PEM semantics.
+4. The Agent does not own authoritative Execution Context.
+5. Agent output is not authoritative merely because it was generated by an Agent.
+6. Capability to perform an action does not by itself grant authority to establish an engineering or execution outcome.
+7. A proposal or recommendation does not constitute authorization.
+8. Observation does not itself mutate authoritative state.
+9. Engineering Decision remains distinct from Execution Determination.
+10. Engineering completion remains distinct from Runtime termination.
+11. Decision Gates may not be bypassed or fabricated.
+12. Participant approval or other participant input may not be fabricated.
+13. Historical state may not be silently erased.
+14. Material uncertainty may not be silently concealed.
+15. The Agent may not silently alter the Engineering Objective.
 
-A subsequent Agent interaction must be able to continue from the authoritative Execution Context without depending on the private conversational memory of a previous Agent session.
+## 28. Implementation Independence
 
-## 16. Authority Prohibitions
+This Contract defines semantic interaction boundaries only.
 
-An Agent must not:
+It does not define:
 
-- redefine EPM semantics;
-- redefine PEM semantics;
-- silently mutate authoritative Execution Context;
-- directly convert its own output into authoritative engineering state;
-- declare an Engineering Decision authoritative merely because it generated it;
-- independently establish an Execution Determination where PEM authority is required;
-- bypass required Decision Gates;
-- fabricate participant approval or authorization;
-- erase or silently rewrite historical state;
-- silently alter the Engineering Objective;
-- conceal material uncertainty;
-- claim verification that has not been established under the applicable verification requirements.
-
-## 17. Traceability Contract
-
-Material Agent contributions, decisions, execution results, and state-changing effects must remain reconstructable through the applicable AESM traceability mechanisms.
-
-Where relevant, traceability must preserve:
-
-- actor or Agent identity;
-- operation or action source;
-- affected entity or state;
-- supporting basis;
-- prior state where required;
-- resulting state;
-- timestamp or ordering information;
-- trace event.
-
-## 18. Contract Invariants
-
-The following invariants apply:
-
-1. Agent is a Participant, not the Runtime.
-2. Agent output is not automatically authoritative.
-3. Observation does not itself mutate authoritative state.
-4. Engineering Decision remains distinct from Execution Determination.
-5. Engineering completion remains distinct from Runtime termination.
-6. Execution Context remains the authoritative operational continuation state.
-7. EPM remains authoritative for engineering meaning and validity.
-8. PEM remains authoritative for execution semantics and control.
-9. Runtime remains responsible for executing PEM.
-10. Reconsideration preserves historical state and revised conclusions.
-11. Material state changes remain traceable.
-12. The Agent must not fabricate information to satisfy progression conditions.
-
-## 19. Implementation Independence
-
-This contract does not prescribe:
-
-- network transport;
-- HTTP or other API mechanisms;
-- JSON or other serialization formats;
+- transport;
+- serialization;
+- message envelope structure;
+- API endpoints;
 - tool-call syntax;
-- message envelopes;
-- model providers;
-- prompting techniques;
+- authentication or authorization mechanisms;
+- model-provider interfaces;
+- programming languages;
+- storage technologies;
 - Agent frameworks;
-- Runtime programming languages;
-- storage technologies.
+- Runtime implementation architecture.
 
-Such concerns belong to subsequent implementation or protocol specifications.
+Such details belong to subsequent implementation or protocol specifications and must remain subordinate to this semantic contract.
 
-## 20. Relationship to Phase 3
+## 29. Phase 4 Freeze Status
 
-This contract is derived from the Phase 3 frozen AESM Operational Model and the Phase 4 Contract Boundary Matrix Revision 2.
+This document is the frozen Phase 4 Agent Execution Contract baseline.
 
-It does not introduce a new authority layer. It specifies the interaction boundary through which an Agent participates in the existing authority structure.
+The Contract was subjected to formal Phase 4 Contract Review against the Phase 4 Contract Boundary Matrix Revision 2, the frozen AESM Operational Model, EPM, and PEM. The review passed all completeness, consistency, authority-boundary, controlled-mutation, continuity, and implementation-independence checks.
 
-## 21. Draft Status
+The frozen baseline includes the corrections for:
 
-This document is a normative **draft** pending formal Phase 4 Contract Review.
+1. explicit Requirement resolution/satisfaction distinction;
+2. explicit Capability–Authority separation;
+3. Runtime-controlled recognition under applicable EPM/PEM semantics;
+4. semantic information-flow wording that does not prescribe transport or message protocol.
 
-The next review must verify:
-
-1. completeness against the Phase 4 Contract Boundary Matrix;
-2. consistency with the frozen Phase 3 Operational Model;
-3. consistency with EPM;
-4. consistency with PEM;
-5. absence of accidental protocol/implementation assumptions;
-6. preservation of Agent / Participant / Runtime distinctions;
-7. preservation of controlled mutation and continuity semantics.
+Future changes to this Contract must not silently modify the frozen baseline. They require an explicit revision, change rationale, consistency review against the governing baselines, and a subsequent freeze decision where the change affects frozen semantics.
