@@ -4,16 +4,7 @@
   "title": "AESM Machine-Readable Agent Protocol",
   "description": "Implementation-independent structural schema for the AESM Machine-Readable Agent Protocol. Schema validity does not grant authority or establish authoritative state.",
   "type": "object",
-  "required": [
-    "protocol",
-    "message_id",
-    "interaction_id",
-    "operation",
-    "direction",
-    "sender",
-    "recipient",
-    "payload"
-  ],
+  "required": ["protocol", "message_id", "interaction_id", "operation", "direction", "sender", "recipient", "payload"],
   "properties": {
     "protocol": {
       "type": "object",
@@ -32,80 +23,48 @@
       "properties": {
         "class": {
           "type": "string",
-          "enum": [
-            "INFORMATIONAL",
-            "CANDIDATE",
-            "EXECUTION-RELATED",
-            "MUTATION-RELEVANT",
-            "OUTCOME",
-            "FAILURE",
-            "CONTINUATION"
-          ]
+          "enum": ["INFORMATIONAL", "CANDIDATE", "EXECUTION-RELATED", "MUTATION-RELEVANT", "OUTCOME", "FAILURE", "CONTINUATION"]
         },
         "name": {
           "type": "string",
-          "enum": [
-            "context_inspection",
-            "continuation",
-            "observation_report",
-            "participant_input",
-            "candidate_contribution",
-            "proposal",
-            "execution_request",
-            "execution_result",
-            "verification_result",
-            "failure_uncertainty",
-            "reconsideration"
-          ]
+          "enum": ["context_inspection", "continuation", "observation_report", "participant_input", "candidate_contribution", "proposal", "execution_request", "execution_result", "verification_result", "failure_uncertainty", "reconsideration"]
         }
       },
+      "allOf": [
+        {"if": {"properties": {"name": {"enum": ["context_inspection", "observation_report", "participant_input"]}}}, "then": {"properties": {"class": {"const": "INFORMATIONAL"}}}},
+        {"if": {"properties": {"name": {"enum": ["candidate_contribution", "proposal"]}}}, "then": {"properties": {"class": {"const": "CANDIDATE"}}}},
+        {"if": {"properties": {"name": {"const": "execution_request"}}}, "then": {"properties": {"class": {"enum": ["EXECUTION-RELATED", "MUTATION-RELEVANT"]}}}},
+        {"if": {"properties": {"name": {"enum": ["execution_result", "verification_result"]}}}, "then": {"properties": {"class": {"const": "OUTCOME"}}}},
+        {"if": {"properties": {"name": {"const": "failure_uncertainty"}}}, "then": {"properties": {"class": {"const": "FAILURE"}}}},
+        {"if": {"properties": {"name": {"enum": ["continuation", "reconsideration"]}}}, "then": {"properties": {"class": {"const": "CONTINUATION"}}}}
+      ],
       "additionalProperties": false
     },
     "direction": {
       "type": "string",
-      "enum": [
-        "agent_to_runtime",
-        "runtime_to_agent",
-        "participant_to_runtime",
-        "runtime_to_participant"
-      ]
+      "enum": ["agent_to_runtime", "runtime_to_agent", "participant_to_runtime", "runtime_to_participant"]
     },
-    "sender": {
-      "$ref": "#/$defs/participant"
+    "sender": {"$ref": "#/$defs/participant"},
+    "recipient": {"$ref": "#/$defs/participant"},
+    "process_instance_ref": {"$ref": "#/$defs/reference"},
+    "execution_context_ref": {"$ref": "#/$defs/reference"},
+    "causation_ref": {"$ref": "#/$defs/reference"},
+    "trace_ref": {"$ref": "#/$defs/reference"},
+    "artifact_refs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/reference"},
+      "uniqueItems": true
     },
-    "recipient": {
-      "$ref": "#/$defs/participant"
-    },
-    "process_instance_ref": {
-      "$ref": "#/$defs/reference"
-    },
-    "execution_context_ref": {
-      "$ref": "#/$defs/reference"
-    },
-    "causation_ref": {
-      "$ref": "#/$defs/reference"
-    },
-    "trace_ref": {
-      "$ref": "#/$defs/reference"
-    },
+    "action_ref": {"$ref": "#/$defs/reference"},
+    "result_ref": {"$ref": "#/$defs/reference"},
+    "verification_ref": {"$ref": "#/$defs/reference"},
     "payload": {
       "type": "object",
       "required": ["kind", "content"],
       "properties": {
         "kind": {
           "type": "string",
-          "enum": [
-            "observation",
-            "participant_input",
-            "candidate_contribution",
-            "proposal",
-            "execution_request",
-            "execution_result",
-            "verification_result",
-            "failure_uncertainty",
-            "continuation",
-            "context"
-          ]
+          "enum": ["observation", "participant_input", "candidate_contribution", "proposal", "execution_request", "execution_result", "verification_result", "failure_uncertainty", "continuation", "context"]
         },
         "content": {}
       },
@@ -115,10 +74,7 @@
       "type": "object",
       "required": ["status"],
       "properties": {
-        "status": {
-          "type": "string",
-          "enum": ["reported", "completed", "failed", "blocked", "uncertain", "rejected"]
-        },
+        "status": {"type": "string", "enum": ["reported", "completed", "failed", "blocked", "uncertain", "rejected"]},
         "summary": {"type": "string"}
       },
       "additionalProperties": false
@@ -150,10 +106,7 @@
       "type": "object",
       "required": ["type", "id"],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["agent", "runtime", "participant", "tool", "environment"]
-        },
+        "type": {"type": "string", "enum": ["agent", "runtime", "participant", "tool", "environment"]},
         "id": {"type": "string", "minLength": 1}
       },
       "additionalProperties": false
