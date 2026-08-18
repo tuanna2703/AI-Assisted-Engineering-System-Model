@@ -2,7 +2,7 @@
 
 **Project:** AI-Assisted Engineering System Model (AESM)  
 **Phase:** Phase 5 — Machine-Readable Agent Protocol  
-**Status:** DRAFT — Phase 5 Construction  
+**Status:** DRAFT — Phase 5 Construction / Completeness Correction  
 **Authority:** Derived from the frozen Agent Execution Contract, AESM Operational Model, PEM, and EPM  
 **Date:** 2026-08-18
 
@@ -71,16 +71,18 @@ Interaction Envelope
         +
 Semantic Operation
         +
-Payload
+Operation-specific Payload
         +
 Context / Correlation References
         +
-Traceability Metadata
+Traceability References
         +
 Outcome / Failure information where applicable
 ```
 
 The protocol representation is transient interaction data unless and until recognized by the Runtime under applicable EPM/PEM semantics.
+
+The envelope schema establishes common structure. Operation-specific payload semantics are defined by this specification and may require operation-specific schema constraints in a conforming implementation.
 
 ---
 
@@ -93,7 +95,7 @@ Every protocol interaction shall have an envelope containing, as applicable:
 | `protocol` | Identifies the protocol family and version. |
 | `message_id` | Unique identity of the protocol message. |
 | `interaction_id` | Identity of the semantic interaction represented by the message. |
-| `operation` | Protocol operation class. |
+| `operation` | Protocol operation class and semantic operation name. |
 | `direction` | Semantic information-flow direction. |
 | `sender` | Participant producing the representation. |
 | `recipient` | Intended semantic recipient. |
@@ -101,6 +103,10 @@ Every protocol interaction shall have an envelope containing, as applicable:
 | `execution_context_ref` | Reference to relevant authoritative context when permitted and applicable. |
 | `causation_ref` | Reference to the interaction that caused this interaction, where applicable. |
 | `trace_ref` | Reference supporting execution traceability. |
+| `artifact_refs` | References to relevant artifacts or evidence when applicable. |
+| `action_ref` | Reference to a relevant Execution Action when applicable. |
+| `result_ref` | Reference to a relevant Execution Result or other result when applicable. |
+| `verification_ref` | Reference to a relevant verification activity/result when applicable. |
 | `payload` | Operation-specific semantic content. |
 | `outcome` | Outcome information where the operation produces an outcome. |
 | `failure` | Material failure or uncertainty information where applicable. |
@@ -216,9 +222,9 @@ The result may be evidence for subsequent processing, verification, or state mut
 
 ### 9.8 Verification Result
 
-Represents a verification activity result.
+Represents a verification activity result as **reported by a Participant**.
 
-A verification result may be used by the Runtime and EPM/PEM semantics to determine subsequent processing. The Agent cannot make the result authoritative merely by marking it verified.
+A protocol field or payload indicating that a Participant reports verification success is not itself authoritative recognition of that verification result. Recognition remains governed by the applicable EPM/PEM and Runtime semantics.
 
 ### 9.9 Failure / Uncertainty Report
 
@@ -257,6 +263,24 @@ In particular:
 > `MUTATION-RELEVANT` does not mean `authorized mutation`.
 
 Authorization and recognition remain governed by the Runtime under EPM/PEM semantics.
+
+The normative operation-to-class mapping is:
+
+| Operation | Required Class |
+|---|---|
+| `context_inspection` | `INFORMATIONAL` |
+| `continuation` | `CONTINUATION` |
+| `observation_report` | `INFORMATIONAL` |
+| `participant_input` | `INFORMATIONAL` |
+| `candidate_contribution` | `CANDIDATE` |
+| `proposal` | `CANDIDATE` |
+| `execution_request` | `EXECUTION-RELATED` or `MUTATION-RELEVANT` as determined by the represented action semantics |
+| `execution_result` | `OUTCOME` |
+| `verification_result` | `OUTCOME` |
+| `failure_uncertainty` | `FAILURE` |
+| `reconsideration` | `CONTINUATION` |
+
+A conforming schema or validator shall reject an operation/class combination that contradicts this mapping, except for the explicitly conditional `execution_request` classification.
 
 ---
 
@@ -343,6 +367,8 @@ failure / uncertainty
 
 An implementation may use a common envelope or serialization mechanism, but semantic categories remain distinct.
 
+The base schema intentionally leaves `payload.content` structurally open because payload structure is operation-specific. The normative operation semantics and required content are defined by this specification; specialized schemas may further constrain individual operation payloads without changing the protocol semantics.
+
 ---
 
 ## 15. Traceability
@@ -353,6 +379,7 @@ Material interactions shall expose sufficient references to support reconstructi
 Interaction
  → Contribution / Action
  → Result
+ → Verification where applicable
  → Recognition
  → State Mutation where applicable
  → Execution Trace
@@ -364,8 +391,9 @@ Traceability references may include:
 - causation;
 - Process Instance reference;
 - Execution Context reference;
-- artifact/evidence reference;
-- action/result reference;
+- artifact/evidence references;
+- action reference;
+- result reference;
 - verification reference.
 
 The protocol shall not require conversational memory as the sole source of material interaction history.
@@ -480,7 +508,7 @@ A conforming implementation or schema validator shall be able to verify, as appl
 8. mutation-relevant messages are not treated as automatic mutations;
 9. proposal messages are not represented as authoritative decisions;
 10. execution results are distinguishable from execution determinations;
-11. verification results remain distinguishable from authoritative recognition;
+11. verification results reported by Participants remain distinguishable from authoritative recognition;
 12. failures and uncertainty are representable;
 13. continuity references support reconstruction without conversational memory;
 14. transport-specific fields do not become normative semantic requirements;
@@ -540,18 +568,17 @@ The conflict shall not be resolved by silently changing the Contract.
 
 This document is currently:
 
-> **DRAFT — PHASE 5 CONSTRUCTION**
+> **DRAFT — PHASE 5 CONSTRUCTION / COMPLETENESS CORRECTION**
 
 It is not yet authoritative and is not frozen.
 
 Required next activities:
 
-1. complete the protocol schema;
-2. construct the Contract-to-Protocol Traceability Matrix;
-3. perform completeness review;
-4. perform consistency review;
-5. perform mandatory Boundary Review;
-6. perform structural and semantic validation;
-7. correct and revalidate any defects;
-8. conduct Freeze Review;
-9. canonicalize and freeze if all criteria pass.
+1. complete completeness correction;
+2. re-run Completeness Review;
+3. perform Consistency Review;
+4. perform mandatory Boundary Review;
+5. perform structural and semantic validation;
+6. correct and revalidate any defects;
+7. conduct Freeze Review;
+8. canonicalize and freeze if all criteria pass.
