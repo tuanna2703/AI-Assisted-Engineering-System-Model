@@ -6,111 +6,43 @@
   "type": "object",
   "required": ["protocol", "message_id", "interaction_id", "operation", "direction", "sender", "recipient", "payload"],
   "properties": {
-    "protocol": {
-      "type": "object",
-      "required": ["name", "version"],
-      "properties": {
-        "name": {"const": "AESM-MRAP"},
-        "version": {"type": "string", "minLength": 1}
+    "protocol": {"type":"object","required":["name","version"],"properties":{"name":{"const":"AESM-MRAP"},"version":{"type":"string","minLength":1}},"additionalProperties":false},
+    "message_id":{"type":"string","minLength":1},
+    "interaction_id":{"type":"string","minLength":1},
+    "operation":{
+      "type":"object","required":["class","name"],
+      "properties":{
+        "class":{"type":"string","enum":["INFORMATIONAL","CANDIDATE","EXECUTION-RELATED","MUTATION-RELEVANT","OUTCOME","FAILURE","CONTINUATION"]},
+        "name":{"type":"string","enum":["context_inspection","continuation","observation_report","participant_input","candidate_contribution","proposal","execution_request","execution_result","verification_result","failure_uncertainty","reconsideration"]}
       },
-      "additionalProperties": false
-    },
-    "message_id": {"type": "string", "minLength": 1},
-    "interaction_id": {"type": "string", "minLength": 1},
-    "operation": {
-      "type": "object",
-      "required": ["class", "name"],
-      "properties": {
-        "class": {
-          "type": "string",
-          "enum": ["INFORMATIONAL", "CANDIDATE", "EXECUTION-RELATED", "MUTATION-RELEVANT", "OUTCOME", "FAILURE", "CONTINUATION"]
-        },
-        "name": {
-          "type": "string",
-          "enum": ["context_inspection", "continuation", "observation_report", "participant_input", "candidate_contribution", "proposal", "execution_request", "execution_result", "verification_result", "failure_uncertainty", "reconsideration"]
-        }
-      },
-      "allOf": [
-        {"if": {"properties": {"name": {"enum": ["context_inspection", "observation_report", "participant_input"]}}}, "then": {"properties": {"class": {"const": "INFORMATIONAL"}}}},
-        {"if": {"properties": {"name": {"enum": ["candidate_contribution", "proposal"]}}}, "then": {"properties": {"class": {"const": "CANDIDATE"}}}},
-        {"if": {"properties": {"name": {"const": "execution_request"}}}, "then": {"properties": {"class": {"enum": ["EXECUTION-RELATED", "MUTATION-RELEVANT"]}}}},
-        {"if": {"properties": {"name": {"enum": ["execution_result", "verification_result"]}}}, "then": {"properties": {"class": {"const": "OUTCOME"}}}},
-        {"if": {"properties": {"name": {"const": "failure_uncertainty"}}}, "then": {"properties": {"class": {"const": "FAILURE"}}}},
-        {"if": {"properties": {"name": {"enum": ["continuation", "reconsideration"]}}}, "then": {"properties": {"class": {"const": "CONTINUATION"}}}}
+      "allOf":[
+        {"if":{"properties":{"name":{"enum":["context_inspection","observation_report","participant_input"]}}},"then":{"properties":{"class":{"const":"INFORMATIONAL"}}}},
+        {"if":{"properties":{"name":{"enum":["candidate_contribution","proposal"]}}},"then":{"properties":{"class":{"const":"CANDIDATE"}}}},
+        {"if":{"properties":{"name":{"const":"execution_request"}}},"then":{"properties":{"class":{"enum":["EXECUTION-RELATED","MUTATION-RELEVANT"]}}}},
+        {"if":{"properties":{"name":{"enum":["execution_result","verification_result"]}}},"then":{"properties":{"class":{"const":"OUTCOME"}}}},
+        {"if":{"properties":{"name":{"const":"failure_uncertainty"}}},"then":{"properties":{"class":{"const":"FAILURE"}}}},
+        {"if":{"properties":{"name":{"enum":["continuation","reconsideration"]}}},"then":{"properties":{"class":{"const":"CONTINUATION"}}}}
       ],
-      "additionalProperties": false
+      "additionalProperties":false
     },
-    "direction": {
-      "type": "string",
-      "enum": ["agent_to_runtime", "runtime_to_agent", "participant_to_runtime", "runtime_to_participant"]
-    },
-    "sender": {"$ref": "#/$defs/participant"},
-    "recipient": {"$ref": "#/$defs/participant"},
-    "process_instance_ref": {"$ref": "#/$defs/reference"},
-    "execution_context_ref": {"$ref": "#/$defs/reference"},
-    "causation_ref": {"$ref": "#/$defs/reference"},
-    "trace_ref": {"$ref": "#/$defs/reference"},
-    "artifact_refs": {
-      "type": "array",
-      "items": {"$ref": "#/$defs/reference"},
-      "uniqueItems": true
-    },
-    "action_ref": {"$ref": "#/$defs/reference"},
-    "result_ref": {"$ref": "#/$defs/reference"},
-    "verification_ref": {"$ref": "#/$defs/reference"},
-    "payload": {
-      "type": "object",
-      "required": ["kind", "content"],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": ["observation", "participant_input", "candidate_contribution", "proposal", "execution_request", "execution_result", "verification_result", "failure_uncertainty", "continuation", "context"]
-        },
-        "content": {}
-      },
-      "additionalProperties": false
-    },
-    "outcome": {
-      "type": "object",
-      "required": ["status"],
-      "properties": {
-        "status": {"type": "string", "enum": ["reported", "completed", "failed", "blocked", "uncertain", "rejected"]},
-        "summary": {"type": "string"}
-      },
-      "additionalProperties": false
-    },
-    "failure": {
-      "type": "object",
-      "required": ["class"],
-      "properties": {
-        "class": {"type": "string", "minLength": 1},
-        "message": {"type": "string"},
-        "material_uncertainty": {"type": "boolean"},
-        "retryable": {"type": "boolean"},
-        "reconsideration_required": {"type": "boolean"}
-      },
-      "additionalProperties": false
-    }
+    "direction":{"type":"string","enum":["to_runtime","from_runtime"]},
+    "sender":{"$ref":"#/$defs/actor"},
+    "recipient":{"$ref":"#/$defs/actor"},
+    "process_instance_ref":{"$ref":"#/$defs/reference"},
+    "execution_context_ref":{"$ref":"#/$defs/reference"},
+    "causation_ref":{"$ref":"#/$defs/reference"},
+    "trace_ref":{"$ref":"#/$defs/reference"},
+    "artifact_refs":{"type":"array","items":{"$ref":"#/$defs/reference"},"uniqueItems":true},
+    "action_ref":{"$ref":"#/$defs/reference"},
+    "result_ref":{"$ref":"#/$defs/reference"},
+    "verification_ref":{"$ref":"#/$defs/reference"},
+    "payload":{"type":"object","required":["kind","content"],"properties":{"kind":{"type":"string","enum":["observation","participant_input","candidate_contribution","proposal","execution_request","execution_result","verification_result","failure_uncertainty","continuation","context"]},"content":{}},"additionalProperties":false},
+    "outcome":{"type":"object","required":["status"],"properties":{"status":{"type":"string","enum":["reported","completed","failed","blocked","uncertain","rejected"]},"summary":{"type":"string"}},"additionalProperties":false},
+    "failure":{"type":"object","required":["class"],"properties":{"class":{"type":"string","minLength":1},"message":{"type":"string"},"material_uncertainty":{"type":"boolean"},"retryable":{"type":"boolean"},"reconsideration_required":{"type":"boolean"}},"additionalProperties":false}
   },
-  "$defs": {
-    "reference": {
-      "type": "object",
-      "required": ["id"],
-      "properties": {
-        "id": {"type": "string", "minLength": 1},
-        "type": {"type": "string", "minLength": 1}
-      },
-      "additionalProperties": false
-    },
-    "participant": {
-      "type": "object",
-      "required": ["type", "id"],
-      "properties": {
-        "type": {"type": "string", "enum": ["agent", "runtime", "participant", "tool", "environment"]},
-        "id": {"type": "string", "minLength": 1}
-      },
-      "additionalProperties": false
-    }
+  "$defs":{
+    "reference":{"type":"object","required":["id"],"properties":{"id":{"type":"string","minLength":1},"type":{"type":"string","minLength":1}},"additionalProperties":false},
+    "actor":{"type":"object","required":["category","id"],"properties":{"category":{"type":"string","enum":["human_participant","ai_agent","runtime","tool","environment"]},"id":{"type":"string","minLength":1}},"additionalProperties":false}
   },
-  "additionalProperties": false
+  "additionalProperties":false
 }
