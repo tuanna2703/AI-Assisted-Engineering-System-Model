@@ -2,7 +2,7 @@
 
 **Project:** AI-Assisted Engineering System Model (AESM)  
 **Phase:** Phase 5 — Machine-Readable Agent Protocol  
-**Status:** DRAFT — Phase 5 Construction / Completeness Correction  
+**Status:** DRAFT — Phase 5 Consistency Correction  
 **Authority:** Derived from the frozen Agent Execution Contract, AESM Operational Model, PEM, and EPM  
 **Date:** 2026-08-18
 
@@ -10,7 +10,7 @@
 
 ## 1. Purpose
 
-The Machine-Readable Agent Protocol (MRAP) defines the implementation-independent machine-readable representation of semantic interaction between an Agent and the AESM execution system.
+The Machine-Readable Agent Protocol (MRAP) defines the implementation-independent machine-readable representation of semantic interaction across the Agent Execution Contract boundary.
 
 MRAP translates the frozen Agent Execution Contract into explicit protocol structures without redefining the semantics established by EPM, PEM, the AESM Operational Model, or the Contract.
 
@@ -96,8 +96,8 @@ Every protocol interaction shall have an envelope containing, as applicable:
 | `message_id` | Unique identity of the protocol message. |
 | `interaction_id` | Identity of the semantic interaction represented by the message. |
 | `operation` | Protocol operation class and semantic operation name. |
-| `direction` | Semantic information-flow direction. |
-| `sender` | Participant producing the representation. |
+| `direction` | Semantic information-flow direction relative to the Runtime. |
+| `sender` | Actor/source producing the representation. |
 | `recipient` | Intended semantic recipient. |
 | `process_instance_ref` | Reference to the relevant Process Instance when applicable. |
 | `execution_context_ref` | Reference to relevant authoritative context when permitted and applicable. |
@@ -115,38 +115,69 @@ The exact wire encoding of these elements is implementation-specific and is outs
 
 ---
 
-## 6. Direction
+## 6. Actor and Source Boundary
 
-`direction` represents semantic information flow only.
+The protocol uses a neutral `actor/source` concept so that protocol representation does not collapse distinct semantic categories.
 
-It does not prescribe:
+The normative categories are:
 
+```text
+Human Participant
+AI Agent
+Runtime
+Tool
+Environment
+```
+
+The semantic relationships are:
+
+```text
+Participant
+├── Human Participant
+└── AI Agent
+
+Runtime
+
+Other Source / Capability
+├── Tool
+└── Environment
+```
+
+An AI Agent is therefore a Participant.
+
+A Tool or Environment source is not thereby a Participant and does not acquire Participant authority merely by being represented in a protocol message.
+
+Runtime is neither a Participant nor an Agent. It is the execution mechanism implementing PEM.
+
+Actor/source identity identifies the origin or intended recipient of information. It does not itself establish authority.
+
+---
+
+## 7. Direction
+
+`direction` represents semantic information flow relative to the Runtime only.
+
+The normative values are:
+
+```text
+to_runtime
+from_runtime
+```
+
+`to_runtime` means that the represented information is flowing toward the Runtime from a source/actor.
+
+`from_runtime` means that the represented information is flowing from the Runtime toward a recipient/source.
+
+The direction field does not prescribe:
+
+- whether the source is an Agent, Human Participant, Tool, or Environment;
 - network direction;
 - transport endpoint;
 - API method;
 - process/thread ownership;
 - communication technology.
 
-Permitted conceptual values include:
-
-```text
-agent_to_runtime
-runtime_to_agent
-participant_to_runtime
-runtime_to_participant
-```
-
-The implementation may map these semantic directions to concrete mechanisms.
-
----
-
-## 7. Sender and Recipient
-
-The protocol shall identify the semantic participants involved in an interaction.
-
-The representation shall not imply that an Agent is the Runtime or that the sender of a message owns the state referenced by the message.
-
-A sender identifies the source of the represented information or proposal; it does not establish the authority of that information.
+The sender and recipient categories provide the actor/source distinction independently of direction.
 
 ---
 
@@ -188,7 +219,7 @@ An observation is information about something perceived or measured. It is not a
 
 ### 9.3 Participant Input
 
-Represents information explicitly supplied by a Participant.
+Represents information explicitly supplied by a Human Participant or AI Agent as a Participant.
 
 Participant Input shall not be fabricated by an Agent and shall not automatically become authoritative state.
 
@@ -222,9 +253,9 @@ The result may be evidence for subsequent processing, verification, or state mut
 
 ### 9.8 Verification Result
 
-Represents a verification activity result as **reported by a Participant**.
+Represents a verification activity result as reported by a Participant or other permitted source.
 
-A protocol field or payload indicating that a Participant reports verification success is not itself authoritative recognition of that verification result. Recognition remains governed by the applicable EPM/PEM and Runtime semantics.
+A protocol field or payload indicating that a source reports verification success is not itself authoritative recognition of that verification result. Recognition remains governed by the applicable EPM/PEM and Runtime semantics.
 
 ### 9.9 Failure / Uncertainty Report
 
@@ -258,12 +289,6 @@ CONTINUATION
 
 The classification describes the semantic role of the operation. It does not grant authority.
 
-In particular:
-
-> `MUTATION-RELEVANT` does not mean `authorized mutation`.
-
-Authorization and recognition remain governed by the Runtime under EPM/PEM semantics.
-
 The normative operation-to-class mapping is:
 
 | Operation | Required Class |
@@ -274,7 +299,7 @@ The normative operation-to-class mapping is:
 | `participant_input` | `INFORMATIONAL` |
 | `candidate_contribution` | `CANDIDATE` |
 | `proposal` | `CANDIDATE` |
-| `execution_request` | `EXECUTION-RELATED` or `MUTATION-RELEVANT` as determined by the represented action semantics |
+| `execution_request` | `EXECUTION-RELATED` or `MUTATION-RELEVANT` according to represented action semantics |
 | `execution_result` | `OUTCOME` |
 | `verification_result` | `OUTCOME` |
 | `failure_uncertainty` | `FAILURE` |
@@ -339,7 +364,7 @@ Protocol metadata may communicate:
 - requested action class;
 - candidate mutation class;
 - required recognition class;
-- verification status as reported by a participant;
+- verification status as reported by a source;
 - permission context reference.
 
 The authoritative interpretation remains outside the protocol representation itself.
@@ -501,18 +526,19 @@ A conforming implementation or schema validator shall be able to verify, as appl
 1. every message has a valid protocol identity/version;
 2. every message has an operation classification;
 3. message identity is distinguishable from interaction identity;
-4. sender/recipient semantics do not collapse Agent and Runtime;
-5. Process Instance references are structurally valid when required;
-6. Execution Context references do not become embedded authoritative state;
-7. operation classes preserve Contract distinctions;
-8. mutation-relevant messages are not treated as automatic mutations;
-9. proposal messages are not represented as authoritative decisions;
-10. execution results are distinguishable from execution determinations;
-11. verification results reported by Participants remain distinguishable from authoritative recognition;
-12. failures and uncertainty are representable;
-13. continuity references support reconstruction without conversational memory;
-14. transport-specific fields do not become normative semantic requirements;
-15. material interactions remain traceable.
+4. sender/recipient categories preserve Human Participant, AI Agent, Runtime, Tool, and Environment distinctions;
+5. direction represents information flow relative to Runtime and does not encode transport;
+6. Process Instance references are structurally valid when required;
+7. Execution Context references do not become embedded authoritative state;
+8. operation classes preserve Contract distinctions;
+9. mutation-relevant messages are not treated as automatic mutations;
+10. proposal messages are not represented as authoritative decisions;
+11. execution results are distinguishable from execution determinations;
+12. verification results reported by sources remain distinguishable from authoritative recognition;
+13. failures and uncertainty are representable;
+14. continuity references support reconstruction without conversational memory;
+15. transport-specific fields do not become normative semantic requirements;
+16. material interactions remain traceable.
 
 ---
 
@@ -568,17 +594,15 @@ The conflict shall not be resolved by silently changing the Contract.
 
 This document is currently:
 
-> **DRAFT — PHASE 5 CONSTRUCTION / COMPLETENESS CORRECTION**
+> **DRAFT — PHASE 5 CONSISTENCY CORRECTION**
 
 It is not yet authoritative and is not frozen.
 
 Required next activities:
 
-1. complete completeness correction;
-2. re-run Completeness Review;
-3. perform Consistency Review;
-4. perform mandatory Boundary Review;
-5. perform structural and semantic validation;
-6. correct and revalidate any defects;
-7. conduct Freeze Review;
-8. canonicalize and freeze if all criteria pass.
+1. re-run Consistency Review;
+2. perform mandatory Boundary Review;
+3. perform structural and semantic validation;
+4. correct and revalidate any defects;
+5. conduct Freeze Review;
+6. canonicalize and freeze if all criteria pass.
