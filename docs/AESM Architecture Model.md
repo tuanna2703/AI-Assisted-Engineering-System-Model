@@ -1,6 +1,6 @@
 # AI-Assisted Engineering System Model — Architectural Model
 
-**Status:** Architecture Freeze — v0.1
+**Status:** Architecture Freeze
 **Authority:** Normative architectural baseline for AESM
 **Scope:** System architecture only
 **Repository:** `tuanna2703/AI-Assisted-Engineering-System-Model`
@@ -57,9 +57,13 @@ The central architectural relationship is:
                                        │
                               Execution Environment
                                        │
-                    ┌──────────────────┼──────────────────┐
-                    │                  │                  │
-                  VS Code             CLI             Other IDEs
+          ┌────────────────────────────┼────────────────────────────┐
+          │                            │                            │
+        IDEs                    CLI / Terminal              Cloud / Web
+          │                            │                            │
+     VS Code, Cursor,            Bash, Zsh,                 GitHub Codespaces,
+     Windsurf, JetBrains,        PowerShell,               Gitpod, web IDEs
+     Visual Studio               AI coding CLIs
 ```
 
 ---
@@ -115,18 +119,19 @@ The Runtime MUST NOT make the Agent conversation the authoritative process state
 
 ### 3.4 Execution Environment
 
-An Execution Environment is the environment through which humans and AI Agents interact with the Runtime and perform engineering work.
+An **Execution Environment** is a real software environment through which humans and AI Agents interact with the AESM Runtime and perform engineering work.
 
 Examples include:
 
-- VS Code
-- command-line interfaces
-- other IDEs
-- web interfaces
-- remote development environments
-- future compatible environments
+- **IDE environments:** VS Code, Cursor, Windsurf, JetBrains IDEs, Visual Studio
+- **CLI / terminal environments:** Bash, Zsh, PowerShell, Windows Terminal, and AI coding CLI environments
+- **Cloud / web development environments:** GitHub Codespaces, Gitpod, and web-based IDEs
+
+These examples illustrate the meaning of Execution Environment; they are not separate AESM concepts or required implementations.
 
 An Execution Environment is replaceable and MUST NOT become an architectural dependency of EPM or PEM.
+
+Tools and services used by an Execution Environment, such as Git, Docker, databases, compilers, test frameworks, or AI model providers, are not thereby considered Execution Environments.
 
 ### 3.5 Participants
 
@@ -380,20 +385,21 @@ The ability to transfer work between Agent sessions is a core acceptance criteri
 
 ## 11. Execution Environment Independence
 
-AESM MUST NOT be architecturally coupled to VS Code.
+AESM MUST NOT be architecturally coupled to any particular Execution Environment.
 
-VS Code is an important initial target because it is a natural environment for engineering work, but the architecture must support equivalent environments.
+VS Code is an important initial target because it is a natural environment for engineering work, but the architecture must support equivalent environments such as IDEs, CLI/terminal environments, and cloud/web development environments.
 
 Conceptually:
 
 ```text
-                    AESM Runtime
-                         │
-          ┌──────────────┼──────────────┐
-          │              │              │
-     VS Code Adapter   CLI Adapter   Other IDE Adapter
-          │              │              │
-       VS Code        Terminal        Other IDE
+                         AESM Runtime
+                              │
+          ┌───────────────────┼───────────────────┐
+          │                   │                   │
+       IDE Adapter       CLI Adapter       Cloud/Web Adapter
+          │                   │                   │
+    VS Code / Cursor      Terminal / CLI     Codespaces / Web IDE
+    / JetBrains / etc.    environments      environments
 ```
 
 An Execution Environment adapter provides interaction with the Runtime and the surrounding engineering tools. It does not redefine EPM or PEM.
@@ -582,7 +588,7 @@ This scenario is the primary architectural validation scenario for AESM.
 
 ## 18. Architectural Freeze Statement
 
-**AESM Architecture v0.1 is frozen as the authoritative architectural baseline.**
+**The AESM Architecture Model is the authoritative architectural baseline.**
 
 The architecture consists of:
 
