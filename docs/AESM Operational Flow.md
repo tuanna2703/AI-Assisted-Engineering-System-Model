@@ -73,7 +73,15 @@ The flow is iterative. It is not a one-way sequence.
 
 A human provides an engineering request through an Execution Environment.
 
-Example:
+Examples of Execution Environments include:
+
+- **IDE environments:** VS Code, Cursor, Windsurf, JetBrains IDEs, Visual Studio
+- **CLI / terminal environments:** Bash, Zsh, PowerShell, Windows Terminal, and AI coding CLI environments
+- **Cloud / web development environments:** GitHub Codespaces, Gitpod, and web-based IDEs
+
+These are examples of environments through which the AESM Runtime may be accessed. They are not separate AESM concepts.
+
+Example request:
 
 ```text
 "Implement feature X."
