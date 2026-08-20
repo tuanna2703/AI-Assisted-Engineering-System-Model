@@ -11,10 +11,23 @@ The implementation is intentionally small and exists to test the frozen semantic
 - append-only execution history;
 - Runtime attachment and replacement;
 - controlled mutation through the Runtime surface;
-- explicit verification before engineering completion;
+- explicit recognition before authoritative Engineering Decision state is recorded;
+- explicit recognition of applicable engineering completion conditions;
 - explicit recovery failure when authoritative Context is unavailable.
 
 This code is implementation-specific and does not modify the normative AESM model.
+
+## Recognition boundary
+
+The Runtime does not independently determine engineering validity. Authoritative Engineering Decision and engineering-completion mutations require explicit recognition records supplied by the governing execution semantics.
+
+In particular:
+
+- an Agent or participant proposal is not sufficient to establish an Engineering Decision;
+- successful verification is evidence that may support completion, but is not by itself a universal engineering-completion rule;
+- the Runtime records recognized outcomes and controls their mutation into authoritative Execution Context.
+
+The recognition records are deliberately lightweight implementation scaffolding. They do not constitute a new architectural layer or redefine EPM/PEM semantics.
 
 ## First proof
 
