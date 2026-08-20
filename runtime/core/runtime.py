@@ -1,4 +1,4 @@
-"""Minimal Runtime control surface for continuity experiments."""
+"""Minimal Runtime control surface for continuity and conformance experiments."""
 from __future__ import annotations
 
 from typing import Any
@@ -34,10 +34,12 @@ class Runtime:
         self.context.evidence.append(observation)
         self.store.save_context(self.context, {"type": "observation_recorded", "observation": observation, "runtime_id": self.runtime_id})
 
-    def establish_decision(self, decision: dict[str, Any]) -> None:
+    def recognize_decision(self, decision: dict[str, Any], recognition: dict[str, Any]) -> None:
+        """Record a recognized decision without defining its engineering validity."""
         self._require_attached()
+        self._require_recognition(recognition, "decision")
         self.context.engineering_decisions.append(decision)
-        self.store.save_context(self.context, {"type": "engineering_decision_recorded", "decision": decision, "runtime_id": self.runtime_id})
+        self.store.save_context(self.context, {"type": "engineering_decision_recognized", "decision": decision, "recognition": recognition, "runtime_id": self.runtime_id})
 
     def set_pending_execution(self, work: dict[str, Any]) -> None:
         self._require_attached()
@@ -52,18 +54,27 @@ class Runtime:
             self.context.pending_execution = []
         self.store.save_context(self.context, {"type": "verification_recorded", "result": result, "runtime_id": self.runtime_id})
 
-    def complete_engineering(self) -> None:
+    def recognize_engineering_completion(self, completion: dict[str, Any]) -> None:
+        """Record completion recognized under applicable EPM/PEM conditions."""
         self._require_attached()
-        if self.context.verification.get("passed") is not True:
-            raise RuntimeError("engineering completion requires successful verification")
+        self._require_recognition(completion, "completion")
         self.context.engineering_completion = True
         self.context.process_state = "engineering_complete"
-        self.store.save_context(self.context, {"type": "engineering_completion_recognized", "runtime_id": self.runtime_id})
+        self.store.save_context(self.context, {"type": "engineering_completion_recognized", "completion": completion, "runtime_id": self.runtime_id})
 
     def stop(self) -> None:
         self.attached = False
         self.process_instance = None
         self.context = None
+
+    @staticmethod
+    def _require_recognition(recognition: dict[str, Any], kind: str) -> None:
+        if not isinstance(recognition, dict):
+            raise TypeError(f"{kind} recognition must be a mapping")
+        if recognition.get("recognized") is not True:
+            raise RuntimeError(f"{kind} must be explicitly recognized by the governing execution semantics")
+        if not recognition.get("basis"):
+            raise RuntimeError(f"{kind} recognition requires an explicit basis")
 
     def _require_attached(self) -> None:
         if not self.attached or self.context is None:
