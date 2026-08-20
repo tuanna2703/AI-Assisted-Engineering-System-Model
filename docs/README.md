@@ -11,7 +11,7 @@ The documentation is organized around **what a reader needs to understand**, rat
 ## Start here
 
 1. **[AESM Overview](01-Overview.md)** — what AESM is, why it exists, and its defining properties.
-2. **[System Model](02-System-Model.md)** — the entities, relationships, boundaries, and authority model.
+2. **[System Model](02-System-Model.md)** — entities, relationships, boundaries, and authority.
 3. **[Engineering Model](03-Engineering-Model.md)** — what engineering work means in AESM.
 4. **[Execution Model](04-Execution-Model.md)** — how engineering work is executed.
 5. **[Process Instance and Execution Context](05-Process-Instance-and-Execution-Context.md)** — the persistent unit of work and its authoritative operational state.
@@ -20,12 +20,15 @@ The documentation is organized around **what a reader needs to understand**, rat
 8. **[Continuity, Traceability, and Reconsideration](08-Continuity-Traceability-and-Reconsideration.md)** — persistence, recovery, history, and controlled change.
 9. **[Operational Guide](09-Operational-Guide.md)** — how the pieces work together during an engineering effort.
 10. **[Reference](10-Reference.md)** — terminology, distinctions, invariants, and quick-reference relationships.
+11. **[Documentation Source Map](11-Documentation-Source-Map.md)** — traceability from the former documentation into the unified set.
+12. **[AI Agent Guide](12-AI-Agent-Guide.md)** — how an AI Agent should understand and participate in AESM.
+13. **[Runtime Implementer Guide](13-Runtime-Implementer-Guide.md)** — implementation-oriented guidance for Runtime developers.
 
 ## Reading paths
 
 ### New to AESM
 
-`Overview → System Model → Operational Guide → Core Concepts`
+`Overview → System Model → Operational Guide → Reference`
 
 ### Engineer using AESM
 
@@ -33,19 +36,21 @@ The documentation is organized around **what a reader needs to understand**, rat
 
 ### AI Agent
 
-`Overview → System Model → Participants and Agent Participation → Execution Model → Continuity`
+`Overview → System Model → AI Agent Guide → Execution Model → Continuity`
 
 ### Runtime implementer
 
-`System Model → Execution Model → Process Instance and Execution Context → Runtime and Conformance → Continuity`
+`System Model → Execution Model → Process Instance and Execution Context → Runtime and Conformance → Runtime Implementer Guide`
 
 ### Need a precise definition
 
-Use **Reference** first, then follow the concept to its governing model.
+Use **Reference** first, then follow the concept to the governing model.
 
-## Authority model
+## Documentation status and authority
 
-The documentation contains both explanatory and normative material. Explanatory text exists to make AESM understandable; it must not contradict the governing semantics.
+This is a **unified replacement documentation set**. The former `docs/` and `specifications/` document organization is no longer part of the canonical AESM knowledge surface.
+
+The documents contain both explanatory and normative material. Explanatory material exists to make AESM understandable; normative statements define or preserve AESM semantics and must not be weakened by implementation convenience.
 
 The conceptual authority relationship is:
 
@@ -83,5 +88,4 @@ The final documentation follows these rules:
 4. Every substantive concept remains traceable to the validated AESM model.
 5. The documentation describes an iterative engineering system, not a waterfall checklist.
 6. Persistent Process Instance state is treated as the continuity boundary.
-
-The previous `docs/` and `specifications/` document organization has been replaced by this unified documentation set.
+7. AI Agents and Runtime implementers receive dedicated reader-oriented guidance without creating alternative semantics.
