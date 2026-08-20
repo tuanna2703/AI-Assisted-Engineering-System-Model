@@ -20,8 +20,11 @@ PEM
 Runtime
   concrete execution and operational control
 
-Process Instance / Execution Context
-  persistent operational state
+Process Instance
+  persistent identity of one engineering execution
+
+Execution Context
+  authoritative current operational state required to continue it
 
 Participants
   Human and AI contributions
@@ -30,7 +33,15 @@ Execution Environment
   interaction and tooling surface
 ```
 
-A convenient internal software structure may differ, but it must not collapse these semantic boundaries.
+These are semantic responsibilities, not a mandatory command hierarchy. A convenient internal software structure may differ, but it must not collapse these boundaries.
+
+## EPM binding
+
+Every Process Instance must have an explicit, recoverable binding to the applicable EPM definition. Where EPM definitions are versioned, the applicable version or revision must be recoverable.
+
+The Runtime must use that binding when evaluating engineering state, transition validity, Decision Gates, completion conditions, and other EPM-governed semantics.
+
+The Runtime must not silently substitute a different EPM definition during recovery or continuation. If the applicable EPM cannot be resolved, execution must represent the deficiency rather than invent engineering semantics.
 
 ## Runtime responsibilities
 
@@ -38,22 +49,23 @@ A conforming Runtime must provide the semantic capabilities necessary to:
 
 1. establish, attach to, and recover Process Instances;
 2. establish, access, maintain, and recover authoritative Execution Context;
-3. observe the current executable situation;
-4. evaluate execution conditions;
-5. recognize relevant inputs and events under applicable semantics;
-6. evaluate Process States and transition conditions;
-7. recognize and handle Decision Gates;
-8. make Execution Determinations;
-9. plan and coordinate permitted actions;
-10. execute or coordinate execution actions;
-11. record Execution Results;
-12. support verification;
-13. apply only permitted state mutations;
-14. preserve pending work and unresolved conditions;
-15. preserve history and traceability;
-16. support reconsideration without silently erasing history;
-17. preserve material failure and uncertainty;
-18. support suspension, resumption, recovery, and applicable termination semantics.
+3. preserve the applicable EPM binding;
+4. observe the current executable situation;
+5. evaluate execution conditions;
+6. recognize relevant inputs and events under applicable semantics;
+7. evaluate Process States and transition conditions;
+8. recognize and handle Decision Gates;
+9. make Execution Determinations;
+10. plan and coordinate permitted actions;
+11. execute or coordinate execution actions;
+12. record Execution Results;
+13. support verification;
+14. apply only permitted state mutations;
+15. preserve pending work and unresolved conditions;
+16. preserve history and traceability;
+17. support reconsideration without silently erasing history;
+18. preserve material failure, uncertainty, and conflicts;
+19. support suspension, resumption, recovery, and applicable termination semantics.
 
 These are semantic obligations, not a required module or service decomposition.
 
@@ -93,16 +105,42 @@ Permitted Mutation
 
 Recognition should consider, as applicable:
 
+- Process Instance identity;
+- applicable EPM identity and version/revision;
 - current Process State;
-- EPM conditions;
+- Requirements and Constraints;
 - PEM execution conditions;
-- authority conditions;
-- required context;
-- validity constraints;
-- provenance and traceability;
-- applicable Decision Gates.
+- authority and authorization conditions;
+- required context and preconditions;
+- validity and provenance;
+- applicable Decision Gates;
+- traceability requirements.
 
-An implementation must not silently convert arbitrary input into authoritative state.
+Recognition is not equivalent to verification, authorization, or mutation. If material information required for recognition is missing, contradictory, stale, or ambiguous, the Runtime must preserve that condition explicitly rather than invent an interpretation.
+
+## State transition boundary
+
+EPM determines engineering transition validity. PEM determines how execution handles the transition.
+
+Therefore:
+
+```text
+EPM transition validity
+        ≠
+Runtime technical ability to move state
+```
+
+A Runtime may execute a state transition only when the applicable EPM conditions have been established and PEM permits execution. The Runtime must record the transition, its basis, and its resulting authoritative state.
+
+When several transitions are technically possible, the Runtime must evaluate the applicable conditions rather than using technical ordering or implementation preference as engineering authority.
+
+## Decision Gate boundary
+
+Decision Gates are EPM-defined conditions governing progression. The Runtime must identify when a gate applies, evaluate its conditions using recognized information, prevent prohibited progression, and preserve the gate outcome in authoritative state and traceability.
+
+A recommendation, assertion, successful action, or technical state change does not by itself satisfy a gate.
+
+A gate that was previously satisfied may become unsatisfied when applicable evidence, verification, Requirements, Constraints, Decisions, or other governing conditions change. The current status must reflect current semantics while the historical satisfaction remains reconstructable.
 
 ## Mutation boundary
 
@@ -127,6 +165,8 @@ Traceability
 ```
 
 Technical write access is not equivalent to semantic permission to mutate authoritative state.
+
+A mutation must preserve semantic consistency. If the complete permitted mutation cannot be committed, the Runtime must not silently expose a partial authoritative state. The implementation may use transactions, versioned state, append-only records, event processing, or another mechanism; AESM specifies the semantic consistency requirement, not the technology.
 
 ## Engineering validity versus execution ability
 
@@ -163,6 +203,19 @@ The Runtime must preserve the distinction among:
 
 Agent capability must not be treated as unrestricted Runtime authority.
 
+## Concurrency and stale state
+
+Multiple Agents, Participants, or Execution Environments may contribute to one Process Instance. The Runtime must therefore prevent stale or concurrent contributions from silently overwriting newer authoritative state or creating invalid combinations of facts.
+
+The implementation may use locking, optimistic concurrency, serialization, queues, version checks, conflict detection, or another mechanism. The semantic requirements are:
+
+1. authoritative state changes are ordered or otherwise conflict-safe;
+2. a contribution evaluated against stale state cannot silently replace newer state;
+3. detected conflicts are represented explicitly;
+4. conflicting contributions are re-evaluated against current authoritative state before permitted mutation;
+5. retries do not silently create duplicate authoritative effects where the applicable operation is intended to be idempotent;
+6. material conflict and retry history remains traceable.
+
 ## Process Instance and continuity
 
 The Process Instance is the persistent identity of engineering work.
@@ -171,7 +224,7 @@ The Execution Context is the authoritative operational state required for contin
 
 Runtime-specific memory, process-local state, caches, Agent conversations, or environment state may support execution but must not become authoritative merely by being convenient.
 
-A Runtime replacement must be able to continue from the authoritative state and records required by applicable semantics.
+A Runtime replacement must be able to continue from the authoritative state and records required by applicable semantics, including the EPM binding.
 
 ## Failure and uncertainty
 
@@ -186,7 +239,9 @@ Examples include:
 - blocked execution;
 - unavailable external capability;
 - recovery failure;
-- uncertain recognition.
+- uncertain recognition;
+- stale-state or concurrency conflict;
+- inability to resolve the applicable EPM.
 
 Failure does not automatically mean Process Instance termination.
 
@@ -202,25 +257,29 @@ Process Instance termination
 Runtime termination
 ```
 
-Runtime restart, shutdown, replacement, or failure must not silently change the engineering lifecycle state.
+Engineering completion requires applicable EPM completion conditions. Process Instance termination is a separate lifecycle condition governed by applicable execution semantics. Runtime restart, shutdown, replacement, or failure must not silently establish either condition.
+
+Lifecycle status is authoritative operational state and must survive Runtime replacement when continuation is supported.
 
 ## Conformance evidence
 
 A Runtime implementation should be able to demonstrate, through appropriate evidence, that it preserves:
 
-- EPM engineering validity;
+- EPM binding and engineering validity;
 - PEM execution semantics;
 - authority separation;
 - controlled recognition and mutation;
-- Process State and Decision Gate handling;
+- Process State and transition semantics;
+- Decision Gate handling and invalidation;
 - Agent and Participant boundaries;
+- concurrency and stale-state protection;
 - traceability and history;
 - continuity and recovery;
 - failure and uncertainty;
 - lifecycle separation;
 - implementation independence.
 
-Useful test/evidence categories include recovery reconstruction, state-transition tests, gate enforcement, mutation-control tests, Agent-boundary tests, external-action traceability, failure handling, Runtime replacement, and completion/termination separation.
+Useful test/evidence categories include EPM binding reconstruction, recovery reconstruction, state-transition tests, gate enforcement and invalidation tests, stale-input/conflict tests, mutation-consistency tests, Agent-boundary tests, external-action traceability, failure handling, Runtime replacement, and completion/termination separation.
 
 ## Implementation independence
 
