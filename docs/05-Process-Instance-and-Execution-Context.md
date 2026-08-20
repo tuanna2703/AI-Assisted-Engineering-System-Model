@@ -17,6 +17,12 @@ A Process Instance is independent of:
 
 Multiple Agents and environments may participate in the same Process Instance.
 
+## Process Instance identity and model binding
+
+A Process Instance must have a stable identity that remains unchanged across continuation, Agent replacement, Runtime restart, and Execution Environment replacement.
+
+The Process Instance must also retain an explicit binding to the applicable EPM definition. Where the EPM is versioned, the applicable version or revision must be recoverable. The binding is part of authoritative process state and must not be inferred solely from the current Runtime, Agent, or environment.
+
 ## Execution Context
 
 The **Execution Context** is the authoritative operational state required to continue a Process Instance consistently at a specific point in time.
@@ -25,6 +31,20 @@ It is a logical concept, not a required storage format.
 
 The physical representation may be a database, files, service state, or another mechanism. What matters is that the authoritative state is persistent, recoverable, portable, and sufficient for continuation.
 
+### Process Instance versus Execution Context
+
+These concepts must not be collapsed:
+
+```text
+Process Instance
+    = persistent identity of one engineering execution
+
+Execution Context
+    = authoritative current operational state required to continue it
+```
+
+The Process Instance identifies **which engineering execution exists**. The Execution Context records **what the authoritative operational situation is now**. A Runtime may represent them together physically, but their semantic roles remain distinct.
+
 ## What the context represents
 
 The context may include:
@@ -32,9 +52,11 @@ The context may include:
 ### Process status
 
 - Process Instance identity
+- applicable EPM identity and version/revision where applicable
 - Engineering Objective
 - current Process State
 - execution mode
+- lifecycle status
 
 ### Engineering state
 
@@ -49,7 +71,7 @@ The context may include:
 
 - accepted Engineering Decisions
 - pending Decisions
-- Decision Gate conditions
+- Decision Gate conditions and satisfaction state
 
 ### Knowledge state
 
@@ -75,6 +97,7 @@ The context may include:
 - verification outcomes
 - material state changes
 - reconsideration history
+- material gate satisfaction and invalidation history
 
 The exact schema is implementation-dependent, but authoritative continuation information must not depend on transient conversation memory.
 
@@ -83,6 +106,14 @@ The exact schema is implementation-dependent, but authoritative continuation inf
 Execution Context is authoritative for the **operational state of the Process Instance**. It does not override EPM engineering meaning or PEM execution semantics.
 
 Conversational memory, an Agent's internal state, a protocol message, or transient Runtime memory is not authoritative merely because it contains similar information.
+
+## Authoritative state consistency
+
+A conforming Runtime must preserve semantic consistency when applying authoritative state changes. A state update must not leave the recoverable Process Instance representing a combination of independently committed facts that could not constitute a valid AESM state.
+
+The implementation mechanism is not prescribed. Atomic transactions, durable event records, versioned state, or other mechanisms may be used. What matters is that recovery cannot silently produce partial authoritative mutation or lose the traceability of what was accepted.
+
+If a mutation cannot be committed consistently, the Runtime must represent the failure explicitly and recover from the last known authoritative state rather than pretending that the mutation succeeded.
 
 ## Continuity
 
@@ -113,6 +144,8 @@ Continue
 A Runtime recovering an interrupted Process Instance must use authoritative state rather than inventing missing history from assumptions or conversation memory.
 
 If required authoritative information is missing, the system should represent the condition explicitly rather than silently fabricate state.
+
+Recovery must also re-establish the applicable EPM binding and any other conditions required to interpret the recovered state correctly.
 
 ## Historical state
 
