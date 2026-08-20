@@ -8,8 +8,8 @@
 | EPM | Engineering Process Model; defines engineering meaning and validity |
 | PEM | Process Execution Model; defines execution semantics |
 | Runtime | Implementation of PEM that executes Process Instances |
-| Process Instance | One execution of an Engineering Process Model for a specific engineering objective |
-| Execution Context | Authoritative operational state required to continue a Process Instance |
+| Process Instance | One execution of an Engineering Process Model for a specific engineering objective; the persistent identity of that execution |
+| Execution Context | Authoritative current operational state required to continue a Process Instance |
 | Participant | Entity contributing to Process Instance execution |
 | Human Participant | Human participating in engineering execution |
 | AI Agent | AI-based Participant in engineering execution |
@@ -20,10 +20,10 @@
 | Engineering Decision | Accepted engineering conclusion or commitment affecting engineering direction or outcome |
 | Execution Determination | Execution-level determination of what may or should occur next |
 | Verification | Evaluation of whether a result, Artifact, Decision, or state satisfies applicable conditions |
-| Process State | Current stage of engineering work within a Process Instance |
-| Decision Gate | Condition governing whether progression is permitted |
+| Process State | EPM-defined current stage of engineering work within a Process Instance |
+| Decision Gate | EPM-defined condition governing whether progression is permitted |
 | Recognition | Runtime-controlled determination that information corresponds to a semantically meaningful input under applicable rules |
-| State Mutation | Controlled change to authoritative Process Instance state |
+| State Mutation | Controlled change to authoritative Process Instance operational state |
 
 ## Critical distinctions
 
@@ -33,21 +33,25 @@ PEM ≠ Runtime
 Agent ≠ Runtime
 Runtime ≠ Execution Context
 Execution Environment ≠ Runtime
+Process Instance ≠ Execution Context
 Conversation ≠ Process Instance
 Conversation ≠ authoritative Execution Context
 Capability ≠ authority
 Proposal ≠ authorization
 Observation ≠ mutation
 Receipt ≠ recognition
+Recognition ≠ verification
 Recognition ≠ unrestricted mutation
 Engineering Decision ≠ Execution Determination
-Execution Result ≠ Execution Determination
-Verification Result ≠ automatic authoritative recognition
+Execution Result ≠ Verification
+Verification Result ≠ automatic State Mutation
 Engineering completion ≠ Process Instance termination
 Process Instance termination ≠ Runtime termination
 ```
 
 ## Authority map
+
+The layers below describe distinct semantic responsibilities rather than a simple command hierarchy:
 
 ```text
 EPM
@@ -60,7 +64,7 @@ Runtime
   concrete execution and operational control
         ↓
 Process Instance / Execution Context
-  persistent operational state
+  persistent operational identity and authoritative operational state
         ↓
 Participants
   human and AI contributions
@@ -122,6 +126,8 @@ Runtime recognition
         ↓
 EPM / PEM conditions
         ↓
+Execution Determination where required
+        ↓
 Permitted mutation
         ↓
 Execution Context / Trace
@@ -129,19 +135,24 @@ Execution Context / Trace
 
 ## Core invariants
 
-1. Process Instance is the persistent unit of engineering execution.
-2. Execution Context is authoritative operational state.
-3. EPM and PEM remain distinct.
-4. Runtime implements PEM and does not redefine engineering validity.
-5. Agent is a Participant, not the Runtime.
-6. Capability does not by itself establish authority.
-7. Agent output is not automatically authoritative.
-8. Decision Gates may not be bypassed or fabricated.
-9. Historical state must remain reconstructable.
-10. Material uncertainty and failure must remain explicit.
-11. Execution must support continuity across interruptions and replacements.
-12. Engineering completion, Process Instance termination, and Runtime termination remain distinct.
-13. Implementation technology does not become normative merely because one Runtime uses it.
+1. Process Instance is the persistent identity of engineering execution.
+2. Execution Context is authoritative current operational state.
+3. Each Process Instance has an explicit, recoverable applicable EPM binding.
+4. EPM and PEM remain distinct.
+5. Runtime implements PEM and does not redefine engineering validity.
+6. Agent is a Participant, not the Runtime.
+7. Capability does not by itself establish authority.
+8. Agent output is not automatically authoritative.
+9. Decision Gates may not be bypassed, fabricated, or silently invalidated.
+10. State transitions require applicable EPM validity and PEM execution conditions.
+11. Recognition, verification, and mutation remain distinct semantic steps.
+12. Authoritative mutation must remain semantically consistent and recoverable.
+13. Concurrent or stale contributions must not silently overwrite newer authoritative state.
+14. Historical state must remain reconstructable.
+15. Material uncertainty, failure, and conflict must remain explicit.
+16. Execution must support continuity across interruptions and replacements when applicable.
+17. Engineering completion, Process Instance termination, and Runtime termination remain distinct.
+18. Implementation technology does not become normative merely because one Runtime uses it.
 
 ## Where to look
 
