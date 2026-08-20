@@ -40,7 +40,9 @@ The documentation is organized around **what a reader needs to understand**, rat
 
 ### Runtime implementer
 
-`System Model → Execution Model → Process Instance and Execution Context → Runtime and Conformance → Runtime Implementer Guide`
+`System Model → Engineering Model → Execution Model → Process Instance and Execution Context → Runtime and Conformance → Runtime Implementer Guide`
+
+The Runtime implementer path intentionally includes the Engineering Model because EPM defines the engineering validity that the Runtime must preserve; a Runtime cannot implement PEM correctly by reading execution semantics in isolation.
 
 ### Need a precise definition
 
@@ -69,7 +71,7 @@ Execution Environment
         ↓ interaction and tooling surface
 ```
 
-The distinction between these layers is fundamental. In particular:
+The layers above represent distinct semantic responsibilities, not a simple command hierarchy. In particular:
 
 - EPM is not PEM.
 - PEM is not a Runtime implementation.
@@ -77,6 +79,9 @@ The distinction between these layers is fundamental. In particular:
 - An Agent is not authoritative merely because it can act.
 - Conversation history is not authoritative Process Instance state.
 - Execution Environment is not the Runtime.
+- Process Instance is not the same semantic concept as Execution Context.
+- A Process Instance has an explicit, recoverable binding to its applicable EPM.
+- Runtime technical capability does not establish engineering validity.
 
 ## Documentation principles
 
@@ -89,3 +94,5 @@ The final documentation follows these rules:
 5. The documentation describes an iterative engineering system, not a waterfall checklist.
 6. Persistent Process Instance state is treated as the continuity boundary.
 7. AI Agents and Runtime implementers receive dedicated reader-oriented guidance without creating alternative semantics.
+8. Semantic requirements are specified independently of implementation mechanisms.
+9. Conformance requires preservation of authority, recognition, mutation, transition, gate, continuity, concurrency, and lifecycle semantics.
