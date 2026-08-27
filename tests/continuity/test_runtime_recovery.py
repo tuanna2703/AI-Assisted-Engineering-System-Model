@@ -2,12 +2,31 @@ from pathlib import Path
 
 import pytest
 
-from runtime.core import ProcessStore, Runtime
+from runtime.core import ProcessInstance, ProcessStore, Runtime
 from runtime.persistence.json_store import PersistenceError
 
 
 DECISION_RECOGNITION = {"recognized": True, "basis": "applicable decision gate satisfied"}
 COMPLETION_RECOGNITION = {"recognized": True, "basis": "applicable engineering completion conditions satisfied"}
+
+
+def test_process_instance_creation():
+    instance = ProcessInstance.create(
+        "Implement feature X",
+        epm={"id": "example-epm"},
+        pem={"id": "example-pem"},
+    )
+
+    assert instance.process_instance_id
+    assert instance.engineering_objective == "Implement feature X"
+    assert instance.lifecycle == "active"
+    assert instance.execution_context_ref == (
+        f"process-instance/{instance.process_instance_id}/context.json"
+    )
+    assert instance.epm == {"id": "example-epm"}
+    assert instance.pem == {"id": "example-pem"}
+    assert instance.created_at
+    assert instance.updated_at
 
 
 def test_process_and_context_survive_runtime_replacement(tmp_path: Path):
