@@ -22,6 +22,7 @@ The baseline commit is the exact repository state against which the initial impl
 The repository currently contains these top-level implementation surfaces:
 
 - `docs/` — unified AESM documentation set.
+- `implementation/` — execution-generated implementation decisions, findings, and evidence.
 - `runtime/` — existing first Runtime implementation experiment.
 - `tests/` — existing automated continuity/recovery tests.
 - `README.md` — repository-level orientation.
@@ -35,6 +36,8 @@ No `schemas/`, `scripts/`, or `model/` directories are present in the baseline r
 The unified documentation set contains the current AESM knowledge surface, including the system model, engineering model, execution model, Process Instance and Execution Context, participant/Agent participation, Runtime/conformance, continuity/traceability/reconsideration, operational guidance, reference material, source mapping, Agent guidance, and Runtime implementer guidance.
 
 The documentation source map explicitly states that the unified set is the current destination of the former conceptual sources and that implementation-specific details remain non-normative unless required by AESM semantics.
+
+`docs/` is reserved for descriptive AESM knowledge. Execution-generated implementation decisions, findings, and evidence are kept outside `docs/` so they cannot be mistaken for part of the descriptive AESM model.
 
 ## Existing Implementation Inventory
 
@@ -67,6 +70,12 @@ The current test suite verifies Runtime replacement/recovery, explicit decision 
 
 The unified documentation set is retained as the conceptual authority. Implementation work must not silently redefine it.
 
+### `implementation/`
+
+**Classification: CREATE / KEEP**
+
+This is the execution-generated implementation record surface. It contains implementation decisions, findings, and evidence that arise while carrying out the controlled implementation plan. These materials support implementation and traceability but are not part of the descriptive AESM documentation set unless a separately approved change promotes a finding into the AESM model.
+
 ### `README.md`
 
 **Classification: KEEP**
@@ -87,6 +96,7 @@ For the prototype, the minimum repository boundary is:
 IMPLEMENTATION_PLAN.md
 IMPLEMENTATION_BASELINE.md
 docs/
+implementation/
 runtime/
 tests/
 README.md
@@ -115,7 +125,8 @@ These are implementation assumptions only. They must not be promoted into AESM s
 2. The existing Runtime already covers part of the Process Instance, Execution Context, persistence, recognition, and recovery concerns described by the implementation plan.
 3. Agent guidance and environment mechanism integration are not yet implemented in the repository.
 4. The existing implementation therefore needs to be evaluated and adapted rather than discarded and rebuilt from zero.
-5. The next implementation work should proceed from the existing Runtime/persistence foundation, but only after validating the exact behavior required for the first Process Instance persistence and Execution Context tasks.
+5. The implementation record should remain outside `docs/` so execution-generated decisions and findings are not confused with descriptive AESM knowledge.
+6. The next implementation work should proceed from the existing Runtime/persistence foundation, but only after validating the exact behavior required for the first Process Instance persistence and Execution Context tasks.
 
 ## Exit Assessment
 
@@ -125,6 +136,7 @@ The implementation team can now distinguish:
 
 - conceptual authority: `docs/`;
 - controlled implementation plan: `IMPLEMENTATION_PLAN.md`;
+- execution-generated implementation record: `implementation/`;
 - experimental implementation: `runtime/`;
 - implementation evidence: `tests/`;
 - baseline assumptions: this document.
