@@ -105,23 +105,23 @@ Complete / terminate Process Instance
 
 ### Repository and Implementation Inventory
 
-- [ ] Inventory the current repository against the implementation objective.
-- [ ] Classify existing implementation-related components as `KEEP`, `ADAPT`, `REPLACE`, `DELETE`, or `CREATE`.
-- [ ] Identify whether existing `runtime`, `tests`, `schemas`, `scripts`, `model`, or related components can be reused without importing obsolete semantics.
-- [ ] Identify the smallest repository structure required for the prototype.
-- [ ] Remove or isolate components that would introduce obsolete architectural assumptions.
-- [ ] Record the resulting implementation boundary in the repository.
+- [x] Inventory the current repository against the implementation objective.
+- [x] Classify existing implementation-related components as `KEEP`, `ADAPT`, `REPLACE`, `DELETE`, or `CREATE`.
+- [x] Identify whether existing `runtime`, `tests`, `schemas`, `scripts`, `model`, or related components can be reused without importing obsolete semantics.
+- [x] Identify the smallest repository structure required for the prototype.
+- [x] Remove or isolate components that would introduce obsolete architectural assumptions.
+- [x] Record the resulting implementation boundary in the repository.
 
 **Exit condition:** Every retained implementation component has a current purpose tied to the executable AESM objective.
 
 ### Process Instance Persistence
 
-- [ ] Define the minimal implementation representation of a Process Instance from existing AESM semantics.
-- [ ] Implement Process Instance creation.
-- [ ] Implement stable Process Instance identification.
-- [ ] Implement Process Instance loading.
-- [ ] Implement persistent storage.
-- [ ] Verify that Process Instance identity survives Agent/session termination.
+- [x] Define the minimal implementation representation of a Process Instance from existing AESM semantics.
+- [x] Implement Process Instance creation.
+- [x] Implement stable Process Instance identification.
+- [x] Implement Process Instance loading.
+- [x] Implement persistent storage.
+- [x] Verify that Process Instance identity survives Agent/session termination.
 
 **Exit condition:** A Process Instance can be created, persisted, closed, and loaded again without relying on conversation history.
 
@@ -305,10 +305,15 @@ After each completed task, the next task is the first unchecked task whose prere
 
 ## Current Status
 
-**Plan status:** Established; implementation not yet started.
+**Plan status:** Implementation in progress.
 
-**Current next step:** Complete the repository and implementation inventory against this plan before writing new Runtime/Agent implementation code.
+**Current next step:** Define the minimal authoritative Execution Context representation from existing AESM semantics.
 
 ## Evidence and Change Record
+
+- **Process Instance persistence implementation:** The existing Runtime already provided `ProcessInstance.create()`, UUID-based identity, `ProcessStore.create()`, `ProcessStore.load_instance()`, and JSON persistence. No change to `runtime/core/models.py` was necessary for this task.
+- **Creation test:** Added `test_process_instance_creation` to `tests/continuity/test_runtime_recovery.py`, covering generated identity, objective, active lifecycle, Execution Context reference, EPM/PEM references, and timestamps.
+- **Persistence/recovery evidence:** Existing `test_process_and_context_survive_runtime_replacement` verifies that a Process Instance created by one Runtime can be loaded by another Runtime after the first Runtime stops, including recovery of the same Process Instance identity.
+- **Implementation commit:** `3dacf70292a5aeee8edbca645a26000d3691d5d3`.
 
 Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan should remain the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
