@@ -139,9 +139,9 @@ Complete / terminate Process Instance
 
 ### Minimal Runtime Core
 
-- [ ] Define the smallest Runtime interface required by the first vertical slice.
-- [ ] Implement Process Instance creation/loading operations.
-- [ ] Implement Context loading/saving operations.
+- [x] Define the smallest Runtime interface required by the first vertical slice.
+- [x] Implement Process Instance creation/loading operations.
+- [x] Implement Context loading/saving operations.
 - [ ] Implement required process-state/lifecycle operations.
 - [ ] Implement evidence recording.
 - [ ] Implement decision recording.
@@ -307,7 +307,7 @@ After each completed task, the next task is the first unchecked task whose prere
 
 **Plan status:** Implementation in progress.
 
-**Current next step:** Define the smallest Runtime interface required for the first vertical slice.
+**Current next step:** Implement the required process-state/lifecycle operations for the first vertical slice.
 
 ## Evidence and Change Record
 
@@ -318,5 +318,8 @@ After each completed task, the next task is the first unchecked task whose prere
 - **Execution Context verification:** `verification_report.md` confirms the current `ExecutionContext` implementation is substantially aligned with `EXECUTION-CONTEXT-REPRESENTATION.md` and that all seven specified verification requirements pass. The report records 8/8 continuity tests passing and no structural changes required.
 - **Execution Context verification scope:** The verification demonstrated Context creation, minimum authoritative information, semantic round-trip preservation, Process Instance association, recovery by a replacement Runtime/Agent context, explicit continuation information through `pending_execution`, and independence from transient Runtime/Agent/session information.
 - **Execution Context implementation decision:** No changes were made to `runtime/core/models.py`, `runtime/core/runtime.py`, `runtime/core/store.py`, or the continuity tests as a result of the verification.
+- **Minimal Runtime interface definition:** `execution/IMPLEMENTATION-MINIMAL-RUNTIME-INTERFACE.md` records the smallest Runtime capability boundary justified by the first vertical slice, the Runtime/Agent authority boundary, current implementation coverage, and confirmed gaps.
+- **Runtime interface verification:** Review of `runtime/core/runtime.py`, `runtime/core/models.py`, `runtime/core/store.py`, `runtime/core/__init__.py`, and `tests/continuity/test_runtime_recovery.py` confirms that Process Instance creation/loading and Context loading/persistence are already implemented and exercised by existing tests. No duplicate implementation was introduced.
+- **Runtime interface verification finding:** The next implementation boundary is required process-state/lifecycle behavior. Artifact association and terminal Process Instance handling remain identified gaps; their concrete API and semantics should be derived from the first vertical slice rather than generalized prematurely.
 
 Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan should remain the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
