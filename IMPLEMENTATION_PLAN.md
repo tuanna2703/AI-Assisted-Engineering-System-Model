@@ -307,7 +307,7 @@ After each completed task, the next task is the first unchecked task whose prere
 
 **Plan status:** Implementation in progress.
 
-**Current next step:** Implement the required process-state/lifecycle operations for the first vertical slice.
+**Current next step:** Select and define the first real vertical slice's applicable process-state/lifecycle semantics before implementing new lifecycle transitions.
 
 ## Evidence and Change Record
 
@@ -321,5 +321,7 @@ After each completed task, the next task is the first unchecked task whose prere
 - **Minimal Runtime interface definition:** `execution/IMPLEMENTATION-MINIMAL-RUNTIME-INTERFACE.md` records the smallest Runtime capability boundary justified by the first vertical slice, the Runtime/Agent authority boundary, current implementation coverage, and confirmed gaps.
 - **Runtime interface verification:** Review of `runtime/core/runtime.py`, `runtime/core/models.py`, `runtime/core/store.py`, `runtime/core/__init__.py`, and `tests/continuity/test_runtime_recovery.py` confirms that Process Instance creation/loading and Context loading/persistence are already implemented and exercised by existing tests. No duplicate implementation was introduced.
 - **Runtime interface verification finding:** The next implementation boundary is required process-state/lifecycle behavior. Artifact association and terminal Process Instance handling remain identified gaps; their concrete API and semantics should be derived from the first vertical slice rather than generalized prematurely.
+- **Process lifecycle investigation:** `execution/IMPLEMENTATION-PROCESS-LIFECYCLE-INVESTIGATION.md` records that Process State and transition validity are governed by the applicable EPM, while PEM governs Runtime execution of those transitions. The current `initial`, `implementation`, and `engineering_complete` values are implementation representations, not established universal AESM state identifiers. Engineering completion recognition is justified when explicitly recognized under governing semantics, but the `engineering_complete` state assignment must not be generalized without first-vertical-slice EPM evidence. Process Instance termination remains distinct from engineering completion and Runtime termination; no terminal lifecycle value should be invented before the vertical slice establishes its semantics.
+- **Lifecycle investigation commit:** `f862480caf776d0c0eddc1ba3026b38bccb716b6`.
 
 Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan should remain the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
