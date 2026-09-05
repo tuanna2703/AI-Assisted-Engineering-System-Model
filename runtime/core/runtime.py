@@ -1,4 +1,4 @@
-"""Minimal Runtime control surface for continuity and conformance experiments."""
+"""Minimal Runtime control surface for continuity and lifecycle experiments."""
 from __future__ import annotations
 
 from typing import Any
@@ -9,6 +9,11 @@ from runtime.core.store import ProcessStore
 
 class Runtime:
     """Small, inspectable Runtime implementation; not a normative semantic layer."""
+
+    INVESTIGATION = "investigation"
+    IMPLEMENTATION = "implementation"
+    VERIFICATION = "verification"
+    ENGINEERING_COMPLETE = "engineering_complete"
 
     def __init__(self, store: ProcessStore, runtime_id: str) -> None:
         self.store = store
@@ -29,6 +34,12 @@ class Runtime:
         context = self.store.load_context(process_instance_id)
         self.process_instance, self.context, self.attached = instance, context, True
 
+    def start_investigation(self) -> None:
+        """Enter investigation from a newly created Process Instance."""
+        self._require_attached()
+        self._require_state("initial")
+        self._set_state(self.INVESTIGATION, "investigation_started")
+
     def observe(self, observation: dict[str, Any]) -> None:
         self._require_attached()
         self.context.evidence.append(observation)
@@ -38,34 +49,88 @@ class Runtime:
         """Record a recognized decision without defining its engineering validity."""
         self._require_attached()
         self._require_recognition(recognition, "decision")
+        if self.context.process_state not in {self.INVESTIGATION, "initial"}:
+            raise RuntimeError("engineering decisions can only be recognized during investigation")
         self.context.engineering_decisions.append(decision)
         self.store.save_context(self.context, {"type": "engineering_decision_recognized", "decision": decision, "recognition": recognition, "runtime_id": self.runtime_id})
 
+    def begin_implementation(self) -> None:
+        """Move investigation to implementation after a recognized decision exists."""
+        self._require_attached()
+        self._require_state(self.INVESTIGATION)
+        if not self.context.engineering_decisions:
+            raise RuntimeError("implementation requires a recognized engineering decision")
+        self.context.pending_execution = []
+        self._set_state(self.IMPLEMENTATION, "implementation_started")
+
     def set_pending_execution(self, work: dict[str, Any]) -> None:
         self._require_attached()
+        self._require_state(self.IMPLEMENTATION)
         self.context.pending_execution.append(work)
-        self.context.process_state = "implementation"
         self.store.save_context(self.context, {"type": "pending_execution_recorded", "work": work, "runtime_id": self.runtime_id})
+
+    def record_artifact(self, artifact: dict[str, Any]) -> None:
+        self._require_attached()
+        self._require_state(self.IMPLEMENTATION)
+        self.context.artifacts.append(artifact)
+        self.store.save_context(self.context, {"type": "artifact_recorded", "artifact": artifact, "runtime_id": self.runtime_id})
+
+    def begin_verification(self) -> None:
+        """Move implementation to verification when recorded work is complete."""
+        self._require_attached()
+        self._require_state(self.IMPLEMENTATION)
+        if not self.context.artifacts:
+            raise RuntimeError("verification requires at least one recorded implementation artifact")
+        if self.context.pending_execution:
+            raise RuntimeError("verification requires no pending execution work")
+        self.context.verification = {}
+        self._set_state(self.VERIFICATION, "verification_started")
 
     def record_verification(self, result: dict[str, Any]) -> None:
         self._require_attached()
+        self._require_state(self.VERIFICATION)
         self.context.verification = result
-        if result.get("passed") is True:
-            self.context.pending_execution = []
         self.store.save_context(self.context, {"type": "verification_recorded", "result": result, "runtime_id": self.runtime_id})
 
+    def reconsider(self, reason: dict[str, Any]) -> None:
+        """Preserve failed/uncertain verification and return to investigation."""
+        self._require_attached()
+        self._require_state(self.VERIFICATION)
+        if self.context.verification.get("passed") is True:
+            raise RuntimeError("successful verification does not require reconsideration")
+        if not isinstance(reason, dict) or not reason.get("description"):
+            raise ValueError("reconsideration requires a descriptive reason")
+        self.context.failure_uncertainty.append(reason)
+        self.context.unresolved_matters.append(reason["description"])
+        self._set_state(self.INVESTIGATION, "reconsideration_requested", {"reason": reason})
+
     def recognize_engineering_completion(self, completion: dict[str, Any]) -> None:
-        """Record completion recognized under applicable EPM/PEM conditions."""
+        """Record completion only after successful verification and recognition."""
         self._require_attached()
         self._require_recognition(completion, "completion")
+        self._require_state(self.VERIFICATION)
+        if self.context.verification.get("passed") is not True:
+            raise RuntimeError("engineering completion requires successful verification")
         self.context.engineering_completion = True
-        self.context.process_state = "engineering_complete"
-        self.store.save_context(self.context, {"type": "engineering_completion_recognized", "completion": completion, "runtime_id": self.runtime_id})
+        self._set_state(self.ENGINEERING_COMPLETE, "engineering_completion_recognized", {"completion": completion})
 
     def stop(self) -> None:
         self.attached = False
         self.process_instance = None
         self.context = None
+
+    def _set_state(self, state: str, event_type: str, extra: dict[str, Any] | None = None) -> None:
+        self.context.process_state = state
+        event = {"type": event_type, "runtime_id": self.runtime_id}
+        if extra:
+            event.update(extra)
+        self.store.save_context(self.context, event)
+
+    def _require_state(self, expected: str) -> None:
+        if self.context.process_state != expected:
+            raise RuntimeError(
+                f"invalid lifecycle transition from {self.context.process_state!r}; expected {expected!r}"
+            )
 
     @staticmethod
     def _require_recognition(recognition: dict[str, Any], kind: str) -> None:
