@@ -174,6 +174,19 @@ Complete / terminate Process Instance
 
 **Exit condition:** A concrete first vertical slice has an explicit objective, applicable EPM binding, derived state/transition semantics, completion/termination semantics, and a justified minimum Runtime lifecycle boundary.
 
+### Agent–Runtime Boundary Investigation
+
+- [x] Review the first real Agent execution as the control condition for AESM participation.
+- [x] Confirm whether a Process Instance and authoritative Execution Context participated in the observed execution.
+- [x] Identify the minimum information that must cross the Agent–Runtime boundary in both directions.
+- [x] Establish the responsibility boundary between Agent, Runtime, and Execution Environment.
+- [x] Determine whether a particular transport such as MCP or CLI is semantically required.
+- [x] Identify the minimum Agent-facing interaction surface without generalizing the Runtime API.
+- [x] Record the distinction between Agent guidance and Runtime-controlled authoritative mutation.
+- [x] Record the resulting implementation boundary and deferred questions.
+
+**Exit condition:** The minimum operational Agent–Runtime interaction required for an AESM-participating Agent execution is documented without introducing a normative transport or changing AESM semantics.
+
 ### Minimal Runtime Core
 
 - [x] Define the smallest Runtime interface required by the first vertical slice.
@@ -348,7 +361,11 @@ During execution, if a task proves too broad to execute or verify as a single un
 
 **Plan status:** Implementation in progress.
 
+**Completed immediately before the current step:** Process Instance persistence, Execution Context implementation/verification, Minimal Runtime interface definition, Process lifecycle investigation, and Agent–Runtime boundary investigation.
+
 **Current next step:** Select the concrete first vertical-slice engineering request, then derive its applicable EPM state, transition, completion, and termination semantics before implementing new lifecycle behavior.
+
+**Important implementation boundary established:** The Agent–Runtime investigation does not justify a normative transport choice or a generalized orchestration layer. The next integration work must remain downstream of the first vertical slice's derived semantics.
 
 ## Evidence and Change Record
 
@@ -361,9 +378,13 @@ During execution, if a task proves too broad to execute or verify as a single un
 - **Execution Context implementation decision:** No changes were made to `runtime/core/models.py`, `runtime/core/runtime.py`, `runtime/core/store.py`, or the continuity tests as a result of the verification.
 - **Minimal Runtime interface definition:** `execution/IMPLEMENTATION-MINIMAL-RUNTIME-INTERFACE.md` records the smallest Runtime capability boundary justified by the first vertical slice, the Runtime/Agent authority boundary, current implementation coverage, and confirmed gaps.
 - **Runtime interface verification:** Review of `runtime/core/runtime.py`, `runtime/core/models.py`, `runtime/core/store.py`, `runtime/core/__init__.py`, and `tests/continuity/test_runtime_recovery.py` confirms that Process Instance creation/loading and Context loading/persistence are already implemented and exercised by existing tests. No duplicate implementation was introduced.
-- **Runtime interface verification finding:** The next implementation boundary is required process-state/lifecycle behavior. Artifact association and terminal Process Instance handling remain identified gaps; their concrete API and semantics should be derived from the first vertical slice rather than generalized prematurely.
+- **Runtime interface verification finding:** The next implementation boundary is required process-state/lifecycle behavior. Artifact association and terminal Process Instance handling remain identified gaps; their concrete API and semantics should be derived from the first real vertical slice rather than generalized prematurely.
 - **Process lifecycle investigation:** `execution/IMPLEMENTATION-PROCESS-LIFECYCLE-INVESTIGATION.md` records that Process State and transition validity are governed by the applicable EPM, while PEM governs Runtime execution of those transitions. The current `initial`, `implementation`, and `engineering_complete` values are implementation representations, not established universal AESM state identifiers. Engineering completion recognition is justified when explicitly recognized under governing semantics, but the `engineering_complete` state assignment must not be generalized without first-vertical-slice EPM evidence. Process Instance termination remains distinct from engineering completion and Runtime termination; no terminal lifecycle value should be invented before the vertical slice establishes its semantics.
 - **Lifecycle investigation commit:** `f862480caf776d0c0eddc1ba3026b38bccb716b6`.
-- **First vertical slice task decomposition:** The First Real Vertical Slice work was expanded into a dedicated definition task with nested subtasks covering request selection, objective/scope, applicable EPM binding, state semantics, transition semantics, completion/termination semantics, and derivation of the minimal Runtime lifecycle boundary. The plan also now explicitly requires future task decomposition/addition to be recorded directly in this checklist.
+- **First vertical slice task decomposition:** The First Real Vertical Slice work was expanded into a dedicated definition task with nested subtasks covering request selection, objective/scope, applicable EPM binding, state semantics, transition semantics, completion/termination semantics, and derivation of the minimal Runtime lifecycle boundary. The plan also explicitly requires future task decomposition/addition to be recorded directly in this checklist.
+- **First Agent execution observation:** The observed Directories Builder Pro execution successfully demonstrated disciplined engineering behavior but did not create or invoke an AESM Process Instance, authoritative Execution Context, or AESM Runtime. The execution therefore serves as the control condition for AESM participation.
+- **Agent–Runtime boundary investigation:** `execution/IMPLEMENTATION-AGENT-RUNTIME-BOUNDARY-INVESTIGATION.md` records that the minimum operational boundary is bidirectional: the Agent consumes authoritative Context and submits contributions/results; the Runtime recognizes them, applies permitted mutations, persists authoritative state, and returns the updated executable situation. The investigation found that an invocation path is required but did not justify MCP, CLI, or another transport as normative.
+- **Agent–Runtime investigation finding:** A small Agent-facing adapter is preferable to exposing the entire Runtime API. The adapter should remain an implementation mechanism and must not silently become an AESM semantic requirement.
+- **Agent–Runtime investigation conclusion:** No normative AESM change is justified by the first execution observation. The next integration task remains downstream of first-vertical-slice EPM state/transition/completion/termination derivation.
 
-Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan should remain the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
+Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan remains the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
