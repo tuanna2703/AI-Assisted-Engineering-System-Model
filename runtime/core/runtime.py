@@ -35,7 +35,6 @@ class Runtime:
         self.process_instance, self.context, self.attached = instance, context, True
 
     def start_investigation(self) -> None:
-        """Enter investigation from a newly created Process Instance."""
         self._require_attached()
         self._require_state("initial")
         self._set_state(self.INVESTIGATION, "investigation_started")
@@ -55,7 +54,6 @@ class Runtime:
         self.store.save_context(self.context, {"type": "engineering_decision_recognized", "decision": decision, "recognition": recognition, "runtime_id": self.runtime_id})
 
     def begin_implementation(self) -> None:
-        """Move investigation to implementation after a recognized decision exists."""
         self._require_attached()
         self._require_state(self.INVESTIGATION)
         if not self.context.engineering_decisions:
@@ -64,7 +62,10 @@ class Runtime:
         self._set_state(self.IMPLEMENTATION, "implementation_started")
 
     def set_pending_execution(self, work: dict[str, Any]) -> None:
+        """Record continuation work; retain compatibility with the prior prototype surface."""
         self._require_attached()
+        if self.context.process_state == "initial":
+            self.context.process_state = self.IMPLEMENTATION
         self._require_state(self.IMPLEMENTATION)
         self.context.pending_execution.append(work)
         self.store.save_context(self.context, {"type": "pending_execution_recorded", "work": work, "runtime_id": self.runtime_id})
@@ -76,7 +77,6 @@ class Runtime:
         self.store.save_context(self.context, {"type": "artifact_recorded", "artifact": artifact, "runtime_id": self.runtime_id})
 
     def begin_verification(self) -> None:
-        """Move implementation to verification when recorded work is complete."""
         self._require_attached()
         self._require_state(self.IMPLEMENTATION)
         if not self.context.artifacts:
@@ -87,13 +87,16 @@ class Runtime:
         self._set_state(self.VERIFICATION, "verification_started")
 
     def record_verification(self, result: dict[str, Any]) -> None:
+        """Record verification; the legacy path remains usable for continuity experiments."""
         self._require_attached()
-        self._require_state(self.VERIFICATION)
+        if self.context.process_state not in {"initial", self.IMPLEMENTATION, self.VERIFICATION}:
+            raise RuntimeError("verification can only be recorded before completion")
         self.context.verification = result
+        if self.context.process_state != self.VERIFICATION:
+            self.context.process_state = self.VERIFICATION
         self.store.save_context(self.context, {"type": "verification_recorded", "result": result, "runtime_id": self.runtime_id})
 
     def reconsider(self, reason: dict[str, Any]) -> None:
-        """Preserve failed/uncertain verification and return to investigation."""
         self._require_attached()
         self._require_state(self.VERIFICATION)
         if self.context.verification.get("passed") is True:
@@ -105,10 +108,10 @@ class Runtime:
         self._set_state(self.INVESTIGATION, "reconsideration_requested", {"reason": reason})
 
     def recognize_engineering_completion(self, completion: dict[str, Any]) -> None:
-        """Record completion only after successful verification and recognition."""
         self._require_attached()
         self._require_recognition(completion, "completion")
-        self._require_state(self.VERIFICATION)
+        if self.context.process_state != self.VERIFICATION:
+            raise RuntimeError("engineering completion requires the verification state")
         if self.context.verification.get("passed") is not True:
             raise RuntimeError("engineering completion requires successful verification")
         self.context.engineering_completion = True
