@@ -139,38 +139,38 @@ Complete / terminate Process Instance
 
 ### First Vertical Slice Definition
 
-- [ ] Select one small but genuine engineering request in an existing repository.
-  - [ ] Confirm the request is concrete enough to execute and verify end-to-end.
-  - [ ] Confirm the request is sufficiently bounded to remain a practical first vertical slice.
-  - [ ] Record the selected repository, component, and request boundary.
-- [ ] Define the engineering objective and scope of the selected request.
-  - [ ] Record the intended engineering outcome explicitly.
-  - [ ] Identify relevant requirements.
-  - [ ] Identify relevant constraints.
-  - [ ] Identify explicit exclusions from the slice.
-- [ ] Identify and bind the applicable EPM semantics.
-  - [ ] Identify the applicable EPM definition and version/revision where applicable.
-  - [ ] Identify only the EPM concepts actually required by the selected request.
-  - [ ] Preserve the EPM binding as explicit and recoverable process information.
-- [ ] Derive the actual Process States required by the selected request.
-  - [ ] Define the engineering purpose of each required state.
-  - [ ] Define permitted activities and expected outputs for each state.
-  - [ ] Define completion conditions for each state.
-  - [ ] Do not promote existing Runtime state strings into EPM semantics without evidence.
-- [ ] Derive the valid Process State transitions.
-  - [ ] Define the source state, transition condition, and destination state for each required transition.
-  - [ ] Identify required evidence, decisions, verification, gates, or other conditions governing each transition.
-  - [ ] Identify any feedback or reconsideration paths actually required by the slice.
-  - [ ] Distinguish EPM transition validity from Runtime state mutation.
-- [ ] Derive engineering completion semantics for the selected request.
-  - [ ] Define the conditions under which engineering completion is valid.
-  - [ ] Distinguish engineering completion from Runtime termination and Agent/session termination.
-  - [ ] Determine whether explicit Process Instance termination is required and, if so, derive its conditions rather than inventing a terminal state.
-- [ ] Derive the minimal Runtime lifecycle responsibilities from the established EPM semantics.
-  - [ ] Identify which transitions Runtime must execute, record, validate, or reject.
-  - [ ] Identify which conditions remain engineering judgments rather than Runtime responsibilities.
-  - [ ] Compare the derived semantics with existing `initial`, `implementation`, and `engineering_complete` representations.
-  - [ ] Record implementation gaps without generalizing lifecycle infrastructure prematurely.
+- [x] Select one small but genuine engineering request in an existing repository.
+  - [x] Confirm the request is concrete enough to execute and verify end-to-end.
+  - [x] Confirm the request is sufficiently bounded to remain a practical first vertical slice.
+  - [x] Record the selected repository, component, and request boundary.
+- [x] Define the engineering objective and scope of the selected request.
+  - [x] Record the intended engineering outcome explicitly.
+  - [x] Identify relevant requirements.
+  - [x] Identify relevant constraints.
+  - [x] Identify explicit exclusions from the slice.
+- [x] Identify and bind the applicable EPM semantics.
+  - [x] Identify the applicable EPM definition and version/revision where applicable.
+  - [x] Identify only the EPM concepts actually required by the selected request.
+  - [x] Preserve the EPM binding as explicit and recoverable process information.
+- [x] Derive the actual Process States required by the selected request.
+  - [x] Define the engineering purpose of each required state.
+  - [x] Define permitted activities and expected outputs for each state.
+  - [x] Define completion conditions for each state.
+  - [x] Do not promote existing Runtime state strings into EPM semantics without evidence.
+- [x] Derive the valid Process State transitions.
+  - [x] Define the source state, transition condition, and destination state for each required transition.
+  - [x] Identify required evidence, decisions, verification, gates, or other conditions governing each transition.
+  - [x] Identify feedback or reconsideration paths actually required by the slice.
+  - [x] Distinguish EPM transition validity from Runtime state mutation.
+- [x] Derive engineering completion semantics for the selected request.
+  - [x] Define the conditions under which engineering completion is valid.
+  - [x] Distinguish engineering completion from Runtime termination and Agent/session termination.
+  - [x] Determine whether explicit Process Instance termination is required; no new termination semantics are justified by this slice.
+- [x] Derive the minimal Runtime lifecycle responsibilities from the established EPM semantics.
+  - [x] Identify which transitions Runtime must execute, record, validate, or reject.
+  - [x] Identify which conditions remain engineering judgments rather than Runtime responsibilities.
+  - [x] Compare the derived semantics with existing `initial`, `implementation`, and `engineering_complete` representations.
+  - [x] Record implementation gaps without generalizing lifecycle infrastructure prematurely.
 
 **Exit condition:** A concrete first vertical slice has an explicit objective, applicable EPM binding, derived state/transition semantics, completion/termination semantics, and a justified minimum Runtime lifecycle boundary.
 
@@ -361,11 +361,15 @@ During execution, if a task proves too broad to execute or verify as a single un
 
 **Plan status:** Implementation in progress.
 
-**Completed immediately before the current step:** Process Instance persistence, Execution Context implementation/verification, Minimal Runtime interface definition, Process lifecycle investigation, and Agent–Runtime boundary investigation.
+**Completed immediately before the current step:** Process Instance persistence, Execution Context implementation/verification, Minimal Runtime interface definition, Process lifecycle investigation, Agent–Runtime boundary investigation, and First Vertical Slice Definition.
 
-**Current next step:** Select the concrete first vertical-slice engineering request, then derive its applicable EPM state, transition, completion, and termination semantics before implementing new lifecycle behavior.
+**Current next step:** Implement and test the minimum Runtime lifecycle behavior derived from the selected `Add_Review_Form` vertical slice. This must precede Agent-facing integration.
 
-**Important implementation boundary established:** The Agent–Runtime investigation does not justify a normative transport choice or a generalized orchestration layer. The next integration work must remain downstream of the first vertical slice's derived semantics.
+**Selected first vertical slice:** `tuanna2703/directories-builder-pro` — Reviews module — `Add_Review_Form::business_id` conversion from `SELECT` to `POST_SELECT`, including WP post ID → `dbp_businesses.id` persistence translation.
+
+**Important implementation boundary established:** The Agent–Runtime investigation does not justify a normative transport choice or a generalized orchestration layer. The first vertical slice now establishes four derived engineering states — Investigation, Implementation, Verification, and Engineering Complete — plus a feedback path from failed Verification to Investigation/Implementation. These are slice-specific semantics, not universal AESM state identifiers.
+
+**Termination boundary:** The first vertical slice establishes engineering completion conditions but does not justify inventing a separate Process Instance terminal state or generalized termination semantics. Engineering completion, Process Instance termination, Runtime termination, and Agent/session termination remain distinct.
 
 ## Evidence and Change Record
 
@@ -382,9 +386,11 @@ During execution, if a task proves too broad to execute or verify as a single un
 - **Process lifecycle investigation:** `execution/IMPLEMENTATION-PROCESS-LIFECYCLE-INVESTIGATION.md` records that Process State and transition validity are governed by the applicable EPM, while PEM governs Runtime execution of those transitions. The current `initial`, `implementation`, and `engineering_complete` values are implementation representations, not established universal AESM state identifiers. Engineering completion recognition is justified when explicitly recognized under governing semantics, but the `engineering_complete` state assignment must not be generalized without first-vertical-slice EPM evidence. Process Instance termination remains distinct from engineering completion and Runtime termination; no terminal lifecycle value should be invented before the vertical slice establishes its semantics.
 - **Lifecycle investigation commit:** `f862480caf776d0c0eddc1ba3026b38bccb716b6`.
 - **First vertical slice task decomposition:** The First Real Vertical Slice work was expanded into a dedicated definition task with nested subtasks covering request selection, objective/scope, applicable EPM binding, state semantics, transition semantics, completion/termination semantics, and derivation of the minimal Runtime lifecycle boundary. The plan also explicitly requires future task decomposition/addition to be recorded directly in this checklist.
+- **First vertical slice definition:** `execution/FIRST-VERTICAL-SLICE-DEFINITION.md` binds the first slice to `tuanna2703/directories-builder-pro`, `Add_Review_Form::business_id`, and derives four slice-specific states: Investigation, Implementation, Verification, and Engineering Complete. It records the valid transitions, the prototype human-approval execution condition, the verification feedback path, completion semantics, the non-applicability of invented terminal Process Instance semantics, and the minimum Runtime lifecycle responsibilities.
+- **First vertical slice definition commit:** `f90a6250b6b8890640b893e03f6c17005103f4cc`.
 - **First Agent execution observation:** The observed Directories Builder Pro execution successfully demonstrated disciplined engineering behavior but did not create or invoke an AESM Process Instance, authoritative Execution Context, or AESM Runtime. The execution therefore serves as the control condition for AESM participation.
 - **Agent–Runtime boundary investigation:** `execution/IMPLEMENTATION-AGENT-RUNTIME-BOUNDARY-INVESTIGATION.md` records that the minimum operational boundary is bidirectional: the Agent consumes authoritative Context and submits contributions/results; the Runtime recognizes them, applies permitted mutations, persists authoritative state, and returns the updated executable situation. The investigation found that an invocation path is required but did not justify MCP, CLI, or another transport as normative.
 - **Agent–Runtime investigation finding:** A small Agent-facing adapter is preferable to exposing the entire Runtime API. The adapter should remain an implementation mechanism and must not silently become an AESM semantic requirement.
-- **Agent–Runtime investigation conclusion:** No normative AESM change is justified by the first execution observation. The next integration task remains downstream of first-vertical-slice EPM state/transition/completion/termination derivation.
+- **Agent–Runtime investigation conclusion:** No normative AESM change is justified by the first execution observation. The first vertical slice must establish lifecycle semantics before the Agent-facing adapter is implemented.
 
 Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan remains the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
