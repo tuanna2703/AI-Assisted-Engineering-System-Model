@@ -20,7 +20,7 @@ A Runtime is not:
 
 A conforming Runtime provides semantic capabilities necessary to:
 
-1. establish, attach to, or recover Process Instances;
+1. discover, establish, attach to, or recover Process Instances;
 2. establish, access, maintain, and recover Execution Context;
 3. establish and preserve the applicable EPM binding;
 4. evaluate the current executable situation according to PEM;
@@ -42,6 +42,32 @@ A conforming Runtime provides semantic capabilities necessary to:
 20. support suspension, resumption, recovery, and termination according to applicable semantics.
 
 These are semantic obligations, not a required software decomposition.
+
+## Process Instance discovery
+
+Process Instance discovery is a Runtime responsibility.
+
+The Runtime is responsible for resolving an existing Process Instance when sufficient identification or discovery information is available. The Execution Environment may provide access, storage, filesystem, network, API, or other capabilities used to perform discovery, but those capabilities do not make the Execution Environment the semantic owner of Process Instance discovery.
+
+Conceptually:
+
+```text
+Execution Environment
+    provides access/capabilities
+             ↓
+Runtime
+    discovers / resolves Process Instance
+             ↓
+Process Instance
+             ↓
+Execution Context
+```
+
+Discovery is an implementation responsibility of the Runtime and does not require a particular storage mechanism, search strategy, identifier, or API shape.
+
+AESM does not require a specific `discover()` API.
+
+A Runtime may implement discovery through files, databases, services, indexes, identifiers, registries, or other suitable mechanisms, provided that the resulting Process Instance identity and authoritative state remain consistent with AESM semantics.
 
 ## Runtime control boundary
 
@@ -147,9 +173,33 @@ A conforming Runtime must support continuation from authoritative Execution Cont
 
 Runtime-specific transient memory is not authoritative merely because it is internal to the Runtime.
 
-Where Runtime replacement is permitted, another conforming Runtime must be able to continue from the authoritative state and associated records required for continuation, including the applicable EPM binding.
+Where Runtime replacement is permitted, another conforming Runtime must be able to:
 
-If the authoritative state is insufficient to establish a valid continuation situation, the Runtime must represent the recovery deficiency rather than fabricate missing state.
+1. discover or otherwise resolve the existing Process Instance;
+2. recover its authoritative Execution Context;
+3. re-establish the applicable EPM binding;
+4. reconstruct the executable situation;
+5. continue execution according to PEM semantics.
+
+Discovery, recovery, and resumption are distinct:
+
+```text
+Discover
+   ↓
+Recover
+   ↓
+Observe
+   ↓
+Evaluate
+   ↓
+Plan
+   ↓
+Continue
+```
+
+The Runtime must not treat persisted continuation information as permission to bypass evaluation.
+
+If authoritative state is insufficient to establish a valid continuation situation, the Runtime must represent the recovery deficiency rather than fabricate missing state.
 
 ## Lifecycle separation
 
@@ -189,6 +239,8 @@ A Runtime claiming conformance must demonstrate preservation of at least:
 
 Useful evidence categories include:
 
+- Process Instance discovery and attachment;
+- Process Instance identity preservation across discovery;
 - Execution Context reconstruction;
 - EPM binding reconstruction;
 - execution-trace reconstruction;
@@ -202,7 +254,10 @@ Useful evidence categories include:
 - external action/result traceability tests;
 - failure, uncertainty, and recovery-deficiency tests;
 - continuity and Runtime replacement tests;
-- completion/termination separation tests.
+- continuation from recovered authoritative state;
+- prevention of blind replay of stale continuation information;
+- completion/termination separation tests;
+- lifecycle separation across Runtime restart and replacement.
 
 These are evidence categories rather than mandatory implementation mechanisms.
 
