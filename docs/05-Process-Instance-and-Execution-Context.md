@@ -23,6 +23,22 @@ A Process Instance must have a stable identity that remains unchanged across con
 
 The Process Instance must also retain an explicit binding to the applicable EPM definition. Where the EPM is versioned, the applicable version or revision must be recoverable. The binding is part of authoritative process state and must not be inferred solely from the current Runtime, Agent, or environment.
 
+## Process Instance lifecycle
+
+Process Instance lifecycle describes the lifecycle condition of the Process Instance itself.
+
+It is distinct from:
+
+- current Process State;
+- engineering completion;
+- Runtime process lifetime;
+- Agent or conversation lifetime;
+- Execution Environment lifetime.
+
+A Process Instance may remain active while its Process State changes as engineering execution progresses.
+
+Runtime replacement or interruption does not itself terminate the Process Instance.
+
 ## Execution Context
 
 The **Execution Context** is the authoritative operational state required to continue a Process Instance consistently at a specific point in time.
@@ -84,9 +100,16 @@ The context may include:
 ### Continuity state
 
 - interruption point
-- pending activities
+- pending execution activity
+- status of pending execution
 - next expected action
-- conditions needed for resumption
+- resumption conditions
+- unresolved conditions relevant to continuation
+- current verification state
+- material failures and uncertainties
+- traceability required to reconstruct the executable situation
+
+Continuation information is authoritative state used by resumed execution. It is not an imperative instruction to replay a previous Runtime operation.
 
 ### History and traceability
 
@@ -139,11 +162,60 @@ Restore authoritative context
 Continue
 ```
 
+## Discovery, recovery, and resumption
+
+These are distinct operations:
+
+```text
+Discovery
+    = identify an existing Process Instance
+
+Recovery
+    = reconstruct its authoritative Execution Context
+
+Resumption
+    = re-enter PEM execution using the recovered authoritative state
+```
+
+Discovery answers:
+
+> Which existing Process Instance should be attached to?
+
+Recovery answers:
+
+> What authoritative state does that Process Instance currently contain?
+
+Resumption answers:
+
+> Given the recovered authoritative state, what execution is currently permissible?
+
+A Runtime must not treat discovery as recovery, or recovery as automatic permission to resume a previously planned action.
+
+The conceptual sequence is:
+
+```text
+Discover Process Instance
+        ↓
+Recover authoritative state
+        ↓
+Observe
+        ↓
+Evaluate
+        ↓
+Plan
+        ↓
+Execute permissible continuation
+```
+
 ## Recovery
 
-A Runtime recovering an interrupted Process Instance must use authoritative state rather than inventing missing history from assumptions or conversation memory.
+A Runtime recovering an interrupted Process Instance must reconstruct the authoritative state required to interpret and continue that Process Instance.
 
-If required authoritative information is missing, the system should represent the condition explicitly rather than silently fabricate state.
+Recovery must not depend on transient Runtime memory, Agent context, or conversation history.
+
+After recovery, the Runtime must re-establish the executable situation through the applicable PEM execution cycle rather than assuming that the previously intended next operation remains valid.
+
+If recovered continuation information is incomplete, stale, contradictory, or otherwise insufficient, the Runtime must represent the deficiency explicitly and evaluate the situation according to applicable execution semantics.
 
 Recovery must also re-establish the applicable EPM binding and any other conditions required to interpret the recovered state correctly.
 

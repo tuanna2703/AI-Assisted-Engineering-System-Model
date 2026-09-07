@@ -184,22 +184,106 @@ Repeated delivery or retry of the same contribution or external result must not 
 
 ## Suspension and resumption
 
-Execution may be suspended when permitted. Suspension preserves sufficient authoritative state, pending work, unresolved conditions, traceability, and failure/uncertainty information for later resumption.
+Execution may be suspended when permitted by applicable execution semantics.
 
-Resumption starts from authoritative state and re-evaluates applicable execution conditions rather than blindly replaying stale assumptions.
+Suspension preserves sufficient authoritative state for later continuation, including as applicable:
+
+- current Process State;
+- pending execution activity;
+- unresolved conditions;
+- interruption information;
+- traceability;
+- failure and uncertainty information;
+- verification state;
+- other information required to reconstruct the executable situation.
+
+Resumption is not equivalent to replaying the last Runtime operation.
+
+Persisted continuation information is interpreted as authoritative input to resumed execution. In particular, a persisted `next_action` identifies expected continuation activity; it is not, by itself, an imperative command that must be executed without reevaluation.
+
+Resumption follows the execution semantics:
+
+```text
+Recover authoritative Process Instance state
+              ↓
+           Observe
+              ↓
+           Evaluate
+              ↓
+             Plan
+              ↓
+           Execute
+              ↓
+           Verify
+              ↓
+     Update Execution Context
+              ↓
+            Repeat
+```
+
+The Runtime must re-evaluate applicable conditions using the recovered authoritative state before continuing execution. It must not silently rely on stale Runtime memory, Agent memory, conversation history, or assumptions from the previous execution session.
+
+## Continuation state
+
+The Execution Context may preserve explicit continuation information.
+
+The following concepts have distinct roles:
+
+```text
+pending_execution
+    = unfinished execution activity that remains relevant to continuation
+
+next_action
+    = expected continuation activity associated with the pending execution
+
+resumption_conditions
+    = conditions that must be considered before continuation
+```
+
+These fields are continuity information, not an instruction to bypass PEM execution semantics.
+
+The presence of `next_action` does not establish that the action is currently permissible. The Runtime must evaluate the recovered situation and applicable EPM/PEM conditions before executing it.
+
+Similarly, the presence of `pending_execution` does not by itself establish whether verification, state transition, completion, suspension, or another execution activity is currently permissible. Those relationships remain governed by the applicable execution conditions.
 
 ## Lifecycle separation
 
-The following remain distinct:
+The following concepts remain distinct:
 
 ```text
+Process Instance lifecycle
+        ≠
+Process State
+        ≠
 Engineering completion
         ≠
-Process Instance termination
-        ≠
-Runtime termination
+Runtime lifecycle
 ```
 
-Stopping or restarting a Runtime must not silently complete or terminate the Process Instance.
+**Process Instance lifecycle** describes the lifecycle condition of the Process Instance as a continuing engineering execution entity.
 
-Process Instance lifecycle status is authoritative process state. Completion is established by applicable EPM completion conditions; termination is a distinct lifecycle condition governed by applicable execution semantics. Runtime startup, shutdown, failure, or replacement does not itself establish either condition.
+**Process State** describes the current engineering execution state governed by applicable EPM semantics and executed under PEM.
+
+**Engineering completion** is established when applicable EPM completion conditions are satisfied.
+
+**Runtime lifecycle** describes the lifetime of a concrete Runtime process.
+
+Therefore:
+
+```text
+Runtime startup
+Runtime restart
+Runtime failure
+Runtime replacement
+Runtime termination
+
+        do not themselves imply
+
+Process State transition
+Process Instance termination
+Engineering completion
+```
+
+A Process Instance may remain active while its Process State changes repeatedly during normal engineering execution.
+
+The exact lifecycle transition vocabulary and transition conditions are governed by applicable execution semantics and must remain distinguishable from ordinary Process State progression.

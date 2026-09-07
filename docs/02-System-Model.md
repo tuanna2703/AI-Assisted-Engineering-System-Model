@@ -79,6 +79,43 @@ A Process Instance represents one engineering effort for a particular objective.
 
 Multiple Agents or environments may participate in the same Process Instance.
 
+## Process Instance, operational state, and lifecycle
+
+A Process Instance identifies which engineering execution exists. Its Execution Context records the authoritative operational situation of that execution.
+
+These concepts must remain distinct:
+
+```text
+Process Instance
+    = persistent identity of one engineering execution
+
+Execution Context
+    = authoritative operational state of that execution
+
+Process State
+    = current engineering execution state
+
+Process Instance lifecycle
+    = lifecycle condition of the continuing Process Instance
+
+Engineering completion
+    = satisfaction of applicable EPM completion conditions
+
+Runtime lifecycle
+    = lifetime of a concrete Runtime process
+```
+
+In particular:
+
+```text
+Process Instance lifecycle
+    ≠ Process State
+    ≠ Engineering completion
+    ≠ Runtime lifecycle
+```
+
+A Runtime restart, replacement, or termination does not by itself establish Process Instance lifecycle termination or engineering completion.
+
 ## Execution Environment
 
 An Execution Environment is a replaceable interaction and engineering-work surface. Examples include IDEs, CLI/terminal environments, and cloud/web development environments.
