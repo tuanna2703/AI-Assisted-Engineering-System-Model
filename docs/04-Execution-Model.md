@@ -184,91 +184,82 @@ Repeated delivery or retry of the same contribution or external result must not 
 
 ## Suspension and resumption
 
-Execution may be suspended when permitted by applicable execution semantics.
+Execution may be suspended only when permitted or required by applicable execution semantics.
 
-Suspension preserves sufficient authoritative state for later continuation, including as applicable:
+Universal lifecycle semantics define suspension as the transition of the Process Instance lifecycle from `ACTIVE` to `SUSPENDED`. Suspension pauses Process Instance execution without terminating the Process Instance.
+
+Suspension must preserve sufficient authoritative state for later continuation, including as applicable:
 
 - current Process State;
-- pending execution activity;
+- pending execution activity and its status;
 - unresolved conditions;
 - interruption information;
 - traceability;
 - failure and uncertainty information;
 - verification state;
+- lifecycle state and transition basis;
 - other information required to reconstruct the executable situation.
 
-Resumption is not equivalent to replaying the last Runtime operation.
+Runtime shutdown, Agent departure, conversation closure, IDE closure, or Execution Environment replacement do not themselves constitute semantic suspension unless applicable execution semantics explicitly establish that transition.
 
-Persisted continuation information is interpreted as authoritative input to resumed execution. In particular, a persisted `next_action` identifies expected continuation activity; it is not, by itself, an imperative command that must be executed without reevaluation.
+A Participant, Agent, external system, or other actor may request or propose suspension where applicable semantics permit. The Runtime must evaluate authority and conditions before applying the lifecycle mutation. Technical ability to write lifecycle state is not authority to suspend.
 
-Resumption follows the execution semantics:
+Resumption is the lifecycle transition from `SUSPENDED` to `ACTIVE` followed by re-entry into PEM execution. Recovery alone is not resumption.
+
+Resumption follows:
 
 ```text
 Recover authoritative Process Instance state
               ↓
-           Observe
+Reevaluate current executable situation
               ↓
-           Evaluate
+Determine permissible continuation
               ↓
-             Plan
-              ↓
-           Execute
-              ↓
-           Verify
-              ↓
-     Update Execution Context
-              ↓
-            Repeat
+Resume PEM execution when permitted
 ```
 
-The Runtime must re-evaluate applicable conditions using the recovered authoritative state before continuing execution. It must not silently rely on stale Runtime memory, Agent memory, conversation history, or assumptions from the previous execution session.
+Before continuation, the Runtime must re-evaluate current authoritative state and applicable EPM/PEM conditions, including as applicable pending execution, resumption conditions, requirements and constraints, verification state, changed conditions, authority, failures, uncertainty, and Decision Gates.
 
-## Continuation state
-
-The Execution Context may preserve explicit continuation information.
-
-The following concepts have distinct roles:
-
-```text
-pending_execution
-    = unfinished execution activity that remains relevant to continuation
-
-next_action
-    = expected continuation activity associated with the pending execution
-
-resumption_conditions
-    = conditions that must be considered before continuation
-```
-
-These fields are continuity information, not an instruction to bypass PEM execution semantics.
-
-The presence of `next_action` does not establish that the action is currently permissible. The Runtime must evaluate the recovered situation and applicable EPM/PEM conditions before executing it.
-
-Similarly, the presence of `pending_execution` does not by itself establish whether verification, state transition, completion, suspension, or another execution activity is currently permissible. Those relationships remain governed by the applicable execution conditions.
+Persisted continuation information such as `next_action` is expected continuation information, not an imperative command. Reevaluation may result in continuing the pending activity, performing different permissible activity, remaining suspended, entering another applicable execution condition, or terminating when termination conditions are independently satisfied.
 
 ## Process Instance lifecycle semantics
 
-Process Instance lifecycle is a universal AESM/PEM semantic dimension. It describes the lifecycle condition of the Process Instance as the persistent engineering execution entity.
+Process Instance lifecycle is a universal AESM/PEM semantic dimension describing the lifecycle condition of the persistent Process Instance itself.
 
-It is not an EPM Process State and must remain distinct from:
+The universal lifecycle state vocabulary is:
 
-- Process State;
-- engineering completion;
-- Runtime lifecycle;
-- Agent or conversation lifetime;
-- Execution Environment lifetime.
+```text
+ACTIVE
+SUSPENDED
+TERMINATED
+```
 
-AESM/PEM defines the universal lifecycle meaning, invariants, and semantic distinctions. Applicable execution semantics determine concrete lifecycle transition conditions and scenario-specific triggers. A Runtime implements those semantics but must not invent lifecycle meaning from technical behavior alone.
+- `ACTIVE` means the Process Instance remains an ongoing engineering execution entity and may execute when applicable conditions permit.
+- `SUSPENDED` means execution is paused while the Process Instance remains extant and potentially resumable; sufficient authoritative state must be preserved for safe continuation.
+- `TERMINATED` means the Process Instance lifecycle has ended and cannot continue as the same lifecycle instance.
 
-Universal lifecycle invariants include:
+The lifecycle state is distinct from EPM Process State, engineering completion, Runtime lifetime, Agent/conversation lifetime, and Execution Environment lifetime.
 
-- Runtime startup, restart, failure, replacement, or termination does not by itself terminate a Process Instance.
-- Engineering completion does not by itself mean Process Instance termination.
-- Suspension, when applicable, is distinct from termination and preserves sufficient authoritative state for possible continuation.
-- Recovery reconstructs authoritative state; resumption re-enters PEM execution using that state.
-- Process Instance lifecycle condition must be recoverable from authoritative state rather than transient Runtime or Agent memory.
+Universal lifecycle transitions are:
 
-AESM/PEM does not require a particular API such as `suspend()`, `resume()`, or `terminate()`. Nor does this section establish a universal literal lifecycle-state enumeration. Where concrete lifecycle states or transitions are required, they must be defined by the applicable specification and execution semantics.
+```text
+ACTIVE ──suspend──→ SUSPENDED
+  ↑                    │
+  └─────resume─────────┘
+
+ACTIVE ───────────────→ TERMINATED
+SUSPENDED ────────────→ TERMINATED
+```
+
+`TERMINATED` is terminal. A terminated Process Instance cannot transition back to `ACTIVE` or `SUSPENDED` as the same lifecycle instance.
+
+Universal PEM semantics do not prescribe a single domain-specific suspension or termination trigger. Applicable execution semantics define concrete triggers, preconditions, authority rules, and scenario-specific conditions. A request or event is not automatically an authoritative lifecycle transition.
+
+A conforming Runtime must preserve lifecycle state as authoritative recoverable operational state and must apply lifecycle transitions only when applicable execution semantics permit or require them. Material lifecycle transitions must remain reconstructable with their basis and material consequences.
+
+Engineering completion remains independent of lifecycle termination. Completion is established by applicable EPM completion conditions; termination is established by applicable lifecycle/execution semantics. An applicable execution model may explicitly require termination after completion, but that is not a universal equivalence.
+
+AESM/PEM does not prescribe a lifecycle API such as `suspend()`, `resume()`, or `terminate()`, nor a storage mechanism for lifecycle state or history.
 
 ## Lifecycle separation
 
@@ -284,30 +275,76 @@ Engineering completion
 Runtime lifecycle
 ```
 
-**Process Instance lifecycle** describes the lifecycle condition of the Process Instance as a continuing engineering execution entity.
+Runtime startup, restart, failure, replacement, or termination do not themselves imply Process State transition, Process Instance termination, or engineering completion.
 
-**Process State** describes the current engineering execution state governed by applicable EPM semantics and executed under PEM.
+A lifecycle transition is an authoritative state mutation and must be semantically consistent with the recovered Execution Context. Current lifecycle state alone is insufficient for lifecycle traceability; material lifecycle history must remain reconstructable independently from current state, subject to applicable retention rules.
 
-**Engineering completion** is established when applicable EPM completion conditions are satisfied.
+## Conformance
 
-**Runtime lifecycle** describes the lifetime of a concrete Runtime process.
+A Runtime claiming conformance must demonstrate preservation of at least:
 
-Therefore:
+1. EPM engineering validity;
+2. PEM execution semantics;
+3. applicable EPM binding;
+4. AESM operational boundaries;
+5. Agent interaction boundaries;
+6. controlled recognition and state mutation;
+7. authority separation;
+8. Process State and transition semantics;
+9. Decision Gate semantics;
+10. concurrency and stale-state protection;
+11. traceability and history;
+12. continuity and recovery;
+13. failure, uncertainty, and conflict handling;
+14. Process Instance lifecycle semantics and separation;
+15. implementation independence.
 
-```text
-Runtime startup
-Runtime restart
-Runtime failure
-Runtime replacement
-Runtime termination
+## Conformance evidence
 
-        do not themselves imply
+Useful evidence categories include:
 
-Process State transition
-Process Instance termination
-Engineering completion
-```
+- Process Instance discovery and attachment;
+- Process Instance identity preservation across discovery;
+- Execution Context reconstruction;
+- EPM binding reconstruction;
+- execution-trace reconstruction;
+- initialization and recovery tests;
+- authority-boundary tests;
+- operation-recognition tests;
+- stale-input and conflict tests;
+- state-transition tests;
+- Decision Gate blocking/progression/invalidation tests;
+- mutation-control and atomicity/consistency tests;
+- external action/result traceability tests;
+- failure, uncertainty, and recovery-deficiency tests;
+- continuity and Runtime replacement tests;
+- continuation from recovered authoritative state;
+- prevention of blind replay of stale continuation information;
+- lifecycle state persistence and reconstruction;
+- authorized suspension and unauthorized-suspension rejection;
+- resumption reevaluation and stale-pending-work handling;
+- authorized termination and unauthorized-termination rejection;
+- termination finality;
+- completion/termination separation;
+- lifecycle transition-history reconstruction;
+- lifecycle separation across Runtime restart and replacement.
 
-A Process Instance may remain active while its Process State changes repeatedly during normal engineering execution.
+These are evidence categories rather than mandatory implementation mechanisms.
 
-The exact lifecycle transition vocabulary and transition conditions are governed by applicable execution semantics and must remain distinguishable from ordinary Process State progression.
+## Implementation independence
+
+Conformance does not prescribe:
+
+- transport;
+- APIs;
+- serialization;
+- databases;
+- filesystems;
+- programming languages;
+- frameworks;
+- model providers;
+- network topology;
+- deployment architecture;
+- UI behavior.
+
+An implementation choice becomes normative only when explicitly required by the applicable AESM semantics.
