@@ -156,36 +156,85 @@ ProcessInstance.lifecycle: active → active
 
 The separate question is whether `engineering_complete` is a valid universal Process State identifier. The current EPM documentation does not establish that literal value as universal; Process State identity belongs to the applicable EPM.
 
+## Lifecycle Semantics Decision
+
+A model-level decision has now been made to resolve the outstanding question identified by this reassessment.
+
+### Decision
+
+**Process Instance lifecycle is a universal AESM/PEM semantic dimension, while concrete lifecycle transition conditions and scenario-specific triggers are determined by applicable execution semantics.**
+
+This means AESM/PEM must define the universal meaning, invariants, and separation of Process Instance lifecycle. It must not, however, impose an unconditional universal state machine with fixed literal values and triggers independent of applicable engineering/execution semantics.
+
+This preserves the established boundary:
+
+```text
+EPM
+  → defines engineering meaning, including Process State and engineering completion
+
+PEM
+  → governs execution and universal Process Instance lifecycle semantics
+
+Applicable execution semantics
+  → establish concrete lifecycle transition conditions and scenario-specific triggers
+
+Runtime
+  → implements those semantics
+```
+
+The full decision and its rationale are recorded in:
+
+`execution/PROCESS-INSTANCE-LIFECYCLE-SEMANTICS-DECISION.md`
+
+### Consequences
+
+The previous open question is resolved. The correct next task is now **specification clarification**, not implementation.
+
+The specification must make explicit:
+
+- universal Process Instance lifecycle semantic categories;
+- lifecycle invariants;
+- lifecycle transition authority;
+- how applicable execution semantics establish transition conditions;
+- suspension semantics;
+- resumption semantics;
+- Process Instance termination semantics;
+- lifecycle state representation, including whether canonical literals are required;
+- lifecycle history/traceability requirements;
+- recovery behavior involving lifecycle condition.
+
+Until these are clarified, no generalized lifecycle state machine or mandatory `suspend()`, `resume()`, or `terminate()` API should be implemented.
+
 ## Lifecycle Conformance Interpretation
 
-The current specification supports the following conformance interpretation.
+The current specification, interpreted through the decision above, supports the following conformance interpretation.
 
-| Semantic | Specification status | What implementation must demonstrate | Current prototype evidence | Preliminary assessment |
+| Semantic | Specification status | What implementation must demonstrate | Current prototype evidence | Assessment |
 |---|---|---|---|---|
-| Process Instance lifecycle | Required conceptually | Preserve lifecycle independently from Process State, completion, and Runtime lifetime | `active` preserved | Demonstrated separation; lifecycle transition semantics remain under-specified |
-| Lifecycle state vocabulary | Incomplete | Use states defined by applicable semantics | Only `active` exists | Specification precision gap |
-| Suspension | Required when applicable | Preserve authoritative continuation state and suspend execution according to applicable conditions | No explicit operation observed | Not demonstrated; not yet an implementation defect solely from absence of API |
-| Resumption | Required for applicable continuation | Recover state, reevaluate, and continue under PEM | Recovery demonstrated; no explicit resume operation | Recovery demonstrated; semantic resumption not demonstrated |
+| Process Instance lifecycle | Universal semantic dimension | Preserve lifecycle independently from Process State, completion, and Runtime lifetime | `active` preserved | Separation demonstrated; concrete transitions require clarification |
+| Lifecycle state vocabulary | Requires specification clarification | Represent lifecycle according to clarified semantics | Only `active` exists | Specification precision gap |
+| Suspension | Supported where applicable | Preserve authoritative continuation state and suspend according to applicable conditions | No explicit operation observed | Not demonstrated; implementation defect not established |
+| Resumption | Required for applicable continuation | Recover, reevaluate, and continue under PEM | Recovery demonstrated; no explicit resume operation | Recovery demonstrated; semantic resumption not demonstrated |
 | Runtime termination | Distinct lifecycle | Do not silently terminate Process Instance | `stop()` leaves persisted lifecycle active | Demonstrated |
-| Process Instance termination | Required as distinct semantic category where applicable | Apply defined lifecycle termination conditions and preserve authoritative state/history | No operation observed | Not demonstrated; concrete requirement remains scenario/specification dependent |
+| Process Instance termination | Distinct semantic category | Apply clarified termination conditions and preserve authoritative state/history | No operation observed | Not demonstrated; final requirement awaits specification clarification |
 | Recovery | Required | Reconstruct authoritative state independently of transient Runtime memory | Cross-Runtime recovery passes | Demonstrated |
 | Pending execution | Required as continuation information where applicable | Preserve unfinished work and relevant conditions | Persisted and recovered | Demonstrated |
 | Pending-work resumption | Governed by PEM | Reevaluate recovered situation before execution | No explicit continuation operation observed | Not demonstrated |
 | Engineering completion | EPM determination | Require applicable completion conditions; keep distinct from lifecycle termination | Explicit completion recognition works | Demonstrated at prototype level |
 
-## Classification Rules Resulting from the Reassessment
+## Classification Rules
 
 The lifecycle experiment should not automatically classify every absent Runtime operation as a Representation Gap or Implementation Defect.
 
-Use the following order:
+Use this order:
 
-1. Establish whether the semantic requirement exists in the applicable EPM/PEM semantics.
-2. Establish whether the requirement is sufficiently precise to identify the expected behavior.
-3. Compare the implementation representation and behavior with that requirement.
+1. Establish whether the semantic requirement exists in applicable EPM/PEM semantics.
+2. Establish whether the requirement is sufficiently precise to identify expected behavior.
+3. Compare implementation representation and behavior with that requirement.
 4. Determine whether the experiment actually exercised the required behavior.
 5. Classify the result only after those questions are answered.
 
-This yields the following preliminary categories:
+The resulting classifications are:
 
 ### Validated semantic boundary
 
@@ -193,46 +242,46 @@ Runtime lifetime is distinct from Process Instance lifecycle and engineering com
 
 ### Specification precision gap
 
-The current documentation does not provide a complete universal Process Instance lifecycle state vocabulary and transition table.
+The current specification does not yet provide a complete universal Process Instance lifecycle state vocabulary and transition table.
 
 ### Evidence gap
 
 The prototype does not demonstrate semantic resumption or suspension behavior merely because recovery and pending-state persistence work.
 
-### Potential implementation gap, pending applicable semantics
+### Potential implementation gap, pending specification clarification
 
-Explicit Process Instance termination and explicit suspension may require implementation support when an applicable EPM/PEM scenario establishes their concrete conditions. The current documentation is insufficient to declare the prototype defective in the abstract.
+Explicit Process Instance termination and suspension support may require implementation when clarified applicable semantics establish concrete required behavior. The current prototype cannot be declared defective in the abstract solely from absent APIs.
 
 ## Consequences for the Lifecycle Experiment Report
 
-The authoritative experiment record should preserve its empirical findings but revise interpretation where necessary:
+The experiment record should preserve its empirical findings but revise interpretation where necessary:
 
 - Do not state that the mere absence of lifecycle mutation proves a Representation Gap.
 - Do not treat `engineering_complete` as a universal AESM Process State.
 - Do not treat Runtime `stop()` as a failed Process Instance termination operation; the semantic model explicitly separates those lifetimes.
 - Distinguish successful recovery from demonstrated semantic resumption.
-- Treat suspension, resumption, and termination requirements as specification-dependent until concrete lifecycle transition semantics are established.
+- Treat suspension, resumption, and termination implementation requirements as dependent on clarified applicable semantics.
 - Promote Runtime lifetime ≠ Process Instance lifetime as a primary validated finding.
 - Keep empirical observations separate from conclusions derived from specification analysis.
 - Use semantic names rather than numeric phase labels when describing investigative stages.
 
-## Required Decision Before Implementation
+## Required Specification Work
 
-The next substantive model-level question is not whether to add `suspend()`, `resume()`, or `terminate()` methods.
+The next work item is to update the appropriate normative/specification documents so that the decision above becomes explicit and operationally precise.
 
-The required question is:
+The specification work should not yet prescribe implementation APIs. It should establish semantics first, including the relationship among lifecycle categories, Process State, engineering completion, Runtime lifetime, recovery, suspension, resumption, and termination.
 
-> Does AESM need a fully specified Process Instance lifecycle state model independent of any particular EPM, or should lifecycle states and transition conditions be defined only by the applicable EPM/PEM execution semantics of each engineering process?
-
-The current documents strongly support the second principle for Process State: EPM defines engineering state meaning while PEM governs execution. The same distinction should be resolved explicitly for Process Instance lifecycle semantics before implementation work begins.
-
-Until that decision is made, no generalized lifecycle state machine should be implemented.
+After the specification clarification, the implementation ↔ PEM conformance matrix should be rerun against the clarified requirements, followed by targeted validation where evidence is still missing.
 
 ## Final Assessment
 
-The targeted reassessment establishes that the lifecycle experiment uncovered a real implementation limitation but did not, by itself, establish the precise nature of every lifecycle gap.
+The targeted reassessment established that the lifecycle experiment uncovered a real limitation in the prototype's demonstrated lifecycle behavior, but the experiment did not by itself establish the precise nature of every lifecycle gap.
 
-The current AESM model already requires:
+The model-level decision now resolves the outstanding semantic boundary:
+
+**Process Instance lifecycle is universal at the AESM/PEM semantic level; concrete lifecycle transition conditions and scenario-specific triggers are established by applicable execution semantics.**
+
+The current model already requires:
 
 - a Process Instance lifecycle distinct from Process State;
 - separation of Runtime lifetime from Process Instance lifetime;
@@ -242,6 +291,6 @@ The current AESM model already requires:
 - reevaluation before resumed execution;
 - explicit distinction between engineering completion and Process Instance termination.
 
-What remains insufficiently specified is the concrete lifecycle state vocabulary and universal transition conditions.
+The remaining deficiency is specification precision: the lifecycle categories, state representation, invariants, and transition conditions need to be made sufficiently explicit to support a definitive implementation conformance determination.
 
-Therefore the correct next step is **specification clarification of Process Instance lifecycle semantics**, followed by a conformance determination against those clarified semantics. Implementation changes should remain deferred until that clarification is complete.
+Therefore implementation changes remain deferred until that specification clarification is complete.
