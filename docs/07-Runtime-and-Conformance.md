@@ -39,9 +39,9 @@ A conforming Runtime provides semantic capabilities necessary to:
 17. support reconsideration without erasing history;
 18. preserve continuity information;
 19. represent material failure, uncertainty, conflicts, and recovery failures explicitly;
-20. support suspension, resumption, recovery, and termination according to applicable semantics.
+20. support Process Instance suspension, resumption, recovery, and termination according to applicable semantics.
 
-These are semantic obligations, not a required software decomposition.
+These are semantic obligations, not a required software decomposition or API surface.
 
 ## Process Instance discovery
 
@@ -201,6 +201,24 @@ The Runtime must not treat persisted continuation information as permission to b
 
 If authoritative state is insufficient to establish a valid continuation situation, the Runtime must represent the recovery deficiency rather than fabricate missing state.
 
+## Process Instance lifecycle semantics
+
+Process Instance lifecycle is a universal AESM/PEM semantic dimension describing the lifecycle condition of the persistent Process Instance itself.
+
+The Runtime must preserve this distinction from:
+
+- EPM Process State;
+- engineering completion;
+- Runtime lifetime;
+- Agent or conversation lifetime;
+- Execution Environment lifetime.
+
+The Runtime implements lifecycle semantics; it does not define them from implementation behavior. In particular, a Runtime must not infer Process Instance termination merely from its own shutdown, restart, replacement, or loss of transient state.
+
+A conforming Runtime must preserve lifecycle condition as authoritative recoverable state and must apply lifecycle transitions only when the applicable execution semantics permit them. Where a lifecycle transition occurs, its basis and material consequences must remain traceable.
+
+AESM/PEM does not require a particular lifecycle API or implementation mechanism. The absence of a method named `suspend()`, `resume()`, or `terminate()` is not itself evidence of non-conformance. Conformance is determined by semantic behavior against the applicable lifecycle requirements.
+
 ## Lifecycle separation
 
 ```text
@@ -214,6 +232,8 @@ Engineering completion
 Stopping or restarting the Runtime must not silently complete or terminate a Process Instance.
 
 Process Instance lifecycle status is authoritative operational state. Engineering completion is established by applicable EPM completion conditions. Process Instance termination is a distinct lifecycle condition governed by applicable execution semantics.
+
+Suspension, when applicable, preserves sufficient authoritative state for later continuation. Resumption requires recovery and reevaluation under PEM rather than blind replay of a previous Runtime operation.
 
 ## Conformance
 
@@ -232,7 +252,7 @@ A Runtime claiming conformance must demonstrate preservation of at least:
 11. traceability and history;
 12. continuity and recovery;
 13. failure, uncertainty, and conflict handling;
-14. lifecycle separation;
+14. Process Instance lifecycle semantics and separation;
 15. implementation independence.
 
 ## Conformance evidence
@@ -256,6 +276,8 @@ Useful evidence categories include:
 - continuity and Runtime replacement tests;
 - continuation from recovered authoritative state;
 - prevention of blind replay of stale continuation information;
+- suspension/resumption behavior where applicable;
+- Process Instance termination behavior where applicable;
 - completion/termination separation tests;
 - lifecycle separation across Runtime restart and replacement.
 
