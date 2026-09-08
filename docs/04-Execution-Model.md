@@ -246,6 +246,30 @@ The presence of `next_action` does not establish that the action is currently pe
 
 Similarly, the presence of `pending_execution` does not by itself establish whether verification, state transition, completion, suspension, or another execution activity is currently permissible. Those relationships remain governed by the applicable execution conditions.
 
+## Process Instance lifecycle semantics
+
+Process Instance lifecycle is a universal AESM/PEM semantic dimension. It describes the lifecycle condition of the Process Instance as the persistent engineering execution entity.
+
+It is not an EPM Process State and must remain distinct from:
+
+- Process State;
+- engineering completion;
+- Runtime lifecycle;
+- Agent or conversation lifetime;
+- Execution Environment lifetime.
+
+AESM/PEM defines the universal lifecycle meaning, invariants, and semantic distinctions. Applicable execution semantics determine concrete lifecycle transition conditions and scenario-specific triggers. A Runtime implements those semantics but must not invent lifecycle meaning from technical behavior alone.
+
+Universal lifecycle invariants include:
+
+- Runtime startup, restart, failure, replacement, or termination does not by itself terminate a Process Instance.
+- Engineering completion does not by itself mean Process Instance termination.
+- Suspension, when applicable, is distinct from termination and preserves sufficient authoritative state for possible continuation.
+- Recovery reconstructs authoritative state; resumption re-enters PEM execution using that state.
+- Process Instance lifecycle condition must be recoverable from authoritative state rather than transient Runtime or Agent memory.
+
+AESM/PEM does not require a particular API such as `suspend()`, `resume()`, or `terminate()`. Nor does this section establish a universal literal lifecycle-state enumeration. Where concrete lifecycle states or transitions are required, they must be defined by the applicable specification and execution semantics.
+
 ## Lifecycle separation
 
 The following concepts remain distinct:
