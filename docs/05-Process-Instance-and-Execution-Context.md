@@ -27,7 +27,7 @@ The Process Instance must also retain an explicit binding to the applicable EPM 
 
 Process Instance lifecycle describes the lifecycle condition of the Process Instance itself.
 
-It is distinct from:
+It is a universal AESM/PEM semantic dimension and is distinct from:
 
 - current Process State;
 - engineering completion;
@@ -35,9 +35,25 @@ It is distinct from:
 - Agent or conversation lifetime;
 - Execution Environment lifetime.
 
-A Process Instance may remain active while its Process State changes as engineering execution progresses.
+The Process Instance lifecycle must remain meaningful even when the applicable EPM Process State changes. A Process Instance may remain active while its Process State changes as engineering execution progresses.
 
 Runtime replacement or interruption does not itself terminate the Process Instance.
+
+AESM/PEM defines the universal meaning and invariants of Process Instance lifecycle. Concrete lifecycle transition conditions and scenario-specific triggers are determined by applicable execution semantics. A particular implementation API or literal lifecycle-state enumeration is not implied unless the applicable specification explicitly requires one.
+
+At minimum, lifecycle semantics must preserve these distinctions:
+
+```text
+Process Instance lifecycle
+        ≠
+Process State
+        ≠
+Engineering completion
+        ≠
+Runtime lifetime
+```
+
+Suspension, when applicable, is distinct from termination. Recovery reconstructs lifecycle and other authoritative operational state; resumption re-enters PEM execution using the recovered state.
 
 ## Execution Context
 
@@ -121,6 +137,7 @@ Continuation information is authoritative state used by resumed execution. It is
 - material state changes
 - reconsideration history
 - material gate satisfaction and invalidation history
+- lifecycle changes and their basis where lifecycle transitions occur
 
 The exact schema is implementation-dependent, but authoritative continuation information must not depend on transient conversation memory.
 
@@ -223,6 +240,8 @@ Recovery must also re-establish the applicable EPM binding and any other conditi
 
 Material historical state must remain reconstructable. Reconsideration may replace current conclusions, but it does not erase the fact that previous conclusions existed or the basis on which they were reached.
 
+Lifecycle transitions, where applicable, are material operational state changes and must remain reconstructable together with their basis and applicable conditions.
+
 ## Process continuity invariant
 
 The Process Instance is the continuity boundary:
@@ -239,3 +258,5 @@ Environment may change
 Process Instance remains
 Execution Context remains authoritative
 ```
+
+This invariant does not prevent Process Instance termination when applicable execution semantics explicitly establish termination. It means that transient execution-layer events do not themselves constitute Process Instance termination.
