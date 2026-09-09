@@ -90,8 +90,10 @@ def test_process_and_context_survive_runtime_replacement(tmp_path: Path):
     store = ProcessStore(tmp_path)
     runtime_a = Runtime(store, "runtime-a")
     pid = runtime_a.create_process("Implement feature X")
+    runtime_a.start_investigation()
     runtime_a.observe({"source": "workspace", "fact": "existing implementation found"})
     runtime_a.recognize_decision({"id": "D1", "conclusion": "use existing extension point"}, DECISION_RECOGNITION)
+    runtime_a.begin_implementation()
     runtime_a.set_pending_execution(
         {
             "id": "W1",

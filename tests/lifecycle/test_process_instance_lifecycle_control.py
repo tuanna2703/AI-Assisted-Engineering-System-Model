@@ -127,6 +127,8 @@ def test_lc03_suspension_persists_across_runtime_loss(tmp_path: Path):
 def test_lc04_suspension_preserves_continuation_state(tmp_path: Path):
     runtime = build_runtime(tmp_path)
     runtime.start_investigation()
+    runtime.recognize_decision({"id": "D1"}, DECISION)
+    runtime.begin_implementation()
     runtime.set_pending_execution({"id": "W1", "status": "ready"})
     process_instance_id = runtime.process_instance.process_instance_id
     context_before = runtime.context.to_dict()
@@ -191,6 +193,8 @@ def test_lc07_reevaluation_can_keep_process_suspended(tmp_path: Path):
 def test_lc08_changed_continuation_invalidates_stale_pending_work(tmp_path: Path):
     runtime = build_runtime(tmp_path)
     runtime.start_investigation()
+    runtime.recognize_decision({"id": "D1"}, DECISION)
+    runtime.begin_implementation()
     runtime.set_pending_execution({"id": "W1", "status": "ready"})
     apply_lifecycle_determination(
         runtime, lifecycle_determination(runtime, "ACTIVE -> SUSPENDED")
