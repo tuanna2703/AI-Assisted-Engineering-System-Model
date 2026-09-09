@@ -57,11 +57,13 @@ class ProcessStore:
         *,
         context_modified: bool = False,
     ) -> None:
-        """Persist a lifecycle transition.
+        """Persist a lifecycle transition as one recoverable consistency boundary.
 
-        Writes the updated process.json, optionally the context.json if the
-        transition materially modified it, and appends the lifecycle event to
-        history.jsonl.
+        The JSON stores use atomic file replacement individually, while the
+        lifecycle operation spans process state, optional Context mutation, and
+        history. Snapshotting the affected files allows the complete operation
+        to be rolled back if any write fails, including a partially appended
+        history record.
         """
         directory = self._dir(instance.process_instance_id)
         if not directory.exists():
@@ -70,14 +72,45 @@ class ProcessStore:
             raise PersistenceError(
                 f"invalid lifecycle value: {instance.lifecycle!r}"
             )
-        instance.updated_at = now()
-        JsonStore(directory / "process.json").save(instance.to_dict())
-        if context_modified:
-            context.version += 1
-            context.updated_at = now()
-            JsonStore(directory / "context.json").save(context.to_dict())
-        JsonlStore(directory / "history.jsonl").append({**event, "at": now()})
+
+        process_path = directory / "process.json"
+        context_path = directory / "context.json"
+        history_path = directory / "history.jsonl"
+        snapshots = {
+            process_path: process_path.read_bytes() if process_path.exists() else None,
+            context_path: context_path.read_bytes() if context_path.exists() else None,
+            history_path: history_path.read_bytes() if history_path.exists() else None,
+        }
+        prior_instance_updated_at = instance.updated_at
+        prior_context_version = context.version
+        prior_context_updated_at = context.updated_at
+
+        try:
+            instance.updated_at = now()
+            JsonStore(process_path).save(instance.to_dict())
+            if context_modified:
+                context.version += 1
+                context.updated_at = now()
+                JsonStore(context_path).save(context.to_dict())
+            JsonlStore(history_path).append({**event, "at": now()})
+        except Exception:
+            instance.updated_at = prior_instance_updated_at
+            context.version = prior_context_version
+            context.updated_at = prior_context_updated_at
+            self._restore_file(process_path, snapshots[process_path])
+            self._restore_file(context_path, snapshots[context_path])
+            self._restore_file(history_path, snapshots[history_path])
+            raise
+
+    @staticmethod
+    def _restore_file(path: Path, content: bytes | None) -> None:
+        if content is None:
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                pass
+            return
+        path.write_bytes(content)
 
     def history(self, process_instance_id: str) -> list[dict[str, Any]]:
         return JsonlStore(self._dir(process_instance_id) / "history.jsonl").read_all()
-
