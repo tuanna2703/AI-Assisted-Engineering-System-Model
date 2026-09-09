@@ -57,10 +57,36 @@ class Runtime:
         self._set_state(self.INVESTIGATION, "investigation_started")
 
     def observe(self, observation: dict[str, Any]) -> None:
-        """Record information; suspension blocks execution, not observation."""
+        """Record an explicitly recognized evidence contribution.
+
+        Observation remains available while suspended, but receipt alone does not
+        promote a contribution into authoritative Evidence.
+        """
         self._require_attached()
-        self.context.evidence.append(observation)
-        self.store.save_context(self.context, {"type": "observation_recorded", "observation": observation, "runtime_id": self.runtime_id})
+        if not isinstance(observation, dict):
+            raise TypeError("observation must be a mapping")
+        self._require_recognition(observation.get("recognition"), "evidence")
+
+        evidence = {key: value for key, value in observation.items() if key != "recognition"}
+        prior_evidence = list(self.context.evidence)
+        prior_version = self.context.version
+        prior_updated_at = self.context.updated_at
+        self.context.evidence.append(evidence)
+        try:
+            self.store.save_context(
+                self.context,
+                {
+                    "type": "evidence_recorded",
+                    "evidence": evidence,
+                    "recognition": observation["recognition"],
+                    "runtime_id": self.runtime_id,
+                },
+            )
+        except Exception:
+            self.context.evidence = prior_evidence
+            self.context.version = prior_version
+            self.context.updated_at = prior_updated_at
+            raise
 
     def recognize_decision(self, decision: dict[str, Any], recognition: dict[str, Any]) -> None:
         """Record a recognized decision without defining its engineering validity."""
