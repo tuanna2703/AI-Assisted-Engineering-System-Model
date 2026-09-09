@@ -11,6 +11,9 @@ def now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+VALID_LIFECYCLE_VALUES = {"active", "suspended", "terminated"}
+
+
 @dataclass
 class ProcessInstance:
     process_instance_id: str

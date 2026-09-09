@@ -3,8 +3,24 @@ from __future__ import annotations
 
 from typing import Any
 
-from runtime.core.models import ExecutionContext, ProcessInstance
+from runtime.core.models import ExecutionContext, ProcessInstance, VALID_LIFECYCLE_VALUES
 from runtime.core.store import ProcessStore
+
+
+# --- Lifecycle transition graph ---
+
+_TRANSITION_GRAPH: dict[tuple[str, str], str] = {
+    ("active", "suspended"): "suspended",
+    ("suspended", "active"): "active",
+    ("active", "terminated"): "terminated",
+    ("suspended", "terminated"): "terminated",
+}
+
+_SEMANTIC_TO_CANONICAL = {
+    "ACTIVE": "active",
+    "SUSPENDED": "suspended",
+    "TERMINATED": "terminated",
+}
 
 
 class Runtime:
@@ -36,17 +52,20 @@ class Runtime:
 
     def start_investigation(self) -> None:
         self._require_attached()
+        self._require_active_lifecycle()
         self._require_state("initial")
         self._set_state(self.INVESTIGATION, "investigation_started")
 
     def observe(self, observation: dict[str, Any]) -> None:
         self._require_attached()
+        self._require_active_lifecycle()
         self.context.evidence.append(observation)
         self.store.save_context(self.context, {"type": "observation_recorded", "observation": observation, "runtime_id": self.runtime_id})
 
     def recognize_decision(self, decision: dict[str, Any], recognition: dict[str, Any]) -> None:
         """Record a recognized decision without defining its engineering validity."""
         self._require_attached()
+        self._require_active_lifecycle()
         self._require_recognition(recognition, "decision")
         if self.context.process_state not in {self.INVESTIGATION, "initial"}:
             raise RuntimeError("engineering decisions can only be recognized during investigation")
@@ -55,6 +74,7 @@ class Runtime:
 
     def begin_implementation(self) -> None:
         self._require_attached()
+        self._require_active_lifecycle()
         self._require_state(self.INVESTIGATION)
         if not self.context.engineering_decisions:
             raise RuntimeError("implementation requires a recognized engineering decision")
@@ -64,7 +84,8 @@ class Runtime:
     def set_pending_execution(self, work: dict[str, Any]) -> None:
         """Record continuation work; retain compatibility with the prior prototype surface."""
         self._require_attached()
-        if self.context.process_state == "initial":
+        self._require_active_lifecycle()
+        if self.context.process_state in {"initial", self.INVESTIGATION}:
             self.context.process_state = self.IMPLEMENTATION
         self._require_state(self.IMPLEMENTATION)
         self.context.pending_execution.append(work)
@@ -72,12 +93,14 @@ class Runtime:
 
     def record_artifact(self, artifact: dict[str, Any]) -> None:
         self._require_attached()
+        self._require_active_lifecycle()
         self._require_state(self.IMPLEMENTATION)
         self.context.artifacts.append(artifact)
         self.store.save_context(self.context, {"type": "artifact_recorded", "artifact": artifact, "runtime_id": self.runtime_id})
 
     def begin_verification(self) -> None:
         self._require_attached()
+        self._require_active_lifecycle()
         self._require_state(self.IMPLEMENTATION)
         if not self.context.artifacts:
             raise RuntimeError("verification requires at least one recorded implementation artifact")
@@ -89,6 +112,7 @@ class Runtime:
     def record_verification(self, result: dict[str, Any]) -> None:
         """Record verification; the legacy path remains usable for continuity experiments."""
         self._require_attached()
+        self._require_active_lifecycle()
         if self.context.process_state not in {"initial", self.IMPLEMENTATION, self.VERIFICATION}:
             raise RuntimeError("verification can only be recorded before completion")
         self.context.verification = result
@@ -98,6 +122,7 @@ class Runtime:
 
     def reconsider(self, reason: dict[str, Any]) -> None:
         self._require_attached()
+        self._require_active_lifecycle()
         self._require_state(self.VERIFICATION)
         if self.context.verification.get("passed") is True:
             raise RuntimeError("successful verification does not require reconsideration")
@@ -109,6 +134,7 @@ class Runtime:
 
     def recognize_engineering_completion(self, completion: dict[str, Any]) -> None:
         self._require_attached()
+        self._require_active_lifecycle()
         self._require_recognition(completion, "completion")
         if self.context.process_state != self.VERIFICATION:
             raise RuntimeError("engineering completion requires the verification state")
@@ -116,6 +142,133 @@ class Runtime:
             raise RuntimeError("engineering completion requires successful verification")
         self.context.engineering_completion = True
         self._set_state(self.ENGINEERING_COMPLETE, "engineering_completion_recognized", {"completion": completion})
+
+    # --- Lifecycle control boundary ---
+
+    def apply_lifecycle_determination(self, determination: dict[str, Any]) -> None:
+        """Authoritative lifecycle-control operation.
+
+        Accepts a lifecycle determination and applies the requested transition
+        after validating target, authority, transition legality, semantic basis,
+        and conflict evidence.
+        """
+        self._require_attached()
+
+        # 1. Validate determination structure
+        if not isinstance(determination, dict):
+            raise ValueError("lifecycle determination must be a mapping")
+        required_fields = {
+            "target_process_instance_id",
+            "requested_transition",
+            "semantic_basis",
+            "authority_context",
+            "actor",
+            "evidence",
+            "occurred_at",
+        }
+        missing = required_fields - determination.keys()
+        if missing:
+            raise ValueError(f"lifecycle determination missing required fields: {sorted(missing)}")
+
+        # 2. Validate target Process Instance
+        if determination["target_process_instance_id"] != self.process_instance.process_instance_id:
+            raise ValueError("lifecycle determination targets a different Process Instance")
+
+        # 3. Validate requested transition format and parse
+        transition_str = determination["requested_transition"]
+        source_semantic, target_semantic = self._parse_transition(transition_str)
+        source_canonical = _SEMANTIC_TO_CANONICAL.get(source_semantic)
+        target_canonical = _SEMANTIC_TO_CANONICAL.get(target_semantic)
+        if source_canonical is None or target_canonical is None:
+            raise ValueError(f"unrecognized lifecycle state in transition: {transition_str!r}")
+
+        # 4. Validate authority
+        authority = determination["authority_context"]
+        if authority != "authorized-controller":
+            raise PermissionError(
+                f"lifecycle determination rejected: unauthorized authority context {authority!r}"
+            )
+
+        # 5. Validate semantic basis is non-empty
+        semantic_basis = determination.get("semantic_basis", "")
+        if not semantic_basis or not str(semantic_basis).strip():
+            raise ValueError("lifecycle determination requires a non-empty semantic basis")
+
+        # 6. Validate current lifecycle matches transition source
+        current_lifecycle = self.process_instance.lifecycle
+        if current_lifecycle != source_canonical:
+            raise RuntimeError(
+                f"lifecycle transition {transition_str!r} requires current lifecycle "
+                f"{source_semantic!r} but Process Instance is {current_lifecycle!r}"
+            )
+
+        # 7. Validate transition is in the legal graph
+        transition_key = (source_canonical, target_canonical)
+        if transition_key not in _TRANSITION_GRAPH:
+            raise RuntimeError(
+                f"lifecycle transition {transition_str!r} is not a valid transition"
+            )
+
+        # 8. Check for explicit conflicts in evidence
+        evidence = determination.get("evidence") or []
+        for entry in evidence:
+            if isinstance(entry, dict) and entry.get("conflict") is True:
+                raise RuntimeError(
+                    "lifecycle determination contains an explicit unresolved conflict; "
+                    "transition rejected"
+                )
+
+        # 9. Validate semantic conditions for specific transitions
+        basis_lower = str(semantic_basis).lower()
+
+        if target_canonical == "suspended":
+            # Suspension: semantic_basis non-empty is sufficient (already checked)
+            pass
+
+        elif source_canonical == "suspended" and target_canonical == "active":
+            # Resumption: must establish that suspension condition ceased
+            self._validate_resumption(basis_lower, evidence)
+
+        elif target_canonical == "terminated":
+            # Termination: semantic_basis non-empty is sufficient (already checked)
+            pass
+
+        # 10. Apply stale-work invalidation for resumption
+        context_modified = False
+        if source_canonical == "suspended" and target_canonical == "active":
+            context_modified = self._apply_stale_work_invalidation(evidence)
+
+        # 11. Mutate lifecycle (in-memory first, persist, rollback on failure)
+        prior_lifecycle = self.process_instance.lifecycle
+        self.process_instance.lifecycle = target_canonical
+
+        lifecycle_event = {
+            "type": "lifecycle_transition",
+            "process_instance_id": self.process_instance.process_instance_id,
+            "prior_lifecycle": prior_lifecycle,
+            "requested_transition": transition_str,
+            "authority_context": determination["authority_context"],
+            "actor": determination["actor"],
+            "semantic_basis": semantic_basis,
+            "evidence": evidence,
+            "resulting_lifecycle": target_canonical,
+            "runtime_id": self.runtime_id,
+            "occurred_at": determination["occurred_at"],
+        }
+
+        try:
+            self.store.save_lifecycle(
+                self.process_instance,
+                self.context,
+                lifecycle_event,
+                context_modified=context_modified,
+            )
+        except Exception:
+            # Rollback in-memory state on persistence failure
+            self.process_instance.lifecycle = prior_lifecycle
+            raise
+
+    # --- End lifecycle control boundary ---
 
     def stop(self) -> None:
         self.attached = False
@@ -147,3 +300,73 @@ class Runtime:
     def _require_attached(self) -> None:
         if not self.attached or self.context is None:
             raise RuntimeError("Runtime is not attached to a Process Instance")
+
+    def _require_active_lifecycle(self) -> None:
+        """Guard: engineering execution is only permitted when lifecycle is active."""
+        if self.process_instance.lifecycle != "active":
+            raise RuntimeError(
+                f"engineering execution is blocked: Process Instance lifecycle is "
+                f"{self.process_instance.lifecycle!r}, not 'active'"
+            )
+
+    @staticmethod
+    def _parse_transition(transition_str: str) -> tuple[str, str]:
+        """Parse a transition string like 'ACTIVE -> SUSPENDED' into (source, target)."""
+        separator = "→" if "→" in transition_str else "->"
+        parts = [p.strip() for p in transition_str.split(separator)]
+        if len(parts) != 2 or not parts[0] or not parts[1]:
+            raise ValueError(f"invalid transition format: {transition_str!r}")
+        return parts[0], parts[1]
+
+    @staticmethod
+    def _validate_resumption(basis_lower: str, evidence: list[dict[str, Any]]) -> None:
+        """Validate that a resumption determination establishes permissibility."""
+        # Reject if basis explicitly states suspension condition remains applicable
+        if "remains applicable" in basis_lower:
+            raise RuntimeError(
+                "resumption rejected: suspension condition remains applicable"
+            )
+
+        # Check for positive resumption indicators in basis or evidence
+        resumption_established = False
+
+        # Check basis for resumption indicators
+        if "ceased" in basis_lower or "permissible" in basis_lower:
+            resumption_established = True
+
+        # Check evidence entries for resumption indicators
+        if not resumption_established:
+            for entry in evidence:
+                if isinstance(entry, dict):
+                    entry_str = str(entry).lower()
+                    if "ceased" in entry_str or "permissible" in entry_str:
+                        resumption_established = True
+                        break
+                    # stale_work evidence also implies resumption context
+                    if "stale_work" in entry:
+                        resumption_established = True
+                        break
+
+        if not resumption_established:
+            raise RuntimeError(
+                "resumption rejected: determination does not establish that "
+                "suspension condition has ceased or continuation is permissible"
+            )
+
+    def _apply_stale_work_invalidation(self, evidence: list[dict[str, Any]]) -> bool:
+        """Remove stale pending execution entries identified by evidence."""
+        stale_ids = set()
+        for entry in evidence:
+            if isinstance(entry, dict) and "stale_work" in entry:
+                stale_ids.add(entry["stale_work"])
+
+        if not stale_ids:
+            return False
+
+        original_count = len(self.context.pending_execution)
+        self.context.pending_execution = [
+            work for work in self.context.pending_execution
+            if work.get("id") not in stale_ids
+        ]
+        return len(self.context.pending_execution) != original_count
+
