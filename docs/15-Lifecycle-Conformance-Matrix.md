@@ -2,63 +2,108 @@
 
 ## Purpose
 
-This matrix translates the Lifecycle Semantic Decision Record into observable conformance criteria for targeted behavioral validation.
+This matrix translates the current Lifecycle Semantic Decision Record and Applicable Process Instance Lifecycle Semantics into observable conformance criteria for targeted behavioral validation.
 
-It does not prescribe APIs, storage schemas, database technology, event sourcing, locking, or other implementation mechanisms.
+It separates semantic requirements, applicability prerequisites, required behavior, existing evidence, and conformance classification.
 
-## Evidence status
+## Governing assessment chain
 
-The prior lifecycle behavioral experiment established useful continuity and recovery evidence, but it did not demonstrate the complete semantic requirements for suspension, resumption, termination, or lifecycle traceability. Existing recovery evidence therefore remains limited to the semantics it actually demonstrates.
+```text
+Lifecycle semantic
+        ↓
+Applicable condition
+        ↓
+Required behavior
+        ↓
+Existing Runtime behavior
+        ↓
+Existing evidence
+        ↓
+Classification
+```
 
-## Conformance criteria
+Absence of an API or mechanism is not itself an implementation gap. A Runtime gap is confirmed only when an applicable semantic requirement establishes concrete behavior and the Runtime cannot satisfy it.
 
-| ID | Semantic requirement | Observable criterion | Existing evidence | Status |
-|---|---|---|---|---|
-| LC-01 | Canonical lifecycle state | Current Process Instance lifecycle state is explicitly recoverable and distinguishable from Process State and engineering completion. | Existing lifecycle/recovery evidence establishes separation conceptually; canonical state behavior not directly tested. | Pending validation |
-| LC-02 | Lifecycle persistence | Lifecycle state survives supported Runtime/process interruption and is recovered from authoritative state. | Recovery experiment demonstrated authoritative continuity, but not all lifecycle states. | Partial evidence |
-| LC-03 | Suspension semantics | A valid suspension trigger produces `ACTIVE → SUSPENDED` and preserves sufficient authoritative continuation state. | No complete behavioral demonstration. | Pending validation |
-| LC-04 | Suspension authority | An unauthorized suspension request/event does not mutate authoritative lifecycle state. | Not demonstrated. | Pending validation |
-| LC-05 | Suspension preservation | After suspension, current Process State, pending work, unresolved conditions, verification state, material failure/uncertainty, and relevant traceability remain sufficient for safe continuation. | Not demonstrated as a lifecycle-specific scenario. | Pending validation |
-| LC-06 | Resumption is distinct from recovery | Recovering a `SUSPENDED` instance does not by itself return it to executable active lifecycle state. | Existing recovery evidence demonstrates recovery/continuation separation conceptually; suspended-state behavior not tested. | Pending validation |
-| LC-07 | Resumption reevaluation | Recovered conditions are reevaluated against current authoritative state and applicable EPM/PEM conditions before continuation. | Existing cross-Runtime recovery test provides continuity/recovery evidence but not complete reevaluation evidence. | Pending validation |
-| LC-08 | Resumption safety | Stale or invalid pending work is not blindly replayed after recovery. | Existing evidence supports the conceptual boundary; targeted stale-work scenario required. | Pending validation |
-| LC-09 | Resumption outcome | Reevaluation can result in continuation, different permissible activity, continued suspension, another applicable condition, or authorized termination. | Not demonstrated. | Pending validation |
-| LC-10 | Termination semantics | A valid termination condition produces `TERMINATED`. | Not demonstrated. | Pending validation |
-| LC-11 | Termination authority | An unauthorized termination request/event does not mutate authoritative lifecycle state. | Not demonstrated. | Pending validation |
-| LC-12 | Termination finality | A terminated Process Instance cannot resume as the same lifecycle instance. | Not demonstrated. | Pending validation |
-| LC-13 | Completion separation | Engineering completion and Process Instance termination are independently observable. | Existing documentation establishes the distinction; behavioral separation not demonstrated. | Pending validation |
-| LC-14 | Lifecycle transition consistency | A lifecycle transition is recovered as a semantically consistent authoritative mutation rather than a partial state. | General mutation consistency evidence exists; lifecycle-specific transition scenario not demonstrated. | Pending validation |
-| LC-15 | Lifecycle traceability | Material lifecycle transitions can be reconstructed independently from current lifecycle state. | Existing traceability evidence does not demonstrate lifecycle transition reconstruction. | Pending validation |
-| LC-16 | Transition attribution | Transition basis and authority/actor information are reconstructable where applicable. | Not demonstrated. | Pending validation |
-| LC-17 | Lifecycle separation from Runtime | Runtime startup, restart, failure, replacement, or termination does not itself imply lifecycle termination or suspension unless applicable semantics explicitly establish it. | Existing continuity/restart evidence supports separation from Runtime lifetime. | Partial evidence |
-| LC-18 | Lifecycle separation from Agent/Environment | Agent departure, conversation closure, IDE closure, or environment replacement does not itself imply lifecycle termination unless applicable semantics explicitly establish it. | Existing continuity evidence supports the boundary. | Partial evidence |
-| LC-19 | Terminal transition graph | `TERMINATED → ACTIVE` and `TERMINATED → SUSPENDED` cannot occur for the same lifecycle instance. | Not demonstrated. | Pending validation |
-| LC-20 | Implementation independence | Conformance evidence demonstrates semantic behavior without relying on a mandated lifecycle API or storage mechanism. | Specification-level requirement only. | Pending validation |
+## Classification vocabulary
 
-## Evidence classification
+- **Conformant — Demonstrated** — direct evidence establishes the required semantic behavior.
+- **Conformant — Evidence Incomplete** — the requirement is applicable and available evidence supports it, but does not establish the complete criterion.
+- **Implementation Gap — Semantically Required** — the applicable requirement is established and the current Runtime cannot satisfy it.
+- **Not Applicable** — the criterion is outside the applicable execution semantics for the scenario; the reason must be recorded.
+- **Specification/Applicability Decision Required** — the universal requirement is defined, but no concrete applicable condition currently makes the behavior testable.
 
-Use these classifications consistently:
+Historical experiment labels such as `Pending validation`, `Partial evidence`, or `Not demonstrated` remain historical evidence descriptions, not final conformance classifications.
 
-- **Demonstrated** — direct behavioral evidence establishes the criterion.
-- **Partial evidence** — related evidence supports part of the criterion but does not establish the complete requirement.
-- **Not demonstrated** — the criterion is defined but no adequate behavioral evidence currently establishes it.
-- **Failed** — direct behavioral evidence contradicts the criterion.
-- **Not applicable** — the criterion is genuinely outside the applicable execution semantics for the tested scenario; the reason must be recorded.
+## Current conformance assessment
 
-Absence of evidence must not be classified as Runtime non-conformance without a defined applicable requirement and an adequate test.
+| ID | Semantic requirement | Applicability prerequisite | Required behavior | Existing evidence | Current classification |
+|---|---|---|---|---|---|
+| LC-01 | Canonical lifecycle state | Universal lifecycle semantics apply to every Process Instance. | Lifecycle state is explicitly represented, recoverable, and distinguishable from Process State and engineering completion. | Lifecycle is represented as `active` and preserved across recovery; separation from Process State and completion was demonstrated. | **Conformant — Demonstrated** |
+| LC-02 | Lifecycle persistence | Supported interruption/recovery of an existing Process Instance. | Lifecycle state is recovered from authoritative state rather than Runtime memory alone. | Cross-Runtime continuity/recovery demonstrated preservation of the observed `ACTIVE` state. | **Conformant — Demonstrated** for the observed state |
+| LC-03 | Suspension transition | A concrete authorized suspension condition established by applicable execution semantics. | `ACTIVE → SUSPENDED` with sufficient authoritative continuation state preserved. | No suspension transition was exercised. | **Specification/Applicability Decision Required** |
+| LC-04 | Suspension authority | A concrete scenario defines authorized and unauthorized suspension requests. | Unauthorized request does not mutate authoritative lifecycle state. | No lifecycle authority scenario was exercised. | **Specification/Applicability Decision Required** |
+| LC-05 | Suspension preservation | A valid suspension condition exists. | Required continuation state and suspension basis remain recoverable after suspension. | No lifecycle-specific suspension scenario exists. | **Specification/Applicability Decision Required** |
+| LC-06 | Recovery is distinct from resumption | A suspended Process Instance exists and is recovered. | Recovery reconstructs state but does not itself establish `ACTIVE`. | Cross-Runtime recovery is demonstrated, but no suspended instance was recovered. | **Conformant — Evidence Incomplete** |
+| LC-07 | Resumption reevaluation | A suspended instance plus a concrete resumption scenario. | Current conditions are reevaluated before `SUSPENDED → ACTIVE` and continuation. | Pending execution survived Runtime replacement, but reevaluation before resumption was not demonstrated. | **Conformant — Evidence Incomplete** |
+| LC-08 | Resumption safety | Suspended instance has stale or materially changed pending work. | Stale/invalid pending work is not blindly replayed. | No stale-work scenario was exercised. | **Conformant — Evidence Incomplete** |
+| LC-09 | Resumption outcome | Suspended instance plus concrete reevaluation condition. | Reevaluation may continue, choose another permissible activity, remain suspended, enter another applicable condition, or terminate when independently authorized. | No semantic resumption outcome was exercised. | **Conformant — Evidence Incomplete** |
+| LC-10 | Termination transition | A concrete authorized termination condition established by applicable execution semantics. | `ACTIVE → TERMINATED` or `SUSPENDED → TERMINATED` as applicable. | No termination transition was exercised. | **Specification/Applicability Decision Required** |
+| LC-11 | Termination authority | A concrete scenario defines authorized and unauthorized termination requests. | Unauthorized termination does not mutate authoritative lifecycle state. | No lifecycle authority scenario was exercised. | **Specification/Applicability Decision Required** |
+| LC-12 | Termination finality | A valid termination transition exists. | `TERMINATED` cannot return to `ACTIVE` or `SUSPENDED` as the same lifecycle instance. | No terminated instance exists in the tested implementation. | **Specification/Applicability Decision Required** |
+| LC-13 | Completion separation | Engineering completion and lifecycle termination are independent unless explicitly connected by applicable semantics. | Completion remains independently observable from lifecycle termination. | Completion/process-state progression while lifecycle remained `ACTIVE` was demonstrated. | **Conformant — Demonstrated** |
+| LC-14 | Lifecycle transition consistency | A concrete lifecycle transition is executed. | Lifecycle state and required Execution Context recover as one semantically consistent authoritative mutation. | General mutation evidence exists, but no lifecycle transition was executed. | **Conformant — Evidence Incomplete** |
+| LC-15 | Lifecycle traceability | A material lifecycle transition is executed. | History reconstructs prior/resulting state, transition identity, sequence, trigger/condition, basis, authority where applicable, and material consequence. | No lifecycle transition history exists because no lifecycle transition was executed. | **Conformant — Evidence Incomplete** |
+| LC-16 | Transition attribution | A lifecycle transition is executed and attribution is meaningful. | Authority/actor and semantic basis are reconstructable where applicable. | No lifecycle transition was executed. | **Conformant — Evidence Incomplete** |
+| LC-17 | Lifecycle separation from Runtime | Runtime interruption occurs without an independently established lifecycle transition. | Runtime lifetime changes do not themselves imply suspension or termination. | `Runtime.stop()` left lifecycle unchanged; cross-Runtime recovery succeeded. | **Conformant — Demonstrated** |
+| LC-18 | Lifecycle separation from Agent/Environment | Agent/session/environment interruption occurs without an independently established lifecycle transition. | Interruption does not itself imply lifecycle suspension or termination. | Existing continuity evidence supports the boundary; full environment-loss semantics were not directly exercised. | **Conformant — Evidence Incomplete** |
+| LC-19 | Terminal transition graph | A terminated lifecycle instance exists after an applicable termination transition. | No `TERMINATED → ACTIVE` or `TERMINATED → SUSPENDED` transition for the same instance. | No terminated instance was created. | **Conformant — Evidence Incomplete** |
+| LC-20 | Implementation independence | Lifecycle behavior is assessed semantically rather than by mandated mechanism. | Conformance does not depend on a specific lifecycle API or persistence technology. | Current specification explicitly makes API/storage choices implementation-dependent. | **Conformant — Demonstrated** at specification level |
+
+## Reassessment conclusion
+
+The universal lifecycle semantics are now sufficiently explicit. The remaining boundary is applicability and evidence, not universal lifecycle vocabulary.
+
+### Demonstrated conformance
+
+- lifecycle separation from Process State;
+- lifecycle separation from engineering completion;
+- lifecycle separation from Runtime lifetime;
+- representation and recovery of the observed `ACTIVE` lifecycle state; and
+- implementation independence at the specification level.
+
+### Evidence incomplete
+
+- recovery of a `SUSPENDED` instance without automatic resumption;
+- reevaluation before resumption;
+- stale-work protection during resumption;
+- alternative resumption outcomes;
+- lifecycle transition consistency;
+- lifecycle transition trace reconstruction;
+- transition attribution; and
+- terminality after an actual termination transition.
+
+These are evidence gaps, not confirmed Runtime defects.
+
+### Applicability decisions still required
+
+Concrete suspension and termination conditions, and their scenario-specific authority, must be established before the corresponding Runtime behavior can be classified as a confirmed implementation gap.
+
+A controlled validation scenario may establish an applicable semantic condition for experimentation without making that scenario a universal AESM trigger.
 
 ## Targeted validation mapping
 
-### Suspension validation
+### Suspension
 
 ```text
-Authorized trigger
+Controlled applicable suspension condition
+      ↓
+Authorized lifecycle determination
       ↓
 ACTIVE → SUSPENDED
       ↓
 Preserve authoritative state
       ↓
-Persist lifecycle transition
+Persist transition
       ↓
 Recover independently
       ↓
@@ -67,18 +112,20 @@ Verify suspended condition and preserved continuation state
 Reconstruct transition history
 ```
 
-### Resumption validation
+Runtime shutdown, Agent departure, conversation closure, IDE closure, or environment replacement must not be used as a suspension trigger unless the test explicitly establishes that semantic relationship.
+
+### Resumption
 
 ```text
 SUSPENDED
       ↓
 Recover authoritative state
       ↓
-Remain non-executing until reevaluation
+Remain non-executing
       ↓
-Observe current situation
+Introduce or observe current conditions
       ↓
-Evaluate current EPM/PEM conditions
+Reevaluate applicable EPM/PEM conditions
       ↓
 Validate pending execution / next expected action
       ↓
@@ -87,14 +134,16 @@ Determine permissible continuation
 Resume ACTIVE execution only when permitted
 ```
 
-At least one scenario should introduce a material change after suspension so that blind replay can be distinguished from genuine reevaluation.
+At least one scenario must introduce a material change after suspension so that blind replay can be distinguished from genuine reevaluation.
 
-### Termination validation
+### Termination
 
 ```text
 ACTIVE or SUSPENDED
       ↓
-Authorized termination condition
+Controlled applicable termination condition
+      ↓
+Authorized lifecycle determination
       ↓
 TERMINATED
       ↓
@@ -105,13 +154,11 @@ Recover historical state
 Verify no same-instance resumption
 ```
 
-A separate unauthorized-request scenario should demonstrate that a termination request without applicable authority does not mutate lifecycle state.
+A separate unauthorized-request scenario should demonstrate that an unauthorized termination request does not mutate lifecycle state.
 
-### Lifecycle traceability validation
+### Traceability
 
-The validator should reconstruct lifecycle history using historical evidence rather than reading only the current lifecycle state.
-
-The reconstructed history should establish, where applicable:
+The validator must reconstruct lifecycle history from historical evidence rather than reading only the current lifecycle field. The reconstruction should establish, where applicable:
 
 ```text
 prior state
@@ -131,10 +178,24 @@ material consequence
 
 The reconstruction must remain possible after subsequent lifecycle changes.
 
-## Current conclusion
+## Decision on Runtime implementation
 
-The lifecycle semantic baseline is now sufficiently explicit to define behavioral tests without prescribing Runtime APIs.
+No generalized Runtime lifecycle implementation is justified yet.
 
-The next experiment should therefore target LC-03 through LC-19, with the existing cross-Runtime continuity experiment retained as supporting evidence for LC-02, LC-06, LC-07, LC-08, LC-17, and LC-18 only to the extent its actual observations support those criteria.
+The next step is targeted behavioral validation using controlled, scenario-specific applicable lifecycle conditions. Only the resulting evidence may establish a confirmed Runtime implementation obligation.
 
-Runtime implementation changes remain out of scope until the targeted validation produces evidence of a confirmed conformance gap.
+## Next work
+
+```text
+Controlled applicable lifecycle scenarios
+        ↓
+Targeted behavioral validation
+        ↓
+Evidence classification
+        ↓
+Confirmed Runtime obligations
+        ↓
+Implementation only for confirmed gaps
+        ↓
+Re-validation
+```
