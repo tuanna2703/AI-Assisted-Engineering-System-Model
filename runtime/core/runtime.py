@@ -57,15 +57,14 @@ class Runtime:
         self._set_state(self.INVESTIGATION, "investigation_started")
 
     def observe(self, observation: dict[str, Any]) -> None:
+        """Record information; suspension blocks execution, not observation."""
         self._require_attached()
-        self._require_active_lifecycle()
         self.context.evidence.append(observation)
         self.store.save_context(self.context, {"type": "observation_recorded", "observation": observation, "runtime_id": self.runtime_id})
 
     def recognize_decision(self, decision: dict[str, Any], recognition: dict[str, Any]) -> None:
         """Record a recognized decision without defining its engineering validity."""
         self._require_attached()
-        self._require_active_lifecycle()
         self._require_recognition(recognition, "decision")
         if self.context.process_state not in {self.INVESTIGATION, "initial"}:
             raise RuntimeError("engineering decisions can only be recognized during investigation")
@@ -82,11 +81,9 @@ class Runtime:
         self._set_state(self.IMPLEMENTATION, "implementation_started")
 
     def set_pending_execution(self, work: dict[str, Any]) -> None:
-        """Record continuation work; retain compatibility with the prior prototype surface."""
+        """Record continuation work without changing Process State implicitly."""
         self._require_attached()
         self._require_active_lifecycle()
-        if self.context.process_state in {"initial", self.INVESTIGATION}:
-            self.context.process_state = self.IMPLEMENTATION
         self._require_state(self.IMPLEMENTATION)
         self.context.pending_execution.append(work)
         self.store.save_context(self.context, {"type": "pending_execution_recorded", "work": work, "runtime_id": self.runtime_id})
@@ -146,15 +143,9 @@ class Runtime:
     # --- Lifecycle control boundary ---
 
     def apply_lifecycle_determination(self, determination: dict[str, Any]) -> None:
-        """Authoritative lifecycle-control operation.
-
-        Accepts a lifecycle determination and applies the requested transition
-        after validating target, authority, transition legality, semantic basis,
-        and conflict evidence.
-        """
+        """Authoritative lifecycle-control operation."""
         self._require_attached()
 
-        # 1. Validate determination structure
         if not isinstance(determination, dict):
             raise ValueError("lifecycle determination must be a mapping")
         required_fields = {
@@ -170,11 +161,9 @@ class Runtime:
         if missing:
             raise ValueError(f"lifecycle determination missing required fields: {sorted(missing)}")
 
-        # 2. Validate target Process Instance
         if determination["target_process_instance_id"] != self.process_instance.process_instance_id:
             raise ValueError("lifecycle determination targets a different Process Instance")
 
-        # 3. Validate requested transition format and parse
         transition_str = determination["requested_transition"]
         source_semantic, target_semantic = self._parse_transition(transition_str)
         source_canonical = _SEMANTIC_TO_CANONICAL.get(source_semantic)
@@ -182,19 +171,16 @@ class Runtime:
         if source_canonical is None or target_canonical is None:
             raise ValueError(f"unrecognized lifecycle state in transition: {transition_str!r}")
 
-        # 4. Validate authority
         authority = determination["authority_context"]
         if authority != "authorized-controller":
             raise PermissionError(
                 f"lifecycle determination rejected: unauthorized authority context {authority!r}"
             )
 
-        # 5. Validate semantic basis is non-empty
         semantic_basis = determination.get("semantic_basis", "")
         if not semantic_basis or not str(semantic_basis).strip():
             raise ValueError("lifecycle determination requires a non-empty semantic basis")
 
-        # 6. Validate current lifecycle matches transition source
         current_lifecycle = self.process_instance.lifecycle
         if current_lifecycle != source_canonical:
             raise RuntimeError(
@@ -202,14 +188,12 @@ class Runtime:
                 f"{source_semantic!r} but Process Instance is {current_lifecycle!r}"
             )
 
-        # 7. Validate transition is in the legal graph
         transition_key = (source_canonical, target_canonical)
         if transition_key not in _TRANSITION_GRAPH:
             raise RuntimeError(
                 f"lifecycle transition {transition_str!r} is not a valid transition"
             )
 
-        # 8. Check for explicit conflicts in evidence
         evidence = determination.get("evidence") or []
         for entry in evidence:
             if isinstance(entry, dict) and entry.get("conflict") is True:
@@ -218,28 +202,16 @@ class Runtime:
                     "transition rejected"
                 )
 
-        # 9. Validate semantic conditions for specific transitions
         basis_lower = str(semantic_basis).lower()
-
-        if target_canonical == "suspended":
-            # Suspension: semantic_basis non-empty is sufficient (already checked)
-            pass
-
-        elif source_canonical == "suspended" and target_canonical == "active":
-            # Resumption: must establish that suspension condition ceased
+        if source_canonical == "suspended" and target_canonical == "active":
             self._validate_resumption(basis_lower, evidence)
 
-        elif target_canonical == "terminated":
-            # Termination: semantic_basis non-empty is sufficient (already checked)
-            pass
-
-        # 10. Apply stale-work invalidation for resumption
+        prior_lifecycle = self.process_instance.lifecycle
+        prior_context = self.context.to_dict()
         context_modified = False
         if source_canonical == "suspended" and target_canonical == "active":
             context_modified = self._apply_stale_work_invalidation(evidence)
 
-        # 11. Mutate lifecycle (in-memory first, persist, rollback on failure)
-        prior_lifecycle = self.process_instance.lifecycle
         self.process_instance.lifecycle = target_canonical
 
         lifecycle_event = {
@@ -264,8 +236,8 @@ class Runtime:
                 context_modified=context_modified,
             )
         except Exception:
-            # Rollback in-memory state on persistence failure
             self.process_instance.lifecycle = prior_lifecycle
+            self.context = ExecutionContext.from_dict(prior_context)
             raise
 
     # --- End lifecycle control boundary ---
@@ -321,20 +293,15 @@ class Runtime:
     @staticmethod
     def _validate_resumption(basis_lower: str, evidence: list[dict[str, Any]]) -> None:
         """Validate that a resumption determination establishes permissibility."""
-        # Reject if basis explicitly states suspension condition remains applicable
         if "remains applicable" in basis_lower:
             raise RuntimeError(
                 "resumption rejected: suspension condition remains applicable"
             )
 
-        # Check for positive resumption indicators in basis or evidence
         resumption_established = False
-
-        # Check basis for resumption indicators
         if "ceased" in basis_lower or "permissible" in basis_lower:
             resumption_established = True
 
-        # Check evidence entries for resumption indicators
         if not resumption_established:
             for entry in evidence:
                 if isinstance(entry, dict):
@@ -342,7 +309,6 @@ class Runtime:
                     if "ceased" in entry_str or "permissible" in entry_str:
                         resumption_established = True
                         break
-                    # stale_work evidence also implies resumption context
                     if "stale_work" in entry:
                         resumption_established = True
                         break
@@ -369,4 +335,3 @@ class Runtime:
             if work.get("id") not in stale_ids
         ]
         return len(self.context.pending_execution) != original_count
-
