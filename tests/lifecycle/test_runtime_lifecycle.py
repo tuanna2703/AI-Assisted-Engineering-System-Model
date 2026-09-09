@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from runtime.core import ProcessStore, Runtime
+from runtime.core.store import JsonlStore
 
 
 DECISION = {"recognized": True, "basis": "applicable decision gate satisfied"}
@@ -134,7 +135,7 @@ def test_suspended_observation_and_recognition_remain_informational(tmp_path: Pa
         runtime.begin_implementation()
 
 
-def test_lifecycle_persistence_failure_restores_authoritative_in_memory_context(tmp_path: Path, monkeypatch):
+def test_lifecycle_persistence_failure_restores_files_and_authoritative_in_memory_state(tmp_path: Path, monkeypatch):
     runtime = build_runtime(tmp_path)
     runtime.context.process_state = Runtime.IMPLEMENTATION
     runtime.set_pending_execution({"id": "W1", "status": "partial"})
@@ -142,18 +143,24 @@ def test_lifecycle_persistence_failure_restores_authoritative_in_memory_context(
         lifecycle_determination(runtime, "ACTIVE -> SUSPENDED", basis="execution temporarily paused")
     )
 
-    persisted_context_before = runtime.store.load_context(runtime.process_instance.process_instance_id).to_dict()
+    process_id = runtime.process_instance.process_instance_id
+    process_path = runtime.store._dir(process_id) / "process.json"
+    context_path = runtime.store._dir(process_id) / "context.json"
+    history_path = runtime.store._dir(process_id) / "history.jsonl"
+    before = {path: path.read_bytes() for path in (process_path, context_path, history_path)}
     prior_lifecycle = runtime.process_instance.lifecycle
     prior_context = runtime.context.to_dict()
 
-    original_save_lifecycle = runtime.store.save_lifecycle
+    original_append = JsonlStore.append
 
-    def failing_save_lifecycle(*args, **kwargs):
-        raise RuntimeError("injected lifecycle persistence failure")
+    def failing_append(self, event):
+        if self.path == history_path and event.get("type") == "lifecycle_transition":
+            raise RuntimeError("injected lifecycle history failure")
+        return original_append(self, event)
 
-    monkeypatch.setattr(runtime.store, "save_lifecycle", failing_save_lifecycle)
+    monkeypatch.setattr(JsonlStore, "append", failing_append)
 
-    with pytest.raises(RuntimeError, match="injected lifecycle persistence failure"):
+    with pytest.raises(RuntimeError, match="injected lifecycle history failure"):
         runtime.apply_lifecycle_determination(
             lifecycle_determination(
                 runtime,
@@ -165,6 +172,6 @@ def test_lifecycle_persistence_failure_restores_authoritative_in_memory_context(
 
     assert runtime.process_instance.lifecycle == prior_lifecycle
     assert runtime.context.to_dict() == prior_context
-    assert runtime.store.load_context(runtime.process_instance.process_instance_id).to_dict() == persisted_context_before
-
-    monkeypatch.setattr(runtime.store, "save_lifecycle", original_save_lifecycle)
+    assert {path: path.read_bytes() for path in (process_path, context_path, history_path)} == before
+    assert runtime.store.load_instance(process_id).lifecycle == prior_lifecycle
+    assert runtime.store.load_context(process_id).to_dict() == prior_context
