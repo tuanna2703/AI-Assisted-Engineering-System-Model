@@ -24,6 +24,18 @@ def prepare_verification(runtime: Runtime) -> None:
     runtime.begin_verification()
 
 
+def lifecycle_determination(runtime: Runtime, transition: str, *, basis: str = "applicable lifecycle condition", evidence=None):
+    return {
+        "target_process_instance_id": runtime.process_instance.process_instance_id,
+        "requested_transition": transition,
+        "semantic_basis": basis,
+        "authority_context": "authorized-controller",
+        "actor": "test-controller",
+        "evidence": evidence or [],
+        "occurred_at": "2026-09-09T00:00:00+00:00",
+    }
+
+
 def test_required_lifecycle_transitions(tmp_path: Path):
     runtime = build_runtime(tmp_path)
 
@@ -92,3 +104,67 @@ def test_completion_cannot_bypass_verification(tmp_path: Path):
     runtime.record_verification({"passed": False})
     with pytest.raises(RuntimeError):
         runtime.recognize_engineering_completion(COMPLETION)
+
+
+def test_pending_execution_cannot_bypass_decision_gate(tmp_path: Path):
+    runtime = build_runtime(tmp_path)
+    runtime.start_investigation()
+
+    with pytest.raises(RuntimeError):
+        runtime.set_pending_execution({"id": "W1", "status": "partial"})
+
+    assert runtime.context.process_state == Runtime.INVESTIGATION
+    assert runtime.context.pending_execution == []
+
+
+def test_suspended_observation_and_recognition_remain_informational(tmp_path: Path):
+    runtime = build_runtime(tmp_path)
+    runtime.apply_lifecycle_determination(
+        lifecycle_determination(runtime, "ACTIVE -> SUSPENDED", basis="execution temporarily paused")
+    )
+
+    runtime.observe({"fact": "new evidence arrived while suspended"})
+    runtime.recognize_decision({"id": "D-suspended"}, DECISION)
+
+    assert runtime.process_instance.lifecycle == "suspended"
+    assert runtime.context.evidence[-1]["fact"] == "new evidence arrived while suspended"
+    assert runtime.context.engineering_decisions[-1]["id"] == "D-suspended"
+
+    with pytest.raises(RuntimeError):
+        runtime.begin_implementation()
+
+
+def test_lifecycle_persistence_failure_restores_authoritative_in_memory_context(tmp_path: Path, monkeypatch):
+    runtime = build_runtime(tmp_path)
+    runtime.context.process_state = Runtime.IMPLEMENTATION
+    runtime.set_pending_execution({"id": "W1", "status": "partial"})
+    runtime.apply_lifecycle_determination(
+        lifecycle_determination(runtime, "ACTIVE -> SUSPENDED", basis="execution temporarily paused")
+    )
+
+    persisted_context_before = runtime.store.load_context(runtime.process_instance.process_instance_id).to_dict()
+    prior_lifecycle = runtime.process_instance.lifecycle
+    prior_context = runtime.context.to_dict()
+
+    original_save_lifecycle = runtime.store.save_lifecycle
+
+    def failing_save_lifecycle(*args, **kwargs):
+        raise RuntimeError("injected lifecycle persistence failure")
+
+    monkeypatch.setattr(runtime.store, "save_lifecycle", failing_save_lifecycle)
+
+    with pytest.raises(RuntimeError, match="injected lifecycle persistence failure"):
+        runtime.apply_lifecycle_determination(
+            lifecycle_determination(
+                runtime,
+                "SUSPENDED -> ACTIVE",
+                basis="suspension condition ceased",
+                evidence=[{"stale_work": "W1"}],
+            )
+        )
+
+    assert runtime.process_instance.lifecycle == prior_lifecycle
+    assert runtime.context.to_dict() == prior_context
+    assert runtime.store.load_context(runtime.process_instance.process_instance_id).to_dict() == persisted_context_before
+
+    monkeypatch.setattr(runtime.store, "save_lifecycle", original_save_lifecycle)
