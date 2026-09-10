@@ -7,6 +7,7 @@ from runtime.core.store import JsonlStore
 
 
 DECISION = {"recognized": True, "basis": "applicable decision gate satisfied"}
+EVIDENCE = {"recognized": True, "basis": "workspace inspection established the observation as recordable evidence"}
 COMPLETION = {"recognized": True, "basis": "applicable engineering completion conditions satisfied"}
 
 
@@ -18,7 +19,7 @@ def build_runtime(tmp_path: Path) -> Runtime:
 
 def prepare_verification(runtime: Runtime) -> None:
     runtime.start_investigation()
-    runtime.observe({"fact": "POST_SELECT returns a WordPress post ID; reviews store a custom business-table ID"})
+    runtime.observe({"fact": "POST_SELECT returns a WordPress post ID; reviews store a custom business-table ID", "recognition": EVIDENCE})
     runtime.recognize_decision({"id": "D1", "conclusion": "translate WP post ID through Business_Repository::find_by_post_id"}, DECISION)
     runtime.begin_implementation()
     runtime.record_artifact({"path": "modules/reviews/forms/add-review-form.php"})
@@ -124,7 +125,7 @@ def test_suspended_observation_and_recognition_remain_informational(tmp_path: Pa
         lifecycle_determination(runtime, "ACTIVE -> SUSPENDED", basis="execution temporarily paused")
     )
 
-    runtime.observe({"fact": "new evidence arrived while suspended"})
+    runtime.observe({"fact": "new evidence arrived while suspended", "recognition": EVIDENCE})
     runtime.recognize_decision({"id": "D-suspended"}, DECISION)
 
     assert runtime.process_instance.lifecycle == "suspended"

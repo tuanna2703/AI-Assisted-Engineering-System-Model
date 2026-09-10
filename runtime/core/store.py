@@ -44,10 +44,27 @@ class ProcessStore:
         directory = self._dir(context.process_instance_id)
         if not directory.exists():
             raise PersistenceError("Process Instance does not exist")
-        context.version += 1
-        context.updated_at = now()
-        JsonStore(directory / "context.json").save(context.to_dict())
-        JsonlStore(directory / "history.jsonl").append({**event, "version": context.version, "at": now()})
+
+        context_path = directory / "context.json"
+        history_path = directory / "history.jsonl"
+        snapshots = {
+            context_path: context_path.read_bytes() if context_path.exists() else None,
+            history_path: history_path.read_bytes() if history_path.exists() else None,
+        }
+        prior_version = context.version
+        prior_updated_at = context.updated_at
+
+        try:
+            context.version += 1
+            context.updated_at = now()
+            JsonStore(context_path).save(context.to_dict())
+            JsonlStore(history_path).append({**event, "version": context.version, "at": now()})
+        except Exception:
+            context.version = prior_version
+            context.updated_at = prior_updated_at
+            self._restore_file(context_path, snapshots[context_path])
+            self._restore_file(history_path, snapshots[history_path])
+            raise
 
     def save_lifecycle(
         self,

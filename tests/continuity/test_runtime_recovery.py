@@ -8,6 +8,7 @@ from runtime.persistence.json_store import PersistenceError
 
 
 DECISION_RECOGNITION = {"recognized": True, "basis": "applicable decision gate satisfied"}
+EVIDENCE_RECOGNITION = {"recognized": True, "basis": "workspace inspection established the observation as recordable evidence"}
 COMPLETION_RECOGNITION = {"recognized": True, "basis": "applicable engineering completion conditions satisfied"}
 
 
@@ -86,12 +87,104 @@ def test_execution_context_round_trip_preserves_semantic_state():
     ]
 
 
+def test_evidence_requires_explicit_recognition(tmp_path: Path):
+    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    runtime.create_process("Implement feature X")
+
+    with pytest.raises(TypeError):
+        runtime.observe({"fact": "candidate observation"})
+
+    with pytest.raises(RuntimeError):
+        runtime.observe({
+            "fact": "candidate observation",
+            "recognition": {"recognized": False, "basis": "proposal only"},
+        })
+
+    with pytest.raises(RuntimeError):
+        runtime.observe({
+            "fact": "candidate observation",
+            "recognition": {"recognized": True},
+        })
+
+    assert runtime.context.evidence == []
+
+
+def test_recognized_evidence_is_recorded_without_process_state_mutation(tmp_path: Path):
+    store = ProcessStore(tmp_path)
+    runtime = Runtime(store, "runtime-a")
+    pid = runtime.create_process("Implement feature X")
+
+    runtime.observe({
+        "source": "workspace",
+        "fact": "existing implementation found",
+        "recognition": EVIDENCE_RECOGNITION,
+    })
+
+    assert runtime.context.evidence == [
+        {"source": "workspace", "fact": "existing implementation found"}
+    ]
+    assert runtime.context.process_state == "initial"
+    assert runtime.context.engineering_decisions == []
+    history = store.history(pid)
+    assert history[-1]["type"] == "evidence_recorded"
+    assert history[-1]["recognition"] == EVIDENCE_RECOGNITION
+
+
+def test_assumption_or_claim_is_not_silently_promoted_to_evidence(tmp_path: Path):
+    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    runtime.create_process("Implement feature X")
+
+    with pytest.raises(RuntimeError):
+        runtime.observe({
+            "kind": "assumption",
+            "statement": "the existing extension point is sufficient",
+            "recognition": {"recognized": False, "basis": "unverified assumption"},
+        })
+
+    with pytest.raises(RuntimeError):
+        runtime.observe({
+            "kind": "claim",
+            "statement": "the implementation is complete",
+            "recognition": {"recognized": False, "basis": "unsupported claim"},
+        })
+
+    assert runtime.context.evidence == []
+
+
+def test_failed_evidence_persistence_restores_in_memory_authoritative_state(tmp_path: Path, monkeypatch):
+    store = ProcessStore(tmp_path)
+    runtime = Runtime(store, "runtime-a")
+    pid = runtime.create_process("Implement feature X")
+    prior_version = runtime.context.version
+
+    def fail_save_context(context, event):
+        context.version += 1
+        raise PersistenceError("simulated evidence persistence failure")
+
+    monkeypatch.setattr(store, "save_context", fail_save_context)
+
+    with pytest.raises(PersistenceError):
+        runtime.observe({
+            "fact": "new evidence",
+            "recognition": EVIDENCE_RECOGNITION,
+        })
+
+    assert runtime.context.evidence == []
+    assert runtime.context.version == prior_version
+    restored = store.load_context(pid)
+    assert restored.evidence == []
+
+
 def test_process_and_context_survive_runtime_replacement(tmp_path: Path):
     store = ProcessStore(tmp_path)
     runtime_a = Runtime(store, "runtime-a")
     pid = runtime_a.create_process("Implement feature X")
     runtime_a.start_investigation()
-    runtime_a.observe({"source": "workspace", "fact": "existing implementation found"})
+    runtime_a.observe({
+        "source": "workspace",
+        "fact": "existing implementation found",
+        "recognition": EVIDENCE_RECOGNITION,
+    })
     runtime_a.recognize_decision({"id": "D1", "conclusion": "use existing extension point"}, DECISION_RECOGNITION)
     runtime_a.begin_implementation()
     runtime_a.set_pending_execution(
@@ -161,13 +254,13 @@ def test_history_is_preserved(tmp_path: Path):
     store = ProcessStore(tmp_path)
     runtime = Runtime(store, "runtime-a")
     pid = runtime.create_process("Implement feature X")
-    runtime.observe({"fact": "A"})
+    runtime.observe({"fact": "A", "recognition": EVIDENCE_RECOGNITION})
     runtime.recognize_decision({"id": "D1"}, DECISION_RECOGNITION)
     runtime.stop()
 
     history = store.history(pid)
     assert [event["type"] for event in history] == [
         "process_created",
-        "observation_recorded",
+        "evidence_recorded",
         "engineering_decision_recognized",
     ]
