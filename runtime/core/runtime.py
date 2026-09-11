@@ -94,8 +94,17 @@ class Runtime:
         self._require_recognition(recognition, "decision")
         if self.context.process_state not in {self.INVESTIGATION, "initial"}:
             raise RuntimeError("engineering decisions can only be recognized during investigation")
+        prior_decisions = list(self.context.engineering_decisions)
+        prior_version = self.context.version
+        prior_updated_at = self.context.updated_at
         self.context.engineering_decisions.append(decision)
-        self.store.save_context(self.context, {"type": "engineering_decision_recognized", "decision": decision, "recognition": recognition, "runtime_id": self.runtime_id})
+        try:
+            self.store.save_context(self.context, {"type": "engineering_decision_recognized", "decision": decision, "recognition": recognition, "runtime_id": self.runtime_id})
+        except Exception:
+            self.context.engineering_decisions = prior_decisions
+            self.context.version = prior_version
+            self.context.updated_at = prior_updated_at
+            raise
 
     def begin_implementation(self) -> None:
         self._require_attached()
@@ -118,8 +127,17 @@ class Runtime:
         self._require_attached()
         self._require_active_lifecycle()
         self._require_state(self.IMPLEMENTATION)
+        prior_artifacts = list(self.context.artifacts)
+        prior_version = self.context.version
+        prior_updated_at = self.context.updated_at
         self.context.artifacts.append(artifact)
-        self.store.save_context(self.context, {"type": "artifact_recorded", "artifact": artifact, "runtime_id": self.runtime_id})
+        try:
+            self.store.save_context(self.context, {"type": "artifact_recorded", "artifact": artifact, "runtime_id": self.runtime_id})
+        except Exception:
+            self.context.artifacts = prior_artifacts
+            self.context.version = prior_version
+            self.context.updated_at = prior_updated_at
+            raise
 
     def begin_verification(self) -> None:
         self._require_attached()
@@ -138,10 +156,21 @@ class Runtime:
         self._require_active_lifecycle()
         if self.context.process_state not in {"initial", self.IMPLEMENTATION, self.VERIFICATION}:
             raise RuntimeError("verification can only be recorded before completion")
+        prior_verification = self.context.verification
+        prior_process_state = self.context.process_state
+        prior_version = self.context.version
+        prior_updated_at = self.context.updated_at
         self.context.verification = result
         if self.context.process_state != self.VERIFICATION:
             self.context.process_state = self.VERIFICATION
-        self.store.save_context(self.context, {"type": "verification_recorded", "result": result, "runtime_id": self.runtime_id})
+        try:
+            self.store.save_context(self.context, {"type": "verification_recorded", "result": result, "runtime_id": self.runtime_id})
+        except Exception:
+            self.context.verification = prior_verification
+            self.context.process_state = prior_process_state
+            self.context.version = prior_version
+            self.context.updated_at = prior_updated_at
+            raise
 
     def reconsider(self, reason: dict[str, Any]) -> None:
         self._require_attached()
