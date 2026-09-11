@@ -192,8 +192,8 @@ Complete / terminate Process Instance
 - [x] Define the smallest Runtime interface required by the first vertical slice.
 - [x] Implement Process Instance creation/loading operations.
 - [x] Implement Context loading/saving operations.
-- [ ] Implement the required process-state/lifecycle operations derived from the selected vertical slice.
-- [ ] Implement evidence recording.
+- [x] Implement the required process-state/lifecycle operations derived from the selected vertical slice.
+- [x] Implement evidence recording.
 - [ ] Implement decision recording.
 - [ ] Implement artifact association/recording.
 - [ ] Implement verification recording.
@@ -361,9 +361,9 @@ During execution, if a task proves too broad to execute or verify as a single un
 
 **Plan status:** Implementation in progress.
 
-**Completed immediately before the current step:** Process Instance persistence, Execution Context implementation/verification, Minimal Runtime interface definition, Process lifecycle investigation, Agent–Runtime boundary investigation, and First Vertical Slice Definition.
+**Completed immediately before the current step:** Process Instance persistence, Execution Context implementation/verification, Minimal Runtime interface definition, Process lifecycle implementation/validation, Agent–Runtime boundary investigation, First Vertical Slice Definition, and Evidence Recording implementation/validation/reconciliation.
 
-**Current next step:** Implement and test the minimum Runtime lifecycle behavior derived from the selected `Add_Review_Form` vertical slice. This must precede Agent-facing integration.
+**Current next step:** Conduct a bounded capability inspection of the current Runtime after Evidence Recording closure. The inspection must determine the smallest next Runtime capability required by the first vertical slice, using the current implementation and persisted semantics rather than inventing architecture.
 
 **Selected first vertical slice:** `tuanna2703/directories-builder-pro` — Reviews module — `Add_Review_Form::business_id` conversion from `SELECT` to `POST_SELECT`, including WP post ID → `dbp_businesses.id` persistence translation.
 
@@ -392,5 +392,8 @@ During execution, if a task proves too broad to execute or verify as a single un
 - **Agent–Runtime boundary investigation:** `execution/IMPLEMENTATION-AGENT-RUNTIME-BOUNDARY-INVESTIGATION.md` records that the minimum operational boundary is bidirectional: the Agent consumes authoritative Context and submits contributions/results; the Runtime recognizes them, applies permitted mutations, persists authoritative state, and returns the updated executable situation. The investigation found that an invocation path is required but did not justify MCP, CLI, or another transport as normative.
 - **Agent–Runtime investigation finding:** A small Agent-facing adapter is preferable to exposing the entire Runtime API. The adapter should remain an implementation mechanism and must not silently become an AESM semantic requirement.
 - **Agent–Runtime investigation conclusion:** No normative AESM change is justified by the first execution observation. The first vertical slice must establish lifecycle semantics before the Agent-facing adapter is implemented.
+- **Evidence Recording implementation and validation:** Pull request #4 was merged as `9aff039efeac3e3c9c520452dd572e1195d33bab`. The post-merge reconciliation records PASS for semantic boundary, context persistence/rollback, lifecycle compatibility, and behavioral validation, with 35/35 tests passing and an explicitly documented coverage qualification for the persistence-failure regression. It also records that no implementation redesign or semantic change is justified.
+- **Evidence Recording repository hygiene:** `.gitignore` was added and committed Python cache files were removed from `main`. The post-merge reconciliation records repository hygiene as corrected. Subsequent repository inspection found no `__pycache__` matches, and the previously present `feature/evidence-recording` branch is no longer returned by branch search.
+- **Evidence Recording closure:** The implementation-plan entry for evidence recording is now marked complete because the merged implementation, tests, behavioral validation, and post-merge reconciliation satisfy the completion-marking rule. Human closure is treated as the accepted baseline for the next bounded capability inspection.
 
 Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan remains the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
