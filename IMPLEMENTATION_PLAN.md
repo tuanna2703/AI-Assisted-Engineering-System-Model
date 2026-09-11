@@ -200,7 +200,23 @@ Complete / terminate Process Instance
 - [ ] Implement process completion/termination handling required by the prototype.
 - [ ] Verify that Runtime responsibilities do not become Agent responsibilities.
 
-**Exit condition:** The Runtime can maintain the operational process around real Agent work without taking over engineering judgment.
+#### Bounded Recording Capability Validation
+
+- [~] Inspect existing decision, artifact, and verification recording implementations against the first vertical slice.
+  - [x] Confirm whether each capability already exists in the current Runtime.
+  - [x] Identify state and lifecycle guards.
+  - [x] Identify persistence/history behavior.
+  - [x] Identify differences between structured and legacy verification paths.
+  - [x] Identify Runtime in-memory consistency behavior when persistence fails.
+- [ ] Add and execute focused behavioral tests for decision recording.
+- [ ] Add and execute focused behavioral tests for artifact association/recording.
+- [ ] Add and execute focused behavioral tests for verification recording and its preconditions.
+- [ ] Add and execute failure-path tests proving persisted and in-memory rollback consistency.
+- [ ] Reconcile test results against the first vertical slice and decide whether implementation changes are required.
+
+**Exit condition:** Existing decision, artifact, and verification capabilities have executable behavioral evidence sufficient to mark or revise their implementation status, and any consistency defect is either corrected or explicitly bounded for follow-up.
+
+**Current inspection finding:** Decision, artifact, and verification recording are already implemented in `runtime/core/runtime.py`; this round therefore does not justify creating new Runtime features. The immediate work is targeted behavioral validation and consistency hardening, with decision recording first because it is the first unchecked recording capability required by the vertical slice.
 
 ### Agent Guidance Interface
 
@@ -363,11 +379,11 @@ During execution, if a task proves too broad to execute or verify as a single un
 
 **Completed immediately before the current step:** Process Instance persistence, Execution Context implementation/verification, Minimal Runtime interface definition, Process lifecycle implementation/validation, Agent–Runtime boundary investigation, First Vertical Slice Definition, and Evidence Recording implementation/validation/reconciliation.
 
-**Current next step:** Conduct a bounded capability inspection of the current Runtime after Evidence Recording closure. The inspection must determine the smallest next Runtime capability required by the first vertical slice, using the current implementation and persisted semantics rather than inventing architecture.
+**Current next step:** Execute the bounded behavioral validation of the existing decision, artifact, and verification recording capabilities. No new Runtime feature should be implemented until those tests establish an actual gap.
 
 **Selected first vertical slice:** `tuanna2703/directories-builder-pro` — Reviews module — `Add_Review_Form::business_id` conversion from `SELECT` to `POST_SELECT`, including WP post ID → `dbp_businesses.id` persistence translation.
 
-**Important implementation boundary established:** The Agent–Runtime investigation does not justify a normative transport choice or a generalized orchestration layer. The first vertical slice now establishes four derived engineering states — Investigation, Implementation, Verification, and Engineering Complete — plus a feedback path from failed Verification to Investigation/Implementation. These are slice-specific semantics, not universal AESM state identifiers.
+**Important implementation boundary established:** The Agent–Runtime investigation does not justify a normative transport choice or a generalized orchestration layer. The first vertical slice establishes four derived engineering states — Investigation, Implementation, Verification, and Engineering Complete — plus a feedback path from failed Verification to Investigation/Implementation. These are slice-specific semantics, not universal AESM state identifiers.
 
 **Termination boundary:** The first vertical slice establishes engineering completion conditions but does not justify inventing a separate Process Instance terminal state or generalized termination semantics. Engineering completion, Process Instance termination, Runtime termination, and Agent/session termination remain distinct.
 
@@ -394,6 +410,8 @@ During execution, if a task proves too broad to execute or verify as a single un
 - **Agent–Runtime investigation conclusion:** No normative AESM change is justified by the first execution observation. The first vertical slice must establish lifecycle semantics before the Agent-facing adapter is implemented.
 - **Evidence Recording implementation and validation:** Pull request #4 was merged as `9aff039efeac3e3c9c520452dd572e1195d33bab`. The post-merge reconciliation records PASS for semantic boundary, context persistence/rollback, lifecycle compatibility, and behavioral validation, with 35/35 tests passing and an explicitly documented coverage qualification for the persistence-failure regression. It also records that no implementation redesign or semantic change is justified.
 - **Evidence Recording repository hygiene:** `.gitignore` was added and committed Python cache files were removed from `main`. The post-merge reconciliation records repository hygiene as corrected. Subsequent repository inspection found no `__pycache__` matches, and the previously present `feature/evidence-recording` branch is no longer returned by branch search.
-- **Evidence Recording closure:** The implementation-plan entry for evidence recording is now marked complete because the merged implementation, tests, behavioral validation, and post-merge reconciliation satisfy the completion-marking rule. Human closure is treated as the accepted baseline for the next bounded capability inspection.
+- **Evidence Recording closure:** The implementation-plan entry for evidence recording is marked complete because the merged implementation, tests, behavioral validation, and post-merge reconciliation satisfy the completion-marking rule. Human closure is the accepted baseline for the next bounded capability inspection.
+- **Next Runtime capability inspection:** `execution/RUNTIME-CAPABILITY-INSPECTION-DECISION-ARTIFACT-VERIFICATION.md` inspected the existing decision, artifact, and verification recording methods. It found that all three capabilities already exist, so no new feature is justified. It also identified a concrete consistency risk: unlike `observe()`, the decision/artifact/verification methods mutate the in-memory Context before persistence and do not restore that mutation if `save_context()` fails. The persistence layer restores files, but the live Runtime object can become inconsistent with authoritative persisted state after a failed write.
+- **Capability testing limitation:** The connected GitHub interface does not expose an executable local pytest runner for this repository, and the inspected commit has no associated GitHub Actions workflow run. Therefore this round is a bounded implementation/capability inspection, not a claim of fresh test execution. The next executable validation is explicitly tracked under `Bounded Recording Capability Validation`.
 
 Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan remains the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
