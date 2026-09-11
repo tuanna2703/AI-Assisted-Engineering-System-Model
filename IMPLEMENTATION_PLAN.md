@@ -202,17 +202,19 @@ Complete / terminate Process Instance
 
 #### Bounded Recording Capability Validation
 
-- [~] Inspect existing decision, artifact, and verification recording implementations against the first vertical slice.
+- [x] Inspect existing decision, artifact, and verification recording implementations against the first vertical slice.
   - [x] Confirm whether each capability already exists in the current Runtime.
   - [x] Identify state and lifecycle guards.
   - [x] Identify persistence/history behavior.
   - [x] Identify differences between structured and legacy verification paths.
   - [x] Identify Runtime in-memory consistency behavior when persistence fails.
-- [ ] Add and execute focused behavioral tests for decision recording.
-- [ ] Add and execute focused behavioral tests for artifact association/recording.
-- [ ] Add and execute focused behavioral tests for verification recording and its preconditions.
-- [ ] Add and execute failure-path tests proving persisted and in-memory rollback consistency.
-- [ ] Reconcile test results against the first vertical slice and decide whether implementation changes are required.
+- [x] Add and execute focused behavioral tests for decision recording.
+- [x] Add and execute focused behavioral tests for artifact association/recording.
+- [x] Add and execute focused behavioral tests for verification recording and its preconditions.
+- [x] Add and execute failure-path tests proving persisted and in-memory rollback consistency.
+  - [!] All three recording operations (`recognize_decision`, `record_artifact`, `record_verification`) have a confirmed caller-level rollback defect: they mutate the in-memory Context before calling `save_context()` and do not restore the mutation on failure. 7/53 tests fail. See `execution/RUNTIME-CAPABILITY-BEHAVIORAL-VALIDATION.md`.
+- [x] Reconcile test results against the first vertical slice and decide whether implementation changes are required.
+  - Minimal implementation correction required: add caller-level rollback following the existing `observe()` pattern. No AESM semantic change involved.
 
 **Exit condition:** Existing decision, artifact, and verification capabilities have executable behavioral evidence sufficient to mark or revise their implementation status, and any consistency defect is either corrected or explicitly bounded for follow-up.
 
@@ -413,5 +415,6 @@ During execution, if a task proves too broad to execute or verify as a single un
 - **Evidence Recording closure:** The implementation-plan entry for evidence recording is marked complete because the merged implementation, tests, behavioral validation, and post-merge reconciliation satisfy the completion-marking rule. Human closure is the accepted baseline for the next bounded capability inspection.
 - **Next Runtime capability inspection:** `execution/RUNTIME-CAPABILITY-INSPECTION-DECISION-ARTIFACT-VERIFICATION.md` inspected the existing decision, artifact, and verification recording methods. It found that all three capabilities already exist, so no new feature is justified. It also identified a concrete consistency risk: unlike `observe()`, the decision/artifact/verification methods mutate the in-memory Context before persistence and do not restore that mutation if `save_context()` fails. The persistence layer restores files, but the live Runtime object can become inconsistent with authoritative persisted state after a failed write.
 - **Capability testing limitation:** The connected GitHub interface does not expose an executable local pytest runner for this repository, and the inspected commit has no associated GitHub Actions workflow run. Therefore this round is a bounded implementation/capability inspection, not a claim of fresh test execution. The next executable validation is explicitly tracked under `Bounded Recording Capability Validation`.
+- **Recording capability behavioral validation:** `execution/RUNTIME-CAPABILITY-BEHAVIORAL-VALIDATION.md` documents the bounded behavioral testing of decision, artifact, and verification recording. 53 tests were created in `tests/recording/test_runtime_recording.py`; 46 passed, 7 failed. All 7 failures confirm a single implementation defect: `recognize_decision()`, `record_artifact()`, and `record_verification()` mutate the in-memory Context before calling `save_context()` and do not restore the mutation when `save_context()` raises, leaving the live Runtime inconsistent with the authoritative persisted state. The persistence layer's own file-level rollback works correctly; only the caller-level rollback is missing. The recommendation is minimal implementation correction following the existing `observe()` pattern. No AESM semantic change is involved. The parent implementation-plan items for decision recording, artifact recording, and verification recording remain unchecked because the confirmed defect must be corrected before their behavioral evidence is sufficient for completion marking. Baseline commit: `87fcc2bba226fda7b66bab910190e23abd10f67a`.
 
 Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan remains the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
