@@ -249,22 +249,24 @@ Complete / terminate Process Instance
 
 ### Agent–Runtime Execution Bridge Inspection
 
-**Status: Not started. Next bounded work unit.**
+**Status: Complete.**
 
 Purpose: determine the smallest operational mechanism by which a real AI Agent can receive AESM guidance and authoritative Process Instance / Execution Context information, perform engineering work in an existing Execution Environment, and cause authoritative Runtime updates without collapsing Agent, Runtime, and Execution Environment responsibilities.
 
 Inspection targets:
 
-- [ ] Identify the actual Agent interaction surface available in the selected Execution Environment.
-- [ ] Trace how a real engineering request can create or identify a Process Instance.
-- [ ] Trace how the Agent can obtain current authoritative Execution Context.
-- [ ] Determine how Agent actions can invoke or otherwise interact with the Runtime without making a specific transport normative.
-- [ ] Determine which Runtime mutations must be authoritative and which activities remain Agent responsibilities.
-- [ ] Determine the minimum guidance/context exchange required for continuity.
-- [ ] Use the Directories Builder Pro request as the empirical target where practical.
-- [ ] Produce an inspection record with concrete evidence, constraints, and the smallest justified implementation boundary.
+- [x] Identify the actual Agent interaction surface available in the selected Execution Environment.
+- [x] Trace how a real engineering request can create or identify a Process Instance.
+- [x] Trace how the Agent can obtain current authoritative Execution Context.
+- [x] Determine how Agent actions can invoke or otherwise interact with the Runtime without making a specific transport normative.
+- [x] Determine which Runtime mutations must be authoritative and which activities remain Agent responsibilities.
+- [x] Determine the minimum guidance/context exchange required for continuity.
+- [x] Use the Directories Builder Pro request as the empirical target where practical.
+- [x] Produce an inspection record with concrete evidence, constraints, and the smallest justified implementation boundary.
 
 **Exit condition:** The repository contains an evidence-based design boundary for operational Agent participation, with no speculative Runtime feature or transport introduced.
+
+**Completion:** The inspection established that the current Agent environment can invoke the existing AESM Runtime programmatically and demonstrated Process Instance creation, persistence, and cross-process recovery. However, no operational Agent–Runtime bridge exists: no mechanism currently creates a Process Instance when an engineering request arrives, no mechanism presents authoritative Execution Context to the Agent, and no mechanism connects Agent engineering activity to Runtime operations. The inspection concluded with **Outcome B — Thin Agent–Runtime Bridge Justified**, identifying a bounded four-part adapter boundary (Process Instance access, Execution Context access, Runtime dispatch, authoritative result/state return). No Runtime, specification, or DBP changes were made or required. Evidence: [`execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md). Bridge implementation itself has **not** been authorized; the inspection produced a justified implementation direction, not a completed integration.
 
 ### Environment Mechanism Mapping
 
@@ -277,6 +279,31 @@ Inspection targets:
 - [ ] Record the mapping and its rationale.
 
 **Exit condition:** The implementation has an explicit, testable mapping between AESM responsibilities and Execution Environment mechanisms.
+
+#### Demonstrated mechanisms (established by bridge inspection)
+
+The Agent–Runtime Execution Bridge Inspection demonstrated that the current Agent environment can:
+
+- Read and write repository files.
+- Execute repository commands and Python code.
+- Use repository-level Agent instructions (`.agents/rules/`).
+- Invoke the AESM Runtime programmatically via `run_command`.
+- Create a Process Instance through Runtime invocation.
+- Persist and recover Process Instance / Execution Context state.
+- Recover state across separate Runtime/process execution (cross-process continuity).
+
+#### Not yet demonstrated mechanisms
+
+The bridge inspection did **not** demonstrate:
+
+- Automatic AESM Runtime participation when an engineering request arrives.
+- Automatic creation or discovery of the relevant Process Instance from an ordinary engineering request.
+- Automatic presentation of authoritative Execution Context to the Agent.
+- A functioning Agent–Runtime bridge.
+- End-to-end AESM participation in a real DBP engineering request.
+- Fresh-Agent continuation through such a bridge.
+
+These are implementation gaps identified by the inspection, not implementation defects in the existing Runtime. The existing Runtime correctly implements its responsibilities; the gap is the absence of a connecting mechanism between Agent activity and Runtime operations.
 
 ### First Real Vertical Slice
 
@@ -367,10 +394,95 @@ The initial prototype is complete only when all of the following are demonstrate
 
 The prototype should be judged by demonstrated behavior and recorded evidence, not by the number of Runtime APIs or documentation pages created.
 
+## Canonical Agent–Runtime Bridge Boundary
+
+The following is the single canonical definition of the bounded bridge justified by the completed Agent–Runtime Execution Bridge Inspection. No alternative or expanded bridge definition is authorized elsewhere in this plan.
+
+The bridge may provide only these responsibilities:
+
+1. **Process Instance access** — Create or discover the relevant persistent Process Instance.
+2. **Execution Context access** — Obtain the authoritative Execution Context associated with that Process Instance and make its current state available to the Agent.
+3. **Runtime dispatch** — Dispatch already-supported Runtime operations on behalf of the Agent.
+4. **Authoritative result/state return** — Return the authoritative Runtime result and resulting Process Instance / Execution Context state to the Agent.
+
+The bridge is an **adapter/access boundary between the Agent and the existing Runtime**. It is not a replacement for the Runtime, Process Store, Execution Context, PEM, EPM, or Execution Environment. It must not become a generalized orchestration layer.
+
+## Explicit Bridge Exclusions
+
+The bounded bridge work does **not** authorize:
+
+- A new persistence store.
+- Replacement of the existing Process Store.
+- Changes to Process Instance persistence semantics.
+- Changes to Runtime lifecycle semantics.
+- Changes to EPM semantics.
+- Changes to PEM semantics.
+- Changes to Execution Context semantics.
+- Creation of a new lifecycle model.
+- An MCP server as a normative AESM requirement.
+- A VS Code extension.
+- VS Code-specific architecture.
+- Generalized Agent orchestration.
+- Broad Runtime refactoring.
+- Speculative AESM model expansion.
+- Automatic behavior not justified by the inspection evidence.
+
+If a future implementation appears to require any excluded capability, that requirement must become a separate design/authorization decision rather than being silently incorporated into the bridge.
+
+## Forward Work Sequence
+
+The completed inspection leads to the following bounded sequence of work units:
+
+- [x] **Controlled Plan Reconciliation** — Reconcile the implementation plan with the completed bridge inspection evidence. Establish the bounded bridge direction and authorization gate in the plan.
+- [!] **Bridge Implementation Authorization** — Explicit decision gate. See below.
+- [ ] **Runtime API Inspection** — Inspect the actual existing Runtime API to determine the smallest concrete adapter contract.
+- [ ] **Minimal Agent–Runtime Bridge Implementation** — Implement the bounded bridge per the canonical boundary above.
+- [ ] **Bridge Behavioral Validation** — Validate that the bridge correctly connects Agent activity to Runtime operations.
+- [ ] **DBP Real-Request Execution** — Execute a real DBP engineering request end-to-end under AESM process control.
+- [ ] **Context-Loss / Fresh-Agent Validation** — Validate that a fresh Agent can resume from authoritative persisted state.
+- [ ] **Reconciliation and Decision Gate** — Evaluate results and determine next steps.
+
+### Bridge Implementation Authorization
+
+**Status: Not yet passed. Explicit decision gate.**
+
+Bridge implementation is not authorized merely because the inspection concluded that a thin bridge is justified. The authorization gate is satisfied only when the bounded bridge boundary (defined in "Canonical Agent–Runtime Bridge Boundary" above) is explicitly accepted as the implementation scope and the next Runtime API Inspection is authorized to determine the concrete adapter contract.
+
+Until this gate is passed:
+
+- No bridge implementation.
+- No bridge tests.
+- No new adapter.
+- No Runtime modifications.
+- No Execution Environment integration.
+
+The gate therefore establishes authorization for **design/implementation work**, not implementation itself during this reconciliation task.
+
+### Runtime API Inspection
+
+**Status: Not started. Next technical investigation after authorization.**
+
+Purpose: inspect the actual existing Runtime API and determine the smallest concrete adapter contract capable of implementing the already-authorized bridge boundary.
+
+The Runtime API Inspection must determine, from actual code and tests:
+
+- How Process Instances are created.
+- How Process Instances are discovered or attached.
+- How Execution Context is obtained.
+- Which Runtime operations are already available.
+- What inputs those operations require.
+- What authoritative state/results they return.
+- What persistence behavior already exists.
+- Which operations can be exposed without changing Runtime semantics.
+
+This inspection is not authorized to begin until the Bridge Implementation Authorization gate is passed.
+
 ## Current Progress Position
 
 The current implementation has established the persistent Process Instance, authoritative Execution Context, minimal Runtime boundary, lifecycle control, and recording foundation. Recording rollback consistency has been corrected and behaviorally validated.
 
-The next objective is therefore **operational Agent participation**, not another isolated recording or persistence feature. The next bounded work unit is `Agent–Runtime Execution Bridge Inspection`. Its purpose is to establish how AESM can participate in a real Agent engineering execution using existing Execution Environment mechanisms and to identify the smallest justified Runtime addition, if any.
+The Agent–Runtime Execution Bridge Inspection has been completed. It established that the current Agent environment can invoke the Runtime programmatically and demonstrated Process Instance persistence and recovery, but found no existing Agent–Runtime bridge or automatic AESM participation path. The inspection concluded with Outcome B — Thin Agent–Runtime Bridge Justified — identifying a bounded four-part adapter boundary.
 
-No implementation of that bridge is authorized until the inspection produces concrete evidence and a bounded implementation decision.
+The next objective is therefore **operational Agent participation** through the bounded bridge, not another isolated Runtime feature. The next work unit is `Bridge Implementation Authorization`, an explicit decision gate that must be passed before any bridge design or implementation work begins. After authorization, `Runtime API Inspection` determines the concrete adapter contract.
+
+No bridge implementation, bridge tests, adapter, Runtime modification, or Execution Environment integration is authorized until the Bridge Implementation Authorization gate is explicitly passed.
