@@ -212,24 +212,26 @@ Complete / terminate Process Instance
 - [x] Add and execute focused behavioral tests for artifact association/recording.
 - [x] Add and execute focused behavioral tests for verification recording and its preconditions.
 - [x] Add and execute failure-path tests proving persisted and in-memory rollback consistency.
-  - [x] All three recording operations (`recognize_decision`, `record_artifact`, `record_verification`) had a confirmed caller-level rollback defect: they mutated the in-memory Context before calling `save_context()` and did not restore the mutation on failure. Corrected following the existing `observe()` pattern. 53/53 recording tests pass after correction. Commit: `009b8e2`.
+  - [x] The initial 53-scenario validation exposed one common caller-level rollback defect in `recognize_decision()`, `record_artifact()`, and `record_verification()`. The defect was corrected following the existing `observe()` rollback pattern. The seven affected regression scenarios passed after correction; the complete recording suite passed 53/53 and the full repository suite passed 88/88 in the recorded validation run. Commit: `009b8e2`.
 - [x] Reconcile test results against the first vertical slice and decide whether implementation changes are required.
   - Minimal implementation correction required: add caller-level rollback following the existing `observe()` pattern. No AESM semantic change involved.
 
-**Exit condition:** Behavioral validation of decision, artifact, and verification recording is complete. The capability remains open until the confirmed caller-level rollback defect is corrected and the regression evidence demonstrates that failed persistence leaves both in-memory and persisted state unchanged.
+**Exit condition:** Behavioral validation of decision, artifact, and verification recording is complete, including failure-path consistency between live in-memory authoritative state and persisted state.
 
-**Current inspection finding:** Decision, artifact, and verification recording already exist in `runtime/core/runtime.py`; no new Runtime feature is justified. Behavioral validation produced 53 tests with 46 passing and 7 failing, all attributable to the same caller-level rollback defect in the three recording methods. The defect is an implementation correction, not an AESM semantic gap. The existing `observe()` rollback behavior is the implementation precedent.
+**Current status:** Complete. Decision, artifact, and verification recording are implemented and behaviorally validated. The caller-level rollback defect discovered during validation was corrected in `009b8e2` and merged into `main` through `48ad835`. The seven previously failing rollback scenarios, 53/53 recording tests, and 88/88 full-suite results are accepted as recorded execution evidence. No further recording or persistence-semantic change is authorized by the current evidence.
 
 #### Caller-Level Recording Rollback Correction
 
-- [ ] Restore the affected in-memory Context mutations when persistence fails in `recognize_decision()`, `record_artifact()`, and `record_verification()`.
-- [ ] Use the existing `observe()` rollback behavior as the implementation precedent rather than introducing a new transaction abstraction.
-- [ ] Verify that rollback restores the complete affected pre-operation in-memory state, not merely the newly recorded list entry.
-- [ ] Preserve the existing persisted-state rollback behavior; do not modify `save_context()` or the persistence architecture unless evidence proves it necessary.
-- [ ] Keep the correction implementation-only; do not alter AESM/EPM/PEM semantics, lifecycle semantics, or structured/direct verification-path semantics.
-- [ ] Treat the 7 currently failing behavioral scenarios as regression acceptance tests.
+**Status: Complete**
 
-**Exit condition:** All seven regression scenarios pass, the complete recording test suite passes, and failed persistence leaves the Runtime's in-memory authoritative state and persisted state unchanged.
+- [x] Restore the affected in-memory Context mutations when persistence fails in `recognize_decision()`, `record_artifact()`, and `record_verification()`.
+- [x] Use the existing `observe()` rollback behavior as the implementation precedent rather than introducing a new transaction abstraction.
+- [x] Verify that rollback restores the complete affected pre-operation in-memory state, including `process_state` where verification recording performs a state transition.
+- [x] Preserve the existing persisted-state rollback behavior; no persistence-layer change was required.
+- [x] Keep the correction implementation-only; no AESM/EPM/PEM semantic, lifecycle, or verification-path change was made.
+- [x] Treat the seven previously failing behavioral scenarios as regression acceptance tests.
+
+**Exit condition:** Satisfied. The corrected Runtime preserves consistency between in-memory authoritative state and persisted state when recording persistence fails.
 
 ### Agent Guidance Interface
 
@@ -244,6 +246,25 @@ Complete / terminate Process Instance
 - [ ] Ensure Agent guidance does not make conversation history authoritative.
 
 **Exit condition:** A real Agent can receive sufficient AESM guidance to participate in the Process Instance using existing environment mechanisms.
+
+### Agent–Runtime Execution Bridge Inspection
+
+**Status: Not started. Next bounded work unit.**
+
+Purpose: determine the smallest operational mechanism by which a real AI Agent can receive AESM guidance and authoritative Process Instance / Execution Context information, perform engineering work in an existing Execution Environment, and cause authoritative Runtime updates without collapsing Agent, Runtime, and Execution Environment responsibilities.
+
+Inspection targets:
+
+- [ ] Identify the actual Agent interaction surface available in the selected Execution Environment.
+- [ ] Trace how a real engineering request can create or identify a Process Instance.
+- [ ] Trace how the Agent can obtain current authoritative Execution Context.
+- [ ] Determine how Agent actions can invoke or otherwise interact with the Runtime without making a specific transport normative.
+- [ ] Determine which Runtime mutations must be authoritative and which activities remain Agent responsibilities.
+- [ ] Determine the minimum guidance/context exchange required for continuity.
+- [ ] Use the Directories Builder Pro request as the empirical target where practical.
+- [ ] Produce an inspection record with concrete evidence, constraints, and the smallest justified implementation boundary.
+
+**Exit condition:** The repository contains an evidence-based design boundary for operational Agent participation, with no speculative Runtime feature or transport introduced.
 
 ### Environment Mechanism Mapping
 
@@ -269,7 +290,6 @@ Complete / terminate Process Instance
 - [ ] Implement the requested change.
 - [ ] Persist implementation/artifact information required for continuity.
 - [ ] Perform verification.
-- [ ] Persist verification results.
 - [ ] Reach a valid completion state.
 
 **Exit condition:** One real engineering request has completed end-to-end under AESM process control.
@@ -334,101 +354,23 @@ Complete / terminate Process Instance
 
 The initial prototype is complete only when all of the following are demonstrated:
 
-- [ ] A human can initiate a real engineering request.
-- [ ] A persistent Process Instance is created.
-- [ ] An authoritative Execution Context is established and persisted.
-- [ ] An AI Agent receives AESM guidance through existing Execution Environment mechanisms.
-- [ ] The Agent can perform investigation and engineering work.
-- [ ] Evidence is persisted.
-- [ ] Decisions are persisted.
-- [ ] Implementation artifacts are associated with the process.
-- [ ] Verification is performed and recorded.
-- [ ] Feedback/reconsideration can occur.
-- [ ] The process can survive Agent/session loss.
-- [ ] A new Agent can resume from persisted state.
-- [ ] The process can reach completion/termination.
-- [ ] Runtime, Agent, and Execution Environment responsibilities remain distinct.
-- [ ] No environment-specific mechanism has silently become an AESM semantic requirement.
-- [ ] No AESM semantic expansion has been introduced without an implementation-based justification.
+- A real engineering request can be represented as a persistent Process Instance.
+- The authoritative Execution Context survives Agent/session loss.
+- The Agent receives sufficient AESM guidance to participate in the process.
+- The Agent performs engineering work using the existing Execution Environment.
+- Runtime-controlled state and constraints remain authoritative where required.
+- Evidence, decisions, artifacts, and verification are persisted.
+- Feedback and reconsideration can be handled without losing process knowledge.
+- The process can continue after the original Agent/session ends.
+- A valid engineering completion state can be reached and distinguished from Runtime/session termination.
+- The implementation remains independent of a specific IDE or transport.
 
-## Change Control
+The prototype should be judged by demonstrated behavior and recorded evidence, not by the number of Runtime APIs or documentation pages created.
 
-The following rules apply to this plan.
+## Current Progress Position
 
-### No unauthorized expansion
+The current implementation has established the persistent Process Instance, authoritative Execution Context, minimal Runtime boundary, lifecycle control, and recording foundation. Recording rollback consistency has been corrected and behaviorally validated.
 
-A new implementation task must not be added merely because it appears useful, interesting, or architecturally elegant.
+The next objective is therefore **operational Agent participation**, not another isolated recording or persistence feature. The next bounded work unit is `Agent–Runtime Execution Bridge Inspection`. Its purpose is to establish how AESM can participate in a real Agent engineering execution using existing Execution Environment mechanisms and to identify the smallest justified Runtime addition, if any.
 
-A proposed addition must identify:
-
-1. the concrete implementation problem it solves;
-2. why the existing plan cannot solve that problem;
-3. whether the addition changes AESM semantics or only implementation;
-4. the specific plan section affected.
-
-### No silent semantic changes
-
-Implementation convenience must not redefine EPM, PEM, Runtime, Process Instance, Execution Context, Agent, Human Participant, or Execution Environment semantics.
-
-### No premature generalization
-
-A mechanism demonstrated for one prototype scenario must not automatically become a general AESM requirement.
-
-### Completion marking
-
-A task may be marked `[x]` only when its stated exit condition has been satisfied with implementation evidence. Partial work uses `[~]`; blocked work uses `[!]` with the reason recorded nearby.
-
-### Next-step rule
-
-After each completed task, the next task is the first unchecked task whose prerequisites are satisfied. Do not skip ahead merely to build a preferred component.
-
-### Dynamic task decomposition
-
-During execution, if a task proves too broad to execute or verify as a single unit, it must be decomposed into semantically meaningful nested subtasks under the parent task rather than being tracked informally outside this plan. If execution reveals a genuinely necessary task that is not represented by the current plan, add it directly to the appropriate work-plan section. Any such addition must follow the change-control rules above and preserve the dependency order of the plan.
-
-## Current Status
-
-**Plan status:** Implementation in progress.
-
-**Completed immediately before the current step:** Process Instance persistence, Execution Context implementation/verification, Minimal Runtime interface definition, Process lifecycle implementation/validation, Agent–Runtime boundary investigation, First Vertical Slice Definition, Evidence Recording implementation/validation/reconciliation, and behavioral validation of the existing decision, artifact, and verification recording capabilities.
-
-**Current next step:** Execute the bounded Caller-Level Recording Rollback Correction. No recording capability should be marked complete until the seven regression scenarios and the complete recording validation pass with persisted and in-memory rollback consistency demonstrated.
-
-**Selected first vertical slice:** `tuanna2703/directories-builder-pro` — Reviews module — `Add_Review_Form::business_id` conversion from `SELECT` to `POST_SELECT`, including WP post ID → `dbp_businesses.id` persistence translation.
-
-**Important implementation boundary established:** The Agent–Runtime investigation does not justify a normative transport choice or a generalized orchestration layer. The first vertical slice establishes four derived engineering states — Investigation, Implementation, Verification, and Engineering Complete — plus a feedback path from failed Verification to Investigation/Implementation. These are slice-specific semantics, not universal AESM state identifiers.
-
-**Termination boundary:** The first vertical slice establishes engineering completion conditions but does not justify inventing a separate Process Instance terminal state or generalized termination semantics. Engineering completion, Process Instance termination, Runtime termination, and Agent/session termination remain distinct.
-
-## Evidence and Change Record
-
-- **Process Instance persistence implementation:** The existing Runtime already provided `ProcessInstance.create()`, UUID-based identity, `ProcessStore.create()`, `ProcessStore.load_instance()`, and JSON persistence. No change to `runtime/core/models.py` was necessary for this task.
-- **Creation test:** Added `test_process_instance_creation` to `tests/continuity/test_runtime_recovery.py`, covering generated identity, objective, active lifecycle, Execution Context reference, EPM/PEM references, and timestamps.
-- **Persistence/recovery evidence:** Existing `test_process_and_context_survive_runtime_replacement` verifies that a Process Instance created by one Runtime can be loaded by another Runtime after the first Runtime stops, including recovery of the same Process Instance identity.
-- **Implementation commit:** `3dacf70292a5aeee8edbca645a26000d3691d5d3`.
-- **Execution Context verification:** `verification_report.md` confirms the current `ExecutionContext` implementation is substantially aligned with `EXECUTION-CONTEXT-REPRESENTATION.md` and that all seven specified verification requirements pass. The report records 8/8 continuity tests passing and no structural changes required.
-- **Execution Context verification scope:** The verification demonstrated Context creation, minimum authoritative information, semantic round-trip preservation, Process Instance association, recovery by a replacement Runtime/Agent context, explicit continuation information through `pending_execution`, and independence from transient Runtime/Agent/session information.
-- **Execution Context implementation decision:** No changes were made to `runtime/core/models.py`, `runtime/core/runtime.py`, `runtime/core/store.py`, or the continuity tests as a result of the verification.
-- **Minimal Runtime interface definition:** `execution/IMPLEMENTATION-MINIMAL-RUNTIME-INTERFACE.md` records the smallest Runtime capability boundary justified by the first vertical slice, the Runtime/Agent authority boundary, current implementation coverage, and confirmed gaps.
-- **Runtime interface verification:** Review of `runtime/core/runtime.py`, `runtime/core/models.py`, `runtime/core/store.py`, `runtime/core/__init__.py`, and `tests/continuity/test_runtime_recovery.py` confirms that Process Instance creation/loading and Context loading/persistence are already implemented and exercised by existing tests. No duplicate implementation was introduced.
-- **Runtime interface verification finding:** The next implementation boundary is required process-state/lifecycle behavior. Artifact association and terminal Process Instance handling remain identified gaps; their concrete API and semantics should be derived from the first real vertical slice rather than generalized prematurely.
-- **Process lifecycle investigation:** `execution/IMPLEMENTATION-PROCESS-LIFECYCLE-INVESTIGATION.md` records that Process State and transition validity are governed by the applicable EPM, while PEM governs Runtime execution of those transitions. The current `initial`, `implementation`, and `engineering_complete` values are implementation representations, not established universal AESM state identifiers. Engineering completion recognition is justified when explicitly recognized under governing semantics, but the `engineering_complete` state assignment must not be generalized without first-vertical-slice EPM evidence. Process Instance termination remains distinct from engineering completion and Runtime termination; no terminal lifecycle value should be invented before the vertical slice establishes its semantics.
-- **Lifecycle investigation commit:** `f862480caf776d0c0eddc1ba3026b38bccb716b6`.
-- **First vertical slice task decomposition:** The First Real Vertical Slice work was expanded into a dedicated definition task with nested subtasks covering request selection, objective/scope, applicable EPM binding, state semantics, transition semantics, completion/termination semantics, and derivation of the minimal Runtime lifecycle boundary. The plan also explicitly requires future task decomposition/addition to be recorded directly in this checklist.
-- **First vertical slice definition:** `execution/FIRST-VERTICAL-SLICE-DEFINITION.md` binds the first slice to `tuanna2703/directories-builder-pro`, `Add_Review_Form::business_id`, and derives four slice-specific states: Investigation, Implementation, Verification, and Engineering Complete. It records the valid transitions, the prototype human-approval execution condition, the verification feedback path, completion semantics, the non-applicability of invented terminal Process Instance semantics, and the minimum Runtime lifecycle responsibilities.
-- **First vertical slice definition commit:** `f90a6250b6b8890640b893e03f6c17005103f4cc`.
-- **First Agent execution observation:** The observed Directories Builder Pro execution successfully demonstrated disciplined engineering behavior but did not create or invoke an AESM Process Instance, authoritative Execution Context, or AESM Runtime. The execution therefore serves as the control condition for AESM participation.
-- **Agent–Runtime boundary investigation:** `execution/IMPLEMENTATION-AGENT-RUNTIME-BOUNDARY-INVESTIGATION.md` records that the minimum operational boundary is bidirectional: the Agent consumes authoritative Context and submits contributions/results; the Runtime recognizes them, applies permitted mutations, persists authoritative state, and returns the updated executable situation. The investigation found that an invocation path is required but did not justify MCP, CLI, or another transport as normative.
-- **Agent–Runtime investigation finding:** A small Agent-facing adapter is preferable to exposing the entire Runtime API. The adapter should remain an implementation mechanism and must not silently become an AESM semantic requirement.
-- **Agent–Runtime investigation conclusion:** No normative AESM change is justified by the first execution observation. The first vertical slice must establish lifecycle semantics before the Agent-facing adapter is implemented.
-- **Evidence Recording implementation and validation:** Pull request #4 was merged as `9aff039efeac3e3c9c520452dd572e1195d33bab`. The post-merge reconciliation records PASS for semantic boundary, context persistence/rollback, lifecycle compatibility, and behavioral validation, with 35/35 tests passing and an explicitly documented coverage qualification for the persistence-failure regression. It also records that no implementation redesign or semantic change is justified.
-- **Evidence Recording repository hygiene:** `.gitignore` was added and committed Python cache files were removed from `main`. The post-merge reconciliation records repository hygiene as corrected. Subsequent repository inspection found no `__pycache__` matches, and the previously present `feature/evidence-recording` branch is no longer returned by branch search.
-- **Evidence Recording closure:** The implementation-plan entry for evidence recording is marked complete because the merged implementation, tests, behavioral validation, and post-merge reconciliation satisfy the completion-marking rule. Human closure is the accepted baseline for the next bounded capability inspection.
-- **Next Runtime capability inspection:** `execution/RUNTIME-CAPABILITY-INSPECTION-DECISION-ARTIFACT-VERIFICATION.md` inspected the existing decision, artifact, and verification recording methods. It found that all three capabilities already exist, so no new feature is justified. It also identified a concrete consistency risk: unlike `observe()`, the decision/artifact/verification methods mutate the in-memory Context before persistence and do not restore that mutation if `save_context()` fails. The persistence layer restores files, but the live Runtime object can become inconsistent with authoritative persisted state after a failed write.
-- **Capability testing limitation:** The connected GitHub interface does not expose an executable local pytest runner for this repository, and the inspected commit has no associated GitHub Actions workflow run. Therefore this round is a bounded implementation/capability inspection, not a claim of fresh test execution. The next executable validation is explicitly tracked under `Bounded Recording Capability Validation`.
-- **Recording capability behavioral validation:** `execution/RUNTIME-CAPABILITY-BEHAVIORAL-VALIDATION.md` documents the bounded behavioral testing of decision, artifact, and verification recording. 53 tests were created in `tests/recording/test_runtime_recording.py`; 46 passed, 7 failed. All 7 failures confirmed a single implementation defect: `recognize_decision()`, `record_artifact()`, and `record_verification()` mutated the in-memory Context before calling `save_context()` and did not restore the mutation when `save_context()` raised, leaving the live Runtime inconsistent with the authoritative persisted state. The persistence layer's own file-level rollback worked correctly; only the caller-level rollback was missing. Baseline commit: `87fcc2bba226fda7b66bab910190e23abd10f67a`.
-- **Caller-level recording rollback correction:** Commit `009b8e2` adds caller-level rollback to `recognize_decision()`, `record_artifact()`, and `record_verification()` following the existing `observe()` pattern. Each method now preserves prior values of its affected mutable state (using `list()` for list fields, direct reference for `verification` dict and scalar fields) before mutation, and restores them in an `except` block if `save_context()` raises. `record_verification()` also preserves and restores `process_state` for the legacy path that transitions state. All 7 previously failing regression tests now pass: `test_failed_decision_persistence_leaves_live_state_inconsistent`, `test_failed_artifact_persistence_leaves_live_state_inconsistent`, `test_failed_verification_persistence_from_verification_state`, `test_failed_verification_persistence_with_state_transition`, `test_decision_and_evidence_rollback_symmetry`, `test_artifact_and_evidence_rollback_symmetry`, `test_verification_and_evidence_rollback_symmetry`. Full recording suite: 53/53 passed. Full repository suite: 88/88 passed. Only `runtime/core/runtime.py` was modified (32 insertions, 3 deletions).
-- **Recording validation reconciliation:** The behavioral validation is accepted as evidence that the three recording capabilities exist and are behaviorally exercised, but not yet as sufficient completion evidence because the seven failure-path scenarios expose a common caller-level rollback defect. The defect is bounded to `recognize_decision()`, `record_artifact()`, and `record_verification()`; `observe()` provides the existing rollback precedent. The correction is explicitly implementation-only and does not authorize changes to AESM semantics, lifecycle behavior, verification-path semantics, or persistence architecture.
-- **Caller-level rollback correction authorization:** The next bounded implementation task is to restore the affected in-memory Context state when persistence fails in the three recording callers, using the existing `observe()` rollback pattern. The seven currently failing behavioral scenarios are the regression acceptance tests. No broader recording redesign or generalized transaction abstraction is authorized by this plan update.
-
-Implementation evidence, findings, and approved deviations should be recorded as work proceeds. This plan remains the single checklist for implementation progress; detailed technical evidence may live in dedicated implementation documents or test artifacts referenced from the relevant task.
+No implementation of that bridge is authorized until the inspection produces concrete evidence and a bounded implementation decision.
