@@ -2,91 +2,83 @@
 
 ## Status
 
-**Decision recorded — controlled archival completed on working branch**
+**Current execution surface reconciled — 2026-09-15**
 
-**Repository:** `tuanna2703/AI-Assisted-Engineering-System-Model`  
-**Working branch:** `cleanup/execution-artifact-reconciliation`
+The `execution/` directory has now been reduced to the small set of records that are directly useful for the current bridge-validation work. Superseded inspection, reconciliation, implementation, environment-mapping, and historical action-log artifacts have been moved to `execution/archive/` rather than deleted.
 
-## Purpose
+## Current active execution records
 
-This record supersedes the pending disposition boundary in `EXECUTION-ARTIFACT-CLEANUP-RECONCILIATION.md` for the three artifacts whose content-level review established that they are closed or superseded historical records rather than active evidence.
+The active `execution/` surface intentionally contains only:
 
-It does not resolve the separate authorization/acceptance question for the Agent–Runtime Bridge implementation.
+- `AGENT-RUNTIME-BRIDGE-CONTRACT.md` — accepted bounded bridge contract;
+- `BRIDGE-IMPLEMENTATION-AUTHORIZATION-DECISION.md` — explicit authorization/acceptance decision;
+- `BRIDGE-BEHAVIORAL-VALIDATION.md` — current behavioral validation evidence;
+- `EXECUTION-ARTIFACT-DISPOSITION-DECISION.md` — current artifact disposition record.
 
-## Disposition decision
+These records form the current execution evidence/decision surface. Durable AESM semantics remain in `docs/`; executable behavior remains in `runtime/` and `tests/`.
 
-The following artifacts are archived rather than deleted:
+## Archived execution evidence
 
-| Former path | Archive path | Decision |
-|---|---|---|
-| `execution/EVIDENCE-RECORDING-CLOSURE.md` | `execution/archive/EVIDENCE-RECORDING-CLOSURE.md` | Archive |
-| `execution/NEXT-RUNTIME-CAPABILITY-REASSESSMENT.md` | `execution/archive/NEXT-RUNTIME-CAPABILITY-REASSESSMENT.md` | Archive |
-| `execution/POST-CORRECTION-RECONCILIATION-RECORDING-ROLLBACK.md` | `execution/archive/POST-CORRECTION-RECONCILIATION-RECORDING-ROLLBACK.md` | Archive |
+The following superseded records are preserved under `execution/archive/`:
 
-The original files were copied into `execution/archive/` and then removed from their former active locations. Their content is preserved unchanged.
-
-## Basis
-
-### Evidence Recording Closure
-
-The artifact records a completed bounded Runtime capability. Its semantic conclusion is already represented by Runtime/conformance material and executable validation evidence. It does not define an unresolved semantic or authorization question. It is therefore historical provenance suitable for archive.
-
-### Runtime Capability Reassessment
-
-The artifact selected the Agent–Runtime Execution Bridge Inspection as the next bounded work unit. That investigation has since been completed and superseded by the environment mapping, bridge boundary work, implementation reconciliation, and subsequent evidence. The artifact is historical planning provenance rather than current execution guidance.
-
-### Post-Correction Recording Rollback Reconciliation
-
-The correction itself is closed and the artifact records the historical correction/reconciliation process. Its identified plan-state follow-up has been superseded by later implementation-plan and execution work. The artifact remains useful as provenance but is not active operational evidence.
-
-## Documentation reconciliation decision
-
-No execution artifact from this cleanup is merged wholesale into `docs/`.
-
-No immediate canonical documentation change is required solely because of this cleanup. The durable concepts represented by the archived artifacts already have appropriate canonical homes, while bridge-specific operational conclusions remain subject to bridge acceptance and real Agent/Execution Environment validation.
-
-## Protected artifacts remaining in `execution/`
-
-The following classes remain active and are intentionally not archived:
-
-- Runtime API inspection evidence;
-- Runtime behavioral validation evidence;
-- Agent–Runtime execution bridge inspection;
-- Environment Mechanism Mapping;
-- bridge contract;
+- Agent–Runtime bridge contract action log;
 - bridge implementation report and action log;
+- Agent–Runtime execution bridge inspection;
 - bridge boundary reconciliation and action log;
+- bridge implementation discrepancy resolution;
 - bridge implementation reconciliation;
-- bridge implementation discrepancy resolution.
+- Environment Mechanism Mapping and action log;
+- Runtime API inspection;
+- Runtime capability behavioral validation;
+- earlier closed/superseded cleanup records already designated for historical preservation.
 
-These artifacts remain necessary because the bridge authorization/acceptance issue and genuine Agent/Execution Environment participation evidence are not yet closed.
+The archive preserves provenance without keeping historical working records in the active execution surface.
 
-## Deletion decision
+## Why these records remain active
 
-**No execution artifact is deleted as redundant by this decision.**
+### Bridge contract
 
-Archival was chosen where historical provenance remains useful. Future deletion requires a separate decision demonstrating that the archived record is no longer required for traceability, auditability, or recovery of a material engineering decision.
+The accepted bridge contract defines the bounded adapter/access boundary used by the current behavioral validation. It should remain directly discoverable while that validation and subsequent DBP readiness decisions depend on it.
 
-## Bridge authorization boundary
+### Authorization decision
 
-This cleanup decision does **not** retrospectively authorize the bridge implementation.
+The authorization record establishes that the bounded bridge is authorized and accepted specifically for controlled Bridge Behavioral Validation, while DBP real-request execution remains gated on validation evidence.
 
-`BRIDGE-IMPLEMENTATION-DISCREPANCY-RESOLUTION.md` remains the controlling reconciliation record for that issue. The implementation is substantively conformant with the bounded adapter architecture, but its governing authorization record remains contradictory and requires an explicit acceptance/authorization decision.
+### Behavioral validation
 
-Accordingly, this cleanup does not authorize:
+The behavioral validation report is the current execution result. It supersedes earlier implementation/inspection reports as the primary evidence for whether the accepted bridge actually behaves as intended.
 
-- Bridge Behavioral Validation;
-- DBP Real-Request Execution;
-- new bridge behavior;
-- Runtime modification;
-- objective-to-Process-Instance discovery implementation.
+### Disposition decision
+
+This record provides the current traceability boundary for the cleanup itself and prevents historical execution artifacts from being mistaken for current operational evidence.
+
+## Documentation reconciliation
+
+No execution report is copied wholesale into `docs/`.
+
+The durable semantic material already belongs in the canonical documentation, especially:
+
+- `docs/06-Participants-and-Agent-Participation.md`;
+- `docs/07-Runtime-and-Conformance.md`;
+- `docs/09-Operational-Guide.md`;
+- `docs/12-AI-Agent-Guide.md`.
+
+Bridge-specific implementation and validation evidence remains in `execution/` because it is evidence about the current implementation and environment rather than a replacement for AESM's durable semantic model.
+
+## Deletion policy
+
+No historical evidence was deleted merely because it became inactive. Superseded records were archived so that auditability and decision lineage remain recoverable.
+
+A future cleanup may delete archived records only after demonstrating that their material evidence is preserved elsewhere and that no traceability, auditability, or recovery requirement depends on the original record.
+
+## Current boundary
+
+The execution cleanup does **not** authorize new implementation, Runtime changes, bridge capability expansion, or DBP execution. Those activities remain governed by the current authorization and validation results.
 
 ## Result
 
-The `execution/` directory has been reduced by moving three closed/superseded records into a dedicated historical archive while preserving their contents and provenance.
-
-The remaining execution artifacts continue to represent active evidence or unresolved decision lineage and should not be removed merely to reduce directory size.
+The active `execution/` directory is now intentionally small: it contains the accepted bridge contract, the authorization decision, the current behavioral validation result, and the current cleanup/disposition record. Historical working artifacts remain available in `execution/archive/` without cluttering the active evidence surface.
 
 ## Next controlled action
 
-The next independent decision remains **Bridge Implementation Authorization / Acceptance**. Once that issue is explicitly resolved, a later cleanup pass can reassess whether additional bridge reports or action logs can be archived and whether any stable bridge participation guidance should be promoted into `docs/`.
+Continue from the current **Bridge Behavioral Validation** result. Any decision to proceed to DBP Real-Request Execution must be based on the validation report's demonstrated evidence and its explicit readiness/gating conclusion, not on the existence of historical implementation reports.
