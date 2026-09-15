@@ -2,7 +2,7 @@
 
 ## Status
 
-**Classification:** Controlled cleanup analysis and authorization preparation  
+**Classification:** Content reconciliation and disposition preparation  
 **Repository:** `tuanna2703/AI-Assisted-Engineering-System-Model`  
 **Source branch:** `main`  
 **Working branch:** `cleanup/execution-artifact-reconciliation`  
@@ -10,13 +10,13 @@
 
 ## Purpose
 
-This artifact establishes a controlled inventory and first-pass reconciliation of the current `execution/` directory against the durable `docs/` documentation surface.
+This artifact establishes a controlled inventory and content-level reconciliation of the current `execution/` directory against the durable `docs/` documentation surface.
 
 The purpose is to distinguish:
 
 - evidence that must remain available as execution provenance;
 - durable engineering conclusions that belong in `docs/`;
-- artifacts that can be archived or removed after authorization;
+- artifacts that can be archived or removed after explicit authorization;
 - artifacts whose disposition still requires a decision.
 
 This is **not** authorization to delete or move any existing execution artifact.
@@ -25,154 +25,211 @@ This is **not** authorization to delete or move any existing execution artifact.
 
 The cleanup is limited to the current `execution/` directory and its relationship to the canonical documentation and implementation surfaces.
 
-The reconciliation considers, where applicable:
+The reconciliation considers:
 
 - `docs/` — durable explanatory and normative documentation;
 - `runtime/` — executable Runtime implementation;
 - `tests/` — behavioral/conformance evidence encoded as tests;
-- `IMPLEMENTATION_PLAN.md` — implementation tracking and planned work;
+- `IMPLEMENTATION_PLAN.md` — implementation tracking and authorization records;
 - `execution/` — reports, action logs, inspection records, validation records, and other execution-generated provenance.
 
 The cleanup does not redesign AESM, alter Runtime semantics, or authorize implementation changes unrelated to artifact disposition.
 
 ## Current execution inventory
 
-The current `execution/` directory contains the following known artifacts from the repository inspection:
-
-| Artifact | Preliminary classification | Rationale |
+| Artifact | Content-level disposition | Basis |
 |---|---|---|
-| `AGENT-RUNTIME-BRIDGE-CONTRACT.md` | Retain — decision/provenance pending reconciliation | Bridge contract artifact; must be checked against durable bridge/environment conclusions before disposition. |
-| `AGENT-RUNTIME-BRIDGE-CONTRACT-ACTION-LOG.md` | Retain — historical provenance | Action log records how the contract work was performed and should not be replaced by a documentation summary. |
-| `AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md` | Retain — implementation evidence pending final reconciliation | Records bridge implementation work and must be reconciled with the actual implementation and tests. |
-| `AGENT-RUNTIME-BRIDGE-IMPLEMENTATION-ACTION-LOG.md` | Retain — historical provenance | Execution trace for implementation work; useful for auditability even if conclusions move elsewhere. |
-| `AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md` | Retain — inspection provenance | Direct inspection artifact establishing observed execution-environment/bridge facts. |
-| `BRIDGE-BOUNDARY-RECONCILIATION.md` | Retain — historical provenance / decision evidence | Records reconciliation of bridge boundaries; durable conclusions may be represented in canonical docs, but the evidence record should not be silently discarded. |
-| `BRIDGE-BOUNDARY-RECONCILIATION-ACTION-LOG.md` | Retain — historical provenance | Action trace associated with bridge-boundary reconciliation. |
-| `BRIDGE-IMPLEMENTATION-DISCREPANCY-RESOLUTION.md` | Retain — historical provenance pending review | Documents resolution of an implementation discrepancy; candidate for archival only after its evidence is represented elsewhere and no open decision depends on it. |
-| `BRIDGE-IMPLEMENTATION-RECONCILIATION.md` | Retain — current reconciliation evidence | Recent bridge implementation reconciliation and therefore part of the active evidence chain. |
-| `ENVIRONMENT-MECHANISM-MAPPING.md` | Retain — current reconciliation evidence | Establishes mapping between the execution environment and available mechanisms; recent work remains relevant to bridge participation. |
-| `ENVIRONMENT-MECHANISM-MAPPING-ACTION-LOG.md` | Retain — historical provenance | Action trace for the environment mapping work. |
-| `EVIDENCE-RECORDING-CLOSURE.md` | Decision required | Closure artifact may be superseded by later reconciliation, but deletion should wait until its evidence lineage is confirmed. |
-| `NEXT-RUNTIME-CAPABILITY-REASSESSMENT.md` | Decision required | Planning/reassessment artifact may contain still-relevant next-action decisions; must be checked against current implementation state. |
-| `POST-CORRECTION-RECONCILIATION-RECORDING-ROLLBACK.md` | Retain — historical provenance pending review | Records a corrective/reconciliation event and should be preserved until its evidence is accounted for. |
-| `RUNTIME-API-INSPECTION.md` | Retain — inspection provenance | Direct Runtime inspection evidence; it should not be replaced merely by the resulting documentation. |
-| `RUNTIME-CAPABILITY-BEHAVIORAL-VALIDATION.md` | Retain — behavioral evidence | Validation report connects implementation behavior to observed test evidence. |
+| `AGENT-RUNTIME-BRIDGE-CONTRACT.md` | **Retain — active decision/provenance evidence** | Defines the bounded bridge contract, preserves Runtime ownership, and records the explicit discovery dependency. Its durable semantic principles overlap `docs/06` and `docs/07`, but the contract remains part of the unresolved bridge acceptance/evidence chain. |
+| `AGENT-RUNTIME-BRIDGE-CONTRACT-ACTION-LOG.md` | **Retain — historical provenance** | Records how the contract determination was performed. It is not a substitute for the contract and should not be merged wholesale into `docs/`. |
+| `AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md` | **Retain — active evidence, qualified** | Contains implementation evidence, test claims, and bridge behavior. It contains material reporting discrepancies and cannot currently serve as authoritative acceptance evidence by itself. |
+| `AGENT-RUNTIME-BRIDGE-IMPLEMENTATION-ACTION-LOG.md` | **Retain — historical provenance** | Records execution history for the bridge implementation and preserves the evidence chain behind reported results. |
+| `AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md` | **Retain — inspection provenance** | Establishes observed Execution Environment/Agent/Runtime mechanism facts that precede the contract and implementation. |
+| `BRIDGE-BOUNDARY-RECONCILIATION.md` | **Retain — active/historical decision evidence** | Reconciles the semantic Agent–Runtime boundary and discovery ownership. Durable principles are reflected in canonical docs, but the reconciliation records evidence and decision lineage. |
+| `BRIDGE-BOUNDARY-RECONCILIATION-ACTION-LOG.md` | **Retain — historical provenance** | Action history for the boundary reconciliation. |
+| `BRIDGE-IMPLEMENTATION-DISCREPANCY-RESOLUTION.md` | **Retain — active decision evidence** | Records that bridge implementation authorization was not established by the governing record despite substantive architectural conformance. It remains directly relevant to acceptance. |
+| `BRIDGE-IMPLEMENTATION-RECONCILIATION.md` | **Retain — active reconciliation evidence** | Contains source-level conformance findings, evidence qualifications, and the authorization/evidence decision boundary. |
+| `ENVIRONMENT-MECHANISM-MAPPING.md` | **Retain — active evidence** | Establishes available Agent/Execution Environment mechanisms and concrete gaps. It directly supports the bridge contract and should remain until real operational participation is demonstrated. |
+| `ENVIRONMENT-MECHANISM-MAPPING-ACTION-LOG.md` | **Retain — historical provenance** | Records how the environment mapping was produced. |
+| `EVIDENCE-RECORDING-CLOSURE.md` | **Archive candidate — after traceability check** | The capability is closed and its durable semantic conclusion is already represented by Runtime/conformance documentation and tests. It still records historical closure evidence, so deletion is not justified. |
+| `NEXT-RUNTIME-CAPABILITY-REASSESSMENT.md` | **Archive candidate — after downstream-reference check** | Its selected next work unit has been superseded by subsequent environment/bridge work. It remains useful as historical planning provenance. |
+| `POST-CORRECTION-RECONCILIATION-RECORDING-ROLLBACK.md` | **Archive candidate — after plan-state reconciliation** | The correction is closed, but the artifact records historical implementation-plan inconsistency and evidence boundaries. |
+| `RUNTIME-API-INSPECTION.md` | **Retain — active inspection evidence** | Direct Runtime inspection establishes the actual API surface on which the bridge contract/implementation depends. It is not replaced by semantic `docs/07`. |
+| `RUNTIME-CAPABILITY-BEHAVIORAL-VALIDATION.md` | **Retain — behavioral evidence** | Connects actual Runtime behavior to validation results and remains relevant to bridge/runtime conformance. |
 
-**Inventory note:** this is the inventory observed during the current repository inspection. Any newly appearing execution artifact must be added before final cleanup authorization.
+**Inventory note:** this matrix covers the execution artifacts observed in the current repository inspection. Any artifact added or changed before cleanup authorization must be reconciled before disposition.
 
-## Artifact relationship model
+## Content reconciliation findings
 
-The current execution history forms a chain rather than a set of independent documents:
+### Bridge contract vs canonical documentation
 
-```text
-Runtime/API inspection
-        |
-        v
-Environment mechanism mapping
-        |
-        v
-Bridge boundary reconciliation
-        |
-        v
-Bridge contract / implementation
-        |
-        v
-Bridge implementation reconciliation
-        |
-        v
-Current bridge evidence / readiness
-```
+The bridge contract's durable authority rules are already substantially represented in `docs/06-Participants-and-Agent-Participation.md` and `docs/07-Runtime-and-Conformance.md`:
 
-Several artifacts also have action-log companions. The action logs provide provenance for the corresponding report and should therefore not be treated as duplicate copies of the report.
+- Agent capability does not grant Runtime authority;
+- the Agent is not the Runtime;
+- authoritative Execution Context remains Runtime-owned;
+- Process Instance discovery is a Runtime responsibility;
+- the Execution Environment supplies mechanisms rather than semantic ownership;
+- Runtime guards and state mutation remain authoritative.
 
-The reconciliation must preserve this distinction:
+The contract also contains bridge-specific constraints such as create/known-ID/context/dispatch boundaries, error propagation, and explicit discovery deferral. Those details are not yet established as canonical AESM semantics and should remain in `execution/` until the bridge is formally accepted and a durable documentation home is explicitly authorized.
 
-- **durable conclusion** → appropriate `docs/` surface;
-- **observed implementation evidence** → may remain in `execution/` and/or `tests/`;
-- **action history** → execution provenance;
-- **open decision** → retained until explicitly resolved.
+**Conclusion:** no immediate wholesale merge of `AGENT-RUNTIME-BRIDGE-CONTRACT.md` into `docs/` is appropriate.
 
-## Reconciliation against `docs/`
+### Environment mapping vs canonical documentation
 
-The current documentation surface already provides durable homes for several classes of conclusion:
+The environment mapping provides concrete observations about available instructions, skills, repository access, command/Python execution, MCP availability, and the absence of an active AESM Agent-to-Runtime path. These are environment-specific findings rather than universal AESM semantics.
 
-- `docs/04-Execution-Model.md` — execution semantics and governed execution flow;
-- `docs/05-Process-Instance-and-Execution-Context.md` — persistent process state and execution context;
-- `docs/06-Participants-and-Agent-Participation.md` — human/Agent participation boundaries;
-- `docs/07-Runtime-and-Conformance.md` — Runtime responsibilities and conformance;
-- `docs/08-Continuity-Traceability-and-Reconsideration.md` — continuity and traceability semantics;
-- `docs/09-Operational-Guide.md` — operational guidance;
-- `docs/12-AI-Agent-Guide.md` — Agent-facing guidance.
+The durable principle — that the Execution Environment provides mechanisms while Runtime retains semantic authority — is already represented in `docs/06` and `docs/07`.
 
-The current cleanup therefore should **not** copy complete execution reports into `docs/`. Instead, the final reconciliation should extract only durable conclusions that belong to the appropriate canonical surface.
+**Conclusion:** preserve the mapping as execution evidence. Do not promote its environment-specific observations wholesale into `docs/`.
 
-### Candidate durable information
+### Runtime inspection vs canonical documentation
 
-The following information classes are candidates for promotion or reconciliation into `docs/`, subject to content-level verification:
+`RUNTIME-API-INSPECTION.md` records the actual implementation surface. `docs/07-Runtime-and-Conformance.md` defines semantic obligations and intentionally does not prescribe a concrete API shape.
 
-1. **Execution bridge boundary** — durable definition of what the bridge is responsible for and what it is not responsible for.
-2. **Environment mechanism mapping** — durable description of how an execution environment exposes the mechanisms through which an Agent can participate in AESM-controlled execution.
-3. **Runtime/bridge conformance conclusions** — stable statements about the relationship between Runtime behavior, bridge behavior, and AESM execution semantics.
-4. **Agent participation requirements** — durable constraints on how an Agent must use the execution bridge without collapsing the Environment, Runtime, PEM, or EPM concepts.
-5. **Continuity and traceability implications** — only conclusions that have been explicitly established by evidence and are stable enough for canonical documentation.
+**Conclusion:** these artifacts are complementary, not duplicates. Runtime API inspection remains execution evidence.
 
-### Information that should remain outside `docs/`
+### Bridge implementation evidence vs canonical documentation
 
-The following should normally remain execution evidence rather than being promoted wholesale:
+The implementation report contains implementation-specific source structure, test claims, error categories, continuity demonstrations, and an Agent-facing smoke-test description. The subsequent discrepancy-resolution and reconciliation records qualify those claims:
 
-- timestamps and command transcripts;
-- action-by-action logs;
-- temporary hypotheses and rejected alternatives;
-- raw inspection notes;
-- intermediate discrepancy analysis;
-- report-specific evidence references that have no durable semantic role;
-- one-off validation observations that are already represented by tests and are not themselves normative.
+- the bridge is substantively conformant with the bounded adapter architecture;
+- Runtime source was not modified by the bridge implementation commit;
+- objective-to-instance discovery remains deferred;
+- repository-local bridge invocation is demonstrated;
+- genuine Agent/Execution Environment participation is **not** demonstrated;
+- the historical focused-test count is inconsistent with the three added test files;
+- the historical full-suite result is recorded but not independently reproduced by the reconciliation;
+- the implementation authorization record is internally inconsistent and requires explicit resolution.
 
-## Preliminary disposition rules
+**Conclusion:** the implementation report remains execution evidence and must not be treated as canonical documentation or proof of real Agent participation.
 
-### Retain — active evidence
+### Recording closure and corrective reconciliation
 
-Retain artifacts that support a currently active implementation/reconciliation chain or that are required to verify the next controlled work unit.
+`EVIDENCE-RECORDING-CLOSURE.md` states that evidence, decision, artifact, and verification recording are completed for the bounded Runtime slice. `POST-CORRECTION-RECONCILIATION-RECORDING-ROLLBACK.md` records the correction and a stale implementation-plan checklist.
 
-### Retain — historical provenance
+The durable semantic conclusion is already covered by Runtime/conformance material and executable tests. The execution artifacts add historical evidence rather than a missing semantic definition.
 
-Retain action logs and historical reports when they establish how a significant decision or correction was reached. They may later be archived, but only after traceability has been preserved.
+**Conclusion:** these are archive candidates, not documentation-merge candidates, once related plan-state references are reconciled.
 
-### Merge into existing documentation
+## Evidence and authority hierarchy used for disposition
 
-Use this classification only when the artifact contains durable conclusions already belonging to an existing canonical documentation surface. The merge should extract and reconcile conclusions, not paste the report wholesale.
+For cleanup purposes:
 
-### Create/update durable documentation
+1. actual Runtime/test implementation and current repository state;
+2. explicit authorization and decision records;
+3. reconciliations comparing implementation against authorization;
+4. execution reports and action logs;
+5. durable documentation for semantic definitions.
 
-Use this when a durable conclusion has no adequate home in `docs/`. The new or updated document must be justified by the artifact evidence and must not introduce a semantic change merely for cleanup purposes.
+This prevents a historical report from overriding a later discrepancy resolution or current repository evidence.
 
-### Archive
+## Explicit authorization/evidence issue discovered during cleanup
 
-Use this only when an artifact is no longer needed for active work but remains useful as historical provenance.
+`BRIDGE-IMPLEMENTATION-DISCREPANCY-RESOLUTION.md` establishes that the governing recorded authorization explicitly authorized Runtime API Inspection while stating that bridge implementation was not authorized. The implementation nevertheless exists and is substantively conformant with the bounded contract.
 
-### Delete
+The discrepancy-resolution artifact therefore correctly classifies the situation as **Authorization Decision Required** rather than treating implementation existence as retrospective authorization.
 
-Use this only when the artifact is demonstrably redundant, contains no unique evidence or decision history, and its information is fully represented elsewhere.
+The following must remain protected until that decision is resolved:
 
-### Decision required
+- `AGENT-RUNTIME-BRIDGE-CONTRACT.md`;
+- `AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md`;
+- `AGENT-RUNTIME-BRIDGE-IMPLEMENTATION-ACTION-LOG.md`;
+- `BRIDGE-IMPLEMENTATION-RECONCILIATION.md`;
+- `BRIDGE-IMPLEMENTATION-DISCREPANCY-RESOLUTION.md`;
+- relevant bridge/environment inspection and mapping evidence.
 
-Use this when the artifact may be obsolete but its evidence lineage, open decisions, or relationship to later work has not yet been established conclusively.
+## Proposed documentation reconciliation
+
+No immediate `docs/` rewrite is required solely to clean `execution/`.
+
+The current durable documentation already contains the core semantic material needed to prevent conceptual collapse:
+
+- `docs/06-Participants-and-Agent-Participation.md` — Agent authority and participation boundaries;
+- `docs/07-Runtime-and-Conformance.md` — Runtime authority, discovery, continuity, state mutation, and implementation independence;
+- `docs/09-Operational-Guide.md` and `docs/12-AI-Agent-Guide.md` — operational/Agent guidance surfaces.
+
+A future documentation update may be justified after bridge acceptance to record a durable, mechanism-neutral Agent–Runtime participation pattern. That update should be driven by accepted implementation and real execution evidence, not by cleanup pressure.
+
+No execution report should be copied wholesale into `docs/`.
+
+## Disposition matrix
+
+| Artifact | Current disposition | Preconditions |
+|---|---|---|
+| `AGENT-RUNTIME-BRIDGE-CONTRACT.md` | **Retain** | Resolve bridge acceptance/authorization; durable excerpts may later be reconciled into docs. |
+| `AGENT-RUNTIME-BRIDGE-CONTRACT-ACTION-LOG.md` | **Retain — provenance** | May later be archived after contract lineage is preserved. |
+| `AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md` | **Retain** | Keep until implementation acceptance and evidence reconciliation are closed. |
+| `AGENT-RUNTIME-BRIDGE-IMPLEMENTATION-ACTION-LOG.md` | **Retain — provenance** | May later be archived after acceptance and evidence lineage are preserved. |
+| `AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md` | **Retain** | Keep through bridge acceptance and real participation validation. |
+| `BRIDGE-BOUNDARY-RECONCILIATION.md` | **Retain — provenance** | Archive only after accepted durable boundary conclusions and traceability are established. |
+| `BRIDGE-BOUNDARY-RECONCILIATION-ACTION-LOG.md` | **Retain — provenance** | Archive only after boundary lineage is preserved. |
+| `BRIDGE-IMPLEMENTATION-DISCREPANCY-RESOLUTION.md` | **Retain** | Mandatory until authorization/acceptance decision is resolved. |
+| `BRIDGE-IMPLEMENTATION-RECONCILIATION.md` | **Retain** | Mandatory until implementation acceptance/evidence closure. |
+| `ENVIRONMENT-MECHANISM-MAPPING.md` | **Retain** | Keep through real Agent/Execution Environment participation validation. |
+| `ENVIRONMENT-MECHANISM-MAPPING-ACTION-LOG.md` | **Retain — provenance** | Archive only after mapping conclusions are preserved and no active decision depends on the log. |
+| `EVIDENCE-RECORDING-CLOSURE.md` | **Archive candidate** | Reconcile downstream plan references and verify no active decision cites it as current status. |
+| `NEXT-RUNTIME-CAPABILITY-REASSESSMENT.md` | **Archive candidate** | Confirm it is superseded and preserve historical decision lineage. |
+| `POST-CORRECTION-RECONCILIATION-RECORDING-ROLLBACK.md` | **Archive candidate** | Reconcile stale `IMPLEMENTATION_PLAN.md` status first. |
+| `RUNTIME-API-INSPECTION.md` | **Retain** | Keep while bridge/runtime acceptance depends on observed API evidence. |
+| `RUNTIME-CAPABILITY-BEHAVIORAL-VALIDATION.md` | **Retain** | Keep while current Runtime/bridge conformance evidence depends on it. |
+
+## What can merge into `docs/` now
+
+**No complete execution artifact should be merged into `docs/` now.**
+
+The following semantic conclusions are already adequately represented by existing canonical documentation:
+
+- Agent ≠ Runtime;
+- Agent output does not automatically become authoritative state;
+- Runtime owns Process Instance discovery and authoritative state;
+- Execution Environment provides mechanisms, not semantic authority;
+- conversation history is not authoritative continuity state;
+- Runtime implementation choices are not themselves AESM semantic requirements.
+
+Bridge-specific operational details should remain execution evidence until bridge authorization/acceptance and genuine Agent participation are resolved.
+
+## What should eventually move from `execution/` to `docs/`
+
+After bridge acceptance and real execution evidence, a future controlled documentation task may extract:
+
+1. a durable, mechanism-neutral description of the Agent–Runtime participation boundary;
+2. the accepted responsibility split between Agent, bridge/adapter, Execution Environment, Runtime, and Process Store;
+3. stable continuity requirements for Agent/session loss;
+4. accepted operational guidance necessary for the Agent to obtain and use authoritative Execution Context.
+
+These should become canonical semantics/guidance, not copied execution reports.
+
+## Archive/delete candidates
+
+No artifact is currently authorized for deletion.
+
+Three artifacts are credible **archive candidates** after their preconditions are met:
+
+- `EVIDENCE-RECORDING-CLOSURE.md`;
+- `NEXT-RUNTIME-CAPABILITY-REASSESSMENT.md`;
+- `POST-CORRECTION-RECONCILIATION-RECORDING-ROLLBACK.md`.
+
+No current artifact is sufficiently proven redundant to justify deletion. Action logs should be archived only when their corresponding decision lineage remains reconstructable without them.
 
 ## Protected evidence set
 
-Until the cleanup disposition is explicitly authorized, the following evidence chain should be treated as protected:
+Until cleanup disposition is explicitly authorized, the following evidence chain remains protected:
 
-- Runtime inspection;
+- Runtime API inspection;
+- Runtime behavioral validation;
 - environment mechanism mapping;
+- bridge execution-environment inspection;
 - bridge boundary reconciliation;
+- bridge contract;
+- bridge implementation report and action log;
 - bridge implementation reconciliation;
-- bridge implementation/contract evidence;
-- associated action logs;
-- behavioral validation and corrective reconciliation records.
+- bridge implementation discrepancy resolution;
+- relevant corrective/recording evidence.
 
-This protection is especially important because the next intended work concerns actual DBP execution under the current AESM model. Removing the bridge/environment evidence prematurely would make it harder to establish whether AESM actually participated in that execution rather than merely being documented.
+This protection is especially important because the intended next objective is actual DBP execution under the current AESM model. Removing bridge/environment evidence prematurely would make it harder to establish whether AESM actually participated in that execution rather than merely being documented.
 
-## Proposed target state
+## Target state
 
 The intended cleaned structure is:
 
@@ -197,39 +254,34 @@ runtime/
 
 The target is **not** an empty `execution/` directory. It is a directory containing only evidence and execution records that have a defensible lifecycle role.
 
-## Required follow-up before deletion or archival
+## Authorization boundary
 
-Before any existing artifact is deleted, moved, or archived:
+**Authorized by this cleanup work:**
 
-1. inspect the complete contents of each candidate artifact;
-2. verify every unique conclusion against the current canonical documentation;
-3. identify any still-open decision or dependency;
-4. update the canonical documentation where durable information is missing;
-5. record the exact source-to-destination mapping;
-6. obtain explicit authorization for the resulting deletion/archive set;
-7. perform cleanup as a separate controlled change;
-8. verify that links and evidence references remain valid after cleanup.
+- inspect and classify execution artifacts;
+- reconcile their contents against canonical documentation;
+- identify documentation merge candidates;
+- identify archive/delete candidates;
+- record the exact conditions for later disposition.
 
-## Current authorization boundary
-
-**Authorized by this work unit:**
-
-- inventory `execution/`;
-- analyze relationships among execution artifacts;
-- identify candidate durable information for `docs/`;
-- create this reconciliation artifact;
-- prepare a proposed disposition.
-
-**Not authorized by this work unit:**
+**Not authorized:**
 
 - delete execution artifacts;
 - move execution artifacts;
-- rewrite canonical AESM semantics solely to simplify cleanup;
-- declare historical evidence unnecessary without traceability review;
-- begin DBP execution based on an assumed-clean execution directory.
+- archive artifacts immediately;
+- rewrite canonical AESM semantics merely to simplify cleanup;
+- treat implementation existence as retrospective authorization;
+- begin DBP execution.
 
-## Recommended next controlled action
+## Next controlled action
 
-Review this reconciliation against the full contents of the listed execution artifacts and the affected canonical documentation. Resolve the `Decision required` classifications and produce an explicit disposition matrix.
+The cleanup analysis now has sufficient content-level evidence to move to an **explicit disposition and cleanup authorization decision**.
 
-Only after that review should the repository perform documentation merges and an authorized execution-artifact cleanup.
+That decision should resolve:
+
+1. the bridge implementation authorization/acceptance contradiction;
+2. whether the three archive candidates have any remaining active references;
+3. whether durable bridge participation guidance should be added to `docs/` after acceptance;
+4. the exact artifact set authorized for archive/removal.
+
+Only after that decision should a separate cleanup change perform archive or deletion operations.
