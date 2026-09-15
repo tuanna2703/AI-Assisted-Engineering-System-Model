@@ -435,8 +435,8 @@ The completed inspection leads to the following bounded sequence of work units:
 
 - [x] **Controlled Plan Reconciliation** — Reconcile the implementation plan with the completed bridge inspection evidence. Establish the bounded bridge direction and authorization gate in the plan.
 - [x] **Bridge Implementation Authorization** — Explicit decision gate. **PASSED** (2026-09-14). Runtime API Inspection is authorized. Bridge implementation remains unauthorized.
-- [ ] **Runtime API Inspection** — Inspect the actual existing Runtime API to determine the smallest concrete adapter contract.
-- [ ] **Minimal Agent–Runtime Bridge Implementation** — Implement the bounded bridge per the canonical boundary above.
+- [x] **Runtime API Inspection** — Inspect the actual existing Runtime API to determine the smallest concrete adapter contract. **Complete** (2026-09-14). Four-operation adapter surface determined. Evidence: [`execution/RUNTIME-API-INSPECTION.md`](execution/RUNTIME-API-INSPECTION.md).
+- [x] **Minimal Agent–Runtime Bridge Implementation** — Implement the bounded bridge per the canonical boundary above. **Complete** (2026-09-15). Bridge implemented, 38 focused tests pass, 126/126 total suite passes, continuity demonstrated, Agent-facing invocation validated. Evidence: [`execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md`](execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md).
 - [ ] **Bridge Behavioral Validation** — Validate that the bridge correctly connects Agent activity to Runtime operations.
 - [ ] **DBP Real-Request Execution** — Execute a real DBP engineering request end-to-end under AESM process control.
 - [ ] **Context-Loss / Fresh-Agent Validation** — Validate that a fresh Agent can resume from authoritative persisted state.
@@ -517,29 +517,26 @@ All explicit bridge exclusions defined in the "Explicit Bridge Exclusions" secti
 
 ### Runtime API Inspection
 
-**Status: Authorized. Next technical investigation.**
+**Status: Complete.**
 
 Purpose: inspect the actual existing Runtime API and determine the smallest concrete adapter contract capable of implementing the already-authorized bridge boundary.
 
-The Runtime API Inspection must determine, from actual code and tests:
+**Completion:** The inspection examined all Runtime source modules (393 lines in `runtime.py`, 75 lines in `models.py`, 134 lines in `store.py`, 63 lines in `json_store.py`), executed 60 behavioral checks (all passed), and verified the 88/88 test suite. Four adapter operations were determined: `create_process`, `attach`, `get_context`, `dispatch`. Objective-to-Process-Instance discovery was classified as a separate design decision. Evidence: [`execution/RUNTIME-API-INSPECTION.md`](execution/RUNTIME-API-INSPECTION.md).
 
-- How Process Instances are created.
-- How Process Instances are discovered or attached.
-- How Execution Context is obtained.
-- Which Runtime operations are already available.
-- What inputs those operations require.
-- What authoritative state/results they return.
-- What persistence behavior already exists.
-- Which operations can be exposed without changing Runtime semantics.
+### Minimal Agent–Runtime Bridge Implementation
 
-This inspection was not authorized to begin until the Bridge Implementation Authorization gate was passed. **That gate is now passed.**
+**Status: Complete.**
+
+Purpose: implement the bounded Agent–Runtime bridge per the canonical bridge boundary.
+
+**Completion:** The bridge was implemented as `bridge/agent_runtime_bridge.py` (228 lines), a thin adapter/access boundary outside `runtime/`. It delegates all authority to the existing Runtime. 38 focused bridge tests pass covering creation, recovery, context access, dispatch, guard rejection, persistence failure, deferred discovery, and cross-bridge continuity. 126/126 total tests pass (88 existing + 38 new) with no regressions. Agent-facing invocation was demonstrated through a repository-local smoke test. Objective-to-Process-Instance discovery remains explicitly deferred. Evidence: [`execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md`](execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md).
 
 ## Current Progress Position
 
-The current implementation has established the persistent Process Instance, authoritative Execution Context, minimal Runtime boundary, lifecycle control, and recording foundation. Recording rollback consistency has been corrected and behaviorally validated.
+The current implementation has established the persistent Process Instance, authoritative Execution Context, minimal Runtime boundary, lifecycle control, recording foundation, and the Agent–Runtime Bridge.
 
-The Agent–Runtime Execution Bridge Inspection has been completed. It established that the current Agent environment can invoke the Runtime programmatically and demonstrated Process Instance persistence and recovery, but found no existing Agent–Runtime bridge or automatic AESM participation path. The inspection concluded with Outcome B — Thin Agent–Runtime Bridge Justified — identifying a bounded four-part adapter boundary.
+The Agent–Runtime Execution Bridge Inspection, Bridge Boundary Reconciliation, Environment Mechanism Mapping, Bridge Contract Determination, Runtime API Inspection, and Minimal Bridge Implementation are all complete.
 
-The Bridge Implementation Authorization gate has been **passed** (2026-09-14). The authorization was based on: the completed bridge inspection evidence, independent verification of all four canonical bridge responsibilities against the current Runtime source code and test suite (88/88 passing), and a disconfirmation evaluation that found no material contradicting evidence across five evaluation categories. The Canonical Bridge Boundary and all architectural exclusions remain unchanged.
+The bridge implementation (2026-09-15) provides Process Instance creation, known-ID recovery, authoritative Execution Context access, and Runtime dispatch for 8 supported operations. It delegates all authority to the existing Runtime. 126/126 tests pass (88 existing Runtime tests + 38 new bridge tests). Continuity across bridge instances and Agent-facing invocation have been demonstrated. Objective-to-Process-Instance discovery remains explicitly deferred as a separate design decision.
 
-The next authorized work unit is **Runtime API Inspection** — a systematic examination of the existing Runtime API surface to determine the concrete adapter contract for the bounded bridge. Bridge implementation, bridge tests, adapter creation, Runtime modification, and Execution Environment integration remain unauthorized until their respective authorization gates are passed.
+The next authorized work unit is **Bridge Behavioral Validation** — validate that the bridge correctly connects Agent activity to Runtime operations. The DBP real-request execution and context-loss/fresh-agent validation remain subsequent work units.
