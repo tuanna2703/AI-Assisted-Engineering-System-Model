@@ -19,7 +19,7 @@ The selected vertical slice previously established that explicit Process Instanc
 - `apply_lifecycle_determination()` is the existing authoritative lifecycle-control surface and persists lifecycle transitions through the store.
 - `ProcessStore.save_lifecycle()` provides a recoverable persistence boundary for lifecycle mutation and history.
 
-## Implemented validation
+## Implemented validation coverage
 
 Added `tests/lifecycle/test_completion_termination.py` covering:
 
@@ -32,24 +32,32 @@ Added `tests/lifecycle/test_completion_termination.py` covering:
 
 The existing targeted lifecycle suite also covers suspension, resumption reevaluation, stale pending-work invalidation, lifecycle history, authorization, persistence rollback, and the distinction between engineering completion and termination.
 
-## Expected execution
+## Validation execution status
 
-Run with the repository's established environment:
+The planned validation command is:
 
 ```text
 PYTHONPATH=. .venv/bin/pytest -v tests/lifecycle/test_completion_termination.py tests/lifecycle/test_process_instance_lifecycle_control.py tests/lifecycle/test_runtime_lifecycle.py tests/continuity/test_runtime_recovery.py
 ```
 
-## Conformance assessment
+This command has **not been executed in the current connected repository environment**. The GitHub connection exposes repository contents and commit/status information, but does not provide the repository's `.venv` execution environment. No GitHub Actions workflow run or commit status is available for the validation commits either.
 
-**Completion handling:** Conformant — Demonstrated by the existing Runtime implementation and targeted behavioral coverage. Engineering completion is a Process State outcome and is not silently converted into lifecycle termination.
+Accordingly, this artifact records **test coverage and implementation inspection, not test-pass evidence**. No pass count is asserted and no conformance classification is upgraded solely from the existence of these tests.
 
-**Runtime interruption:** Conformant — Demonstrated. Runtime detachment does not mutate persisted Process Instance lifecycle state.
+## Provisional assessment pending execution
 
-**Explicit lifecycle termination:** Conformant — Evidence strengthened. The existing lifecycle-control mechanism already supports authorized termination, persistence, recovery, terminal-state enforcement, and history. No additional termination API or semantic expansion is justified by the current vertical slice.
+- **Completion handling:** Evidence is insufficient for a demonstrated behavioral classification until the focused and lifecycle regression suites are actually executed.
+- **Runtime interruption:** Existing implementation inspection supports the intended distinction, but execution evidence is still required for closure.
+- **Explicit lifecycle termination:** Existing implementation inspection shows an authoritative lifecycle-control path with persistence, recovery, and terminal-state enforcement; the new tests strengthen coverage, but execution evidence is still required before treating the item as fully validated.
 
 ## Scope decision
 
-No Runtime implementation change is required for completion/termination semantics at this point. The implementation work for this bounded item is therefore test/evidence hardening rather than creation of a new lifecycle operation.
+No Runtime implementation change is required based on the inspection performed here. The bounded implementation work remains test/evidence hardening rather than creation of a new lifecycle operation.
 
 This does not authorize automatic termination, Agent-controlled termination, or any new lifecycle semantics. Future termination behavior remains governed by the applicable lifecycle semantics and their authority conditions.
+
+## Closure gate
+
+**Status: Evidence Incomplete — execution required.**
+
+Next required action is to run the focused completion/termination tests plus the lifecycle regression suite in the repository's established Python environment. If those pass, record the exact environment, command, and results here and then reconcile `IMPLEMENTATION_PLAN.md`. If they fail, classify the failure before changing implementation or semantics.
