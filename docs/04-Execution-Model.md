@@ -184,80 +184,21 @@ Repeated delivery or retry of the same contribution or external result must not 
 
 ## Suspension and resumption
 
-Execution may be suspended only when permitted or required by applicable execution semantics.
+Execution may be suspended only when permitted or required by applicable execution semantics. Suspension pauses Process Instance execution without terminating the Process Instance.
 
-Universal lifecycle semantics define suspension as the transition of the Process Instance lifecycle from `ACTIVE` to `SUSPENDED`. Suspension pauses Process Instance execution without terminating the Process Instance.
+Recovery alone is not resumption. Before resuming a suspended Process Instance, the Runtime must reevaluate the current executable situation against current authoritative state and applicable conditions. Persisted continuation information is not an imperative command.
 
-Suspension must preserve sufficient authoritative state for later continuation, including as applicable:
-
-- current Process State;
-- pending execution activity and its status;
-- unresolved conditions;
-- interruption information;
-- traceability;
-- failure and uncertainty information;
-- verification state;
-- lifecycle state and transition basis;
-- other information required to reconstruct the executable situation.
-
-Runtime shutdown, Agent departure, conversation closure, IDE closure, or Execution Environment replacement do not themselves constitute semantic suspension unless applicable execution semantics explicitly establish that transition.
-
-A Participant, Agent, external system, or other actor may request or propose suspension where applicable semantics permit. The Runtime must evaluate authority and conditions before applying the lifecycle mutation. Technical ability to write lifecycle state is not authority to suspend.
-
-Resumption is the lifecycle transition from `SUSPENDED` to `ACTIVE` followed by re-entry into PEM execution. Recovery alone is not resumption.
-
-Resumption follows:
-
-```text
-Recover authoritative Process Instance state
-              ↓
-Reevaluate current executable situation
-              ↓
-Determine permissible continuation
-              ↓
-Resume PEM execution when permitted
-```
-
-Before continuation, the Runtime must re-evaluate current authoritative state and applicable EPM/PEM conditions, including as applicable pending execution, resumption conditions, requirements and constraints, verification state, changed conditions, authority, failures, uncertainty, and Decision Gates.
-
-Persisted continuation information such as `next_action` is expected continuation information, not an imperative command. Reevaluation may result in continuing the pending activity, performing different permissible activity, remaining suspended, entering another applicable execution condition, or terminating when termination conditions are independently satisfied.
+The detailed semantics of suspension authority, preservation requirements, resumption reevaluation, resumption outcomes, and their relationship to applicable execution conditions are specified in [Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md).
 
 ## Process Instance lifecycle semantics
 
-Process Instance lifecycle is a universal AESM/PEM semantic dimension describing the lifecycle condition of the persistent Process Instance itself.
+Process Instance lifecycle is a universal AESM/PEM semantic dimension describing the lifecycle condition of the persistent Process Instance. The canonical lifecycle states are `ACTIVE`, `SUSPENDED`, and `TERMINATED`.
 
-The universal lifecycle state vocabulary is:
-
-```text
-ACTIVE
-SUSPENDED
-TERMINATED
-```
-
-- `ACTIVE` means the Process Instance remains an ongoing engineering execution entity and may execute when applicable conditions permit.
-- `SUSPENDED` means execution is paused while the Process Instance remains extant and potentially resumable; sufficient authoritative state must be preserved for safe continuation.
-- `TERMINATED` means the Process Instance lifecycle has ended and cannot continue as the same lifecycle instance.
-
-The lifecycle state is distinct from EPM Process State, engineering completion, Runtime lifetime, Agent/conversation lifetime, and Execution Environment lifetime.
-
-Universal lifecycle transitions are:
-
-```text
-ACTIVE ──suspend──→ SUSPENDED
-  ↑                    │
-  └─────resume─────────┘
-
-ACTIVE ───────────────→ TERMINATED
-SUSPENDED ────────────→ TERMINATED
-```
-
-`TERMINATED` is terminal. A terminated Process Instance cannot transition back to `ACTIVE` or `SUSPENDED` as the same lifecycle instance.
-
-Universal PEM semantics do not prescribe a single domain-specific suspension or termination trigger. Applicable execution semantics define concrete triggers, preconditions, authority rules, and scenario-specific conditions. A request or event is not automatically an authoritative lifecycle transition.
-
-A conforming Runtime must preserve lifecycle state as authoritative recoverable operational state and must apply lifecycle transitions only when applicable execution semantics permit or require them. Material lifecycle transitions must remain reconstructable with their basis and material consequences.
+Lifecycle state is distinct from EPM Process State, engineering completion, Runtime lifetime, Agent/conversation lifetime, and Execution Environment lifetime.
 
 Engineering completion remains independent of lifecycle termination. Completion is established by applicable EPM completion conditions; termination is established by applicable lifecycle/execution semantics. An applicable execution model may explicitly require termination after completion, but that is not a universal equivalence.
+
+The detailed lifecycle semantics — including transition graphs, suspension/resumption/termination authority, preservation requirements, conflict handling, traceability, Runtime obligations, and conformance interpretation — are specified in [Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md).
 
 AESM/PEM does not prescribe a lifecycle API such as `suspend()`, `resume()`, or `terminate()`, nor a storage mechanism for lifecycle state or history.
 

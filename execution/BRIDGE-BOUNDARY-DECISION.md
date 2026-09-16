@@ -58,7 +58,7 @@ Plus the non-dispatch bridge operations: `create_process`, `attach`, `get_contex
 
 ### 2.3 Agent Responsibilities Relevant to the Bridge
 
-Source: [06-Participants-and-Agent-Participation.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/06-Participants-and-Agent-Participation.md), [12-AI-Agent-Guide.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/12-AI-Agent-Guide.md).
+Source: [06-Participants-and-Agent-Participation.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/06-Participants-and-Agent-Participation.md).
 
 The Agent may: inspect Execution Context; perform investigation; contribute evidence candidates; propose engineering decisions; create/modify artifacts; perform verification; report execution results; challenge earlier conclusions; request clarification; identify conditions requiring reconsideration.
 
@@ -68,7 +68,7 @@ Key invariants: `Agent ≠ Runtime`, `Agent capability ≠ authority`, `Agent ou
 
 ### 2.4 Runtime Responsibilities Relevant to the Bridge
 
-Source: [07-Runtime-and-Conformance.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/07-Runtime-and-Conformance.md), [13-Runtime-Implementer-Guide.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/13-Runtime-Implementer-Guide.md).
+Source: [07-Runtime-and-Conformance.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/07-Runtime-and-Conformance.md).
 
 The Runtime: discovers/establishes/recovers Process Instances; maintains authoritative Execution Context; evaluates the executable situation; recognizes information under EPM/PEM semantics; evaluates Process State transitions; handles Decision Gates; makes Execution Determinations; applies permitted state mutations; preserves pending work; supports reconsideration; supports suspension, resumption, recovery, and termination.
 
@@ -80,7 +80,7 @@ The Execution Environment: hosts the Agent and bridge mechanism; provides access
 
 ### 2.6 Relevant EPM/PEM Semantics
 
-Source: [03-Engineering-Model.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/03-Engineering-Model.md), [04-Execution-Model.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/04-Execution-Model.md), [08-Continuity-Traceability-and-Reconsideration.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/08-Continuity-Traceability-and-Reconsideration.md), [16-Applicable-Process-Instance-Lifecycle-Semantics.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/16-Applicable-Process-Instance-Lifecycle-Semantics.md), [14-Lifecycle-Semantic-Decision-Record.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/14-Lifecycle-Semantic-Decision-Record.md).
+Source: [03-Engineering-Model.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/03-Engineering-Model.md), [04-Execution-Model.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/04-Execution-Model.md), [08-Continuity-Traceability-and-Reconsideration.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/08-Continuity-Traceability-and-Reconsideration.md), [11-Applicable-Process-Instance-Lifecycle-Semantics.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/11-Applicable-Process-Instance-Lifecycle-Semantics.md), [14-Lifecycle-Semantic-Decision-Record.md](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/archive/14-Lifecycle-Semantic-Decision-Record.md).
 
 - **Lifecycle authority** is separate from technical mutation capability (Decision L-05, L-11). Lifecycle transitions require authorization by applicable execution semantics.
 - **Reconsideration** is an AESM engineering concept (EPM §Reconsideration, PEM §Verification) triggered by new evidence, failed verification, changed constraints. It is part of the iterative engineering flow.
@@ -93,8 +93,8 @@ Source: [03-Engineering-Model.md](file:///Volumes/DATA/Workspace/Development/MAM
 | Source | Type | Relevance |
 |---|---|---|
 | [`AGENT-RUNTIME-BRIDGE-CONTRACT.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/AGENT-RUNTIME-BRIDGE-CONTRACT.md) | Accepted decision (contract) | Bridge boundary, responsibilities, non-responsibilities |
-| [`BRIDGE-IMPLEMENTATION-AUTHORIZATION-DECISION.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/BRIDGE-IMPLEMENTATION-AUTHORIZATION-DECISION.md) | Accepted decision (authorization) | What was authorized/accepted for the bridge |
-| [`BRIDGE-BEHAVIORAL-VALIDATION.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/BRIDGE-BEHAVIORAL-VALIDATION.md) | Validation evidence | Current bridge dispatch table, the finding under analysis |
+| [`BRIDGE-IMPLEMENTATION-AUTHORIZATION-DECISION.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/archive/BRIDGE-IMPLEMENTATION-AUTHORIZATION-DECISION.md) | Accepted decision (authorization) | What was authorized/accepted for the bridge |
+| [`BRIDGE-BEHAVIORAL-VALIDATION.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/archive/BRIDGE-BEHAVIORAL-VALIDATION.md) | Validation evidence | Current bridge dispatch table, the finding under analysis |
 | [`agent_runtime_bridge.py`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/bridge/agent_runtime_bridge.py) | Implementation evidence | Current bridge dispatch table |
 | [`runtime.py`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/runtime/core/runtime.py) | Implementation evidence | Runtime operations under analysis |
 | [`04-Execution-Model.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/04-Execution-Model.md) | Normative specification | PEM lifecycle, reconsideration, suspension/resumption semantics |
@@ -102,10 +102,8 @@ Source: [03-Engineering-Model.md](file:///Volumes/DATA/Workspace/Development/MAM
 | [`06-Participants-and-Agent-Participation.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/06-Participants-and-Agent-Participation.md) | Normative specification | Agent boundary, capabilities, non-authorities |
 | [`07-Runtime-and-Conformance.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/07-Runtime-and-Conformance.md) | Normative specification | Runtime responsibilities, lifecycle, conformance |
 | [`08-Continuity-Traceability-and-Reconsideration.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/08-Continuity-Traceability-and-Reconsideration.md) | Normative specification | Reconsideration semantics, suspension/resumption |
-| [`12-AI-Agent-Guide.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/12-AI-Agent-Guide.md) | Normative specification | Agent responsibilities |
-| [`13-Runtime-Implementer-Guide.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/13-Runtime-Implementer-Guide.md) | Normative specification | Runtime implementer guidance |
-| [`14-Lifecycle-Semantic-Decision-Record.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/14-Lifecycle-Semantic-Decision-Record.md) | Accepted decision | Lifecycle semantic decisions L-01 through L-17 |
-| [`16-Applicable-Process-Instance-Lifecycle-Semantics.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/16-Applicable-Process-Instance-Lifecycle-Semantics.md) | Normative specification | Applicable lifecycle semantics, authority, conformance |
+| [`14-Lifecycle-Semantic-Decision-Record.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/archive/14-Lifecycle-Semantic-Decision-Record.md) | Accepted decision | Lifecycle semantic decisions L-01 through L-17 |
+| [`11-Applicable-Process-Instance-Lifecycle-Semantics.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/11-Applicable-Process-Instance-Lifecycle-Semantics.md) | Normative specification | Applicable lifecycle semantics, authority, conformance |
 | [`03-Engineering-Model.md`](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/03-Engineering-Model.md) | Normative specification | EPM reconsideration, verification, completion |
 
 ### 2.8 Contradictions and Unresolved Boundary Statements
@@ -149,8 +147,8 @@ The operation itself requires `authority_context == "authorized-controller"`. Th
 #### Existing AESM Meaning
 
 - [04-Execution-Model.md §Process Instance lifecycle semantics](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/04-Execution-Model.md): Lifecycle transitions are governed by applicable execution semantics; AESM does not prescribe lifecycle APIs.
-- [16-Applicable-Process-Instance-Lifecycle-Semantics.md §Authority](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/16-Applicable-Process-Instance-Lifecycle-Semantics.md): Lifecycle authority is separate from technical mutation capability. Request ≠ authorization ≠ Runtime mutation.
-- [14-Lifecycle-Semantic-Decision-Record.md §L-05, L-11](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/14-Lifecycle-Semantic-Decision-Record.md): Agents may request but do not directly control lifecycle state.
+- [11-Applicable-Process-Instance-Lifecycle-Semantics.md §Authority](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/11-Applicable-Process-Instance-Lifecycle-Semantics.md): Lifecycle authority is separate from technical mutation capability. Request ≠ authorization ≠ Runtime mutation.
+- [14-Lifecycle-Semantic-Decision-Record.md §L-05, L-11](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/execution/archive/14-Lifecycle-Semantic-Decision-Record.md): Agents may request but do not directly control lifecycle state.
 
 #### Bridge Boundary Test
 
@@ -258,7 +256,7 @@ And in the reconsideration specification ([08-Continuity-Traceability-and-Recons
 
 > A reconsideration should: (1) identify what is being reconsidered; (2) identify the reason; (3) preserve the previous conclusion and its basis; (4) evaluate the new information; (5) establish a new conclusion through applicable EPM semantics; (6) apply controlled state changes; (7) preserve traceability.
 
-The Agent is explicitly permitted to "challenge earlier conclusions" and to "identify conditions requiring reconsideration" ([06-Participants-and-Agent-Participation.md §What an Agent may do](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/06-Participants-and-Agent-Participation.md), [12-AI-Agent-Guide.md §What the Agent may contribute](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/12-AI-Agent-Guide.md)).
+The Agent is explicitly permitted to "challenge earlier conclusions" and to "identify conditions requiring reconsideration" ([06-Participants-and-Agent-Participation.md §What an Agent may do](file:///Volumes/DATA/Workspace/Development/MAMP/htdocs/wordpress-plugins/AI-Assisted-Engineering-System-Model/docs/06-Participants-and-Agent-Participation.md)).
 
 **Owning actor/layer:** Reconsideration is part of the engineering flow. The Agent participates in the engineering flow — the Agent identifies conditions requiring reconsideration. The Runtime applies the controlled state change. The `reconsider` operation is a **process-state transition** (verification → investigation), which is analogous to the currently exposed transitions (`start_investigation`, `begin_implementation`, `begin_verification`).
 

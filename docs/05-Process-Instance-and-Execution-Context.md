@@ -25,9 +25,9 @@ The Process Instance must also retain an explicit binding to the applicable EPM 
 
 ## Process Instance lifecycle
 
-Process Instance lifecycle describes the lifecycle condition of the Process Instance itself.
+Process Instance lifecycle describes the lifecycle condition of the Process Instance itself. The canonical lifecycle states are `ACTIVE`, `SUSPENDED`, and `TERMINATED`.
 
-It is a universal AESM/PEM semantic dimension and is distinct from:
+Lifecycle state is a universal AESM/PEM semantic dimension and is distinct from:
 
 - current Process State;
 - engineering completion;
@@ -35,40 +35,11 @@ It is a universal AESM/PEM semantic dimension and is distinct from:
 - Agent or conversation lifetime;
 - Execution Environment lifetime.
 
-The universal lifecycle state vocabulary is:
-
-```text
-ACTIVE
-SUSPENDED
-TERMINATED
-```
-
-`ACTIVE` means the Process Instance remains an ongoing engineering execution entity and may execute when applicable conditions permit.
-
-`SUSPENDED` means execution is paused while the Process Instance remains extant and potentially resumable. Sufficient authoritative state must be preserved for safe continuation.
-
-`TERMINATED` means the Process Instance lifecycle has ended and cannot continue as the same lifecycle instance. It is terminal.
+Lifecycle state is not an EPM Process State and does not replace or constrain the EPM-defined engineering state model.
 
 A newly established Process Instance is `ACTIVE` unless applicable execution semantics explicitly establish another initial condition.
 
-Universal lifecycle transitions are:
-
-```text
-ACTIVE ──suspend──→ SUSPENDED
-  ↑                    │
-  └─────resume─────────┘
-
-ACTIVE ───────────────→ TERMINATED
-SUSPENDED ────────────→ TERMINATED
-```
-
-`TERMINATED` cannot transition to `ACTIVE` or `SUSPENDED` as the same lifecycle instance.
-
-Lifecycle state is not an EPM Process State and does not replace or constrain the EPM-defined engineering state model.
-
-Universal AESM/PEM semantics define lifecycle meaning and invariants. Applicable execution semantics define concrete triggers, preconditions, authority rules, and scenario-specific transition conditions. Runtime behavior must not be used to invent lifecycle meaning.
-
-Suspension, when applicable, preserves sufficient authoritative state for possible continuation. Recovery reconstructs lifecycle and other authoritative operational state. Resumption requires reevaluation of the recovered executable situation before continuation.
+The detailed lifecycle semantics — including transition graphs, suspension/resumption/termination authority, preservation requirements, recovery, reevaluation, conflict handling, traceability, and conformance interpretation — are specified in [Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md).
 
 ## Execution Context
 

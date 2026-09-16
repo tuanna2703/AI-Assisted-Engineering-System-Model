@@ -20,9 +20,7 @@ The documentation is organized around **what a reader needs to understand**, rat
 8. **[Continuity, Traceability, and Reconsideration](08-Continuity-Traceability-and-Reconsideration.md)** — persistence, recovery, history, and controlled change.
 9. **[Operational Guide](09-Operational-Guide.md)** — how the pieces work together during an engineering effort.
 10. **[Reference](10-Reference.md)** — terminology, distinctions, invariants, and quick-reference relationships.
-11. **[Documentation Source Map](11-Documentation-Source-Map.md)** — traceability from the former documentation into the unified set.
-12. **[AI Agent Guide](12-AI-Agent-Guide.md)** — how an AI Agent should understand and participate in AESM.
-13. **[Runtime Implementer Guide](13-Runtime-Implementer-Guide.md)** — implementation-oriented guidance for Runtime developers.
+11. **[Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md)** — detailed lifecycle states, transitions, authority, preservation, and conformance interpretation.
 
 ## Reading paths
 
@@ -36,11 +34,11 @@ The documentation is organized around **what a reader needs to understand**, rat
 
 ### AI Agent
 
-`Overview → System Model → AI Agent Guide → Execution Model → Continuity`
+`Overview → System Model → Participants and Agent Participation → Execution Model → Continuity`
 
 ### Runtime implementer
 
-`System Model → Engineering Model → Execution Model → Process Instance and Execution Context → Runtime and Conformance → Runtime Implementer Guide`
+`System Model → Engineering Model → Execution Model → Process Instance and Execution Context → Runtime and Conformance → Applicable Process Instance Lifecycle Semantics`
 
 The Runtime implementer path intentionally includes the Engineering Model because EPM defines the engineering validity that the Runtime must preserve; a Runtime cannot implement PEM correctly by reading execution semantics in isolation.
 
@@ -93,6 +91,6 @@ The final documentation follows these rules:
 4. Every substantive concept remains traceable to the validated AESM model.
 5. The documentation describes an iterative engineering system, not a waterfall checklist.
 6. Persistent Process Instance state is treated as the continuity boundary.
-7. AI Agents and Runtime implementers receive dedicated reader-oriented guidance without creating alternative semantics.
+7. AI Agent and Runtime implementer guidance is integrated into the participant and conformance documents rather than maintained as separate alternative semantics.
 8. Semantic requirements are specified independently of implementation mechanisms.
 9. Conformance requires preservation of authority, recognition, mutation, transition, gate, continuity, concurrency, and lifecycle semantics.

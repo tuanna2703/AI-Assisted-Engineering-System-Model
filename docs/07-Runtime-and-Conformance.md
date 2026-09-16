@@ -69,6 +69,14 @@ AESM does not require a specific `discover()` API.
 
 A Runtime may implement discovery through files, databases, services, indexes, identifiers, registries, or other suitable mechanisms, provided that the resulting Process Instance identity and authoritative state remain consistent with AESM semantics.
 
+## EPM binding
+
+Every Process Instance must have an explicit, recoverable binding to the applicable EPM definition. Where EPM definitions are versioned, the applicable version or revision must be recoverable.
+
+The Runtime must use that binding when evaluating engineering state, transition validity, Decision Gates, completion conditions, and other EPM-governed semantics.
+
+The Runtime must not silently substitute a different EPM definition during recovery or continuation. If the applicable EPM cannot be resolved, execution must represent the deficiency rather than invent engineering semantics.
+
 ## Runtime control boundary
 
 ```text
@@ -157,6 +165,22 @@ The Runtime should preserve the distinction between requested action, performed 
 
 An external action may succeed technically without establishing a verified or authoritative engineering result.
 
+## Engineering validity versus execution ability
+
+EPM determines whether an engineering transition is valid.
+
+PEM determines how execution handles that transition.
+
+Therefore:
+
+```text
+Runtime can perform X
+        ≠
+AESM permits X
+```
+
+A Runtime must not infer engineering validity from technical capability.
+
 ## Concurrent participation
 
 Multiple Participants, Agents, or Execution Environments may contribute to the same Process Instance. A conforming Runtime must preserve consistency when contributions are concurrent or were produced from stale Execution Context.
@@ -201,86 +225,25 @@ If authoritative state is insufficient to establish a valid continuation situati
 
 ## Process Instance lifecycle semantics
 
-Process Instance lifecycle is a universal AESM/PEM semantic dimension describing the lifecycle condition of the persistent Process Instance itself.
+Process Instance lifecycle is a universal AESM/PEM semantic dimension describing the lifecycle condition of the persistent Process Instance. The canonical lifecycle states are `ACTIVE`, `SUSPENDED`, and `TERMINATED`.
 
-The canonical universal lifecycle states are:
+Lifecycle state is distinct from EPM Process State, engineering completion, Runtime lifetime, Agent/conversation lifetime, and Execution Environment lifetime. A Runtime must not invent lifecycle meaning from technical behavior.
 
-```text
-ACTIVE
-SUSPENDED
-TERMINATED
-```
+A conforming Runtime must, where applicable execution semantics require lifecycle behavior:
 
-`ACTIVE` means the Process Instance is an ongoing engineering execution entity and may execute when applicable conditions permit.
+- represent lifecycle state explicitly;
+- apply lifecycle transitions only when authorized by applicable execution semantics;
+- preserve sufficient authoritative state during suspension for possible continuation;
+- reevaluate the executable situation before resumption rather than blindly replaying stale continuation information;
+- enforce termination finality;
+- reject unauthorized lifecycle requests without silently mutating lifecycle state;
+- preserve lifecycle transition evidence as reconstructable history.
 
-`SUSPENDED` means Process Instance execution is paused while the Process Instance remains extant and potentially resumable. Sufficient authoritative state must be preserved for safe continuation.
-
-`TERMINATED` means the Process Instance lifecycle has ended and cannot continue as the same lifecycle instance. It is terminal.
-
-Universal lifecycle transitions are:
-
-```text
-ACTIVE ──suspend──→ SUSPENDED
-  ↑                    │
-  └─────resume─────────┘
-
-ACTIVE ───────────────→ TERMINATED
-SUSPENDED ────────────→ TERMINATED
-```
-
-`TERMINATED` must not transition to `ACTIVE` or `SUSPENDED` as the same lifecycle instance.
-
-The lifecycle state is distinct from EPM Process State, engineering completion, Runtime lifetime, Agent/conversation lifetime, and Execution Environment lifetime.
-
-Universal AESM/PEM semantics define lifecycle meaning and invariants. Applicable execution semantics define concrete triggers, preconditions, authority rules, and scenario-specific transition conditions. A Runtime must not invent lifecycle meaning from technical behavior.
-
-### Suspension conformance
-
-A conforming Runtime must, where applicable execution semantics authorize or require suspension:
-
-- apply `ACTIVE → SUSPENDED` only when the transition is permitted;
-- preserve sufficient authoritative state for possible continuation;
-- preserve the transition basis and material consequences;
-- reject or otherwise represent unauthorized suspension requests without silently mutating lifecycle state.
-
-Runtime shutdown, Agent departure, conversation closure, IDE closure, or Execution Environment replacement do not themselves constitute semantic suspension unless applicable execution semantics explicitly establish that transition.
-
-### Resumption conformance
-
-Recovery alone is not resumption.
-
-For a suspended Process Instance, the Runtime must recover the suspended lifecycle state and then re-evaluate the current executable situation before returning the Process Instance to active execution.
-
-Reevaluation considers applicable current state, pending execution, resumption conditions, requirements and constraints, verification state, changed conditions, authority, failures, uncertainty, and Decision Gates.
-
-A persisted `next_action` or equivalent continuation record is not an imperative command. Stale or invalid pending work must not be blindly replayed.
-
-The outcome of reevaluation may be continuation, different permissible activity, continued suspension, another applicable execution condition, or termination where independently authorized.
-
-### Termination conformance
-
-A conforming Runtime must, where applicable execution semantics establish a valid termination condition:
-
-- apply the transition to `TERMINATED` only when authorized;
-- preserve the termination basis and material consequences;
-- reject or otherwise represent unauthorized termination requests without silently mutating lifecycle state;
-- prevent resumption of the terminated Process Instance as the same lifecycle instance.
-
-Historical recovery of a terminated Process Instance may remain possible for audit, traceability, or other permitted purposes, but does not reactivate it.
-
-### Completion and termination separation
-
-Engineering completion is established according to applicable EPM completion conditions. Process Instance termination is established according to applicable lifecycle/execution semantics.
+Runtime shutdown, Agent departure, conversation closure, IDE closure, or Execution Environment replacement do not themselves constitute semantic suspension or termination unless applicable execution semantics explicitly establish that transition.
 
 Engineering completion does not universally imply Process Instance termination. An applicable execution model may explicitly require termination after completion, but that is an applicable rule rather than a universal equivalence.
 
-### Lifecycle persistence and traceability
-
-Current lifecycle state is authoritative operational state and must be persistent and recoverable as part of Execution Context.
-
-Every material lifecycle transition must be reconstructable from authoritative history. At minimum, lifecycle history must permit reconstruction of prior and resulting lifecycle states, transition identity or equivalent reference, sequence/time information, triggering event/request/condition, authority or actor attribution where applicable, applicable semantic basis, relevant conditions or evidence, and material consequences for continuation or termination.
-
-Current lifecycle state alone is insufficient conformance evidence for lifecycle traceability. Historical transition information must not be silently overwritten by later lifecycle state changes, subject to applicable retention rules.
+The detailed lifecycle semantics — including transition graphs, suspension/resumption/termination authority, preservation requirements, conflict handling, traceability, Runtime obligations, and conformance interpretation — are specified in [Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md).
 
 ## Lifecycle separation
 
