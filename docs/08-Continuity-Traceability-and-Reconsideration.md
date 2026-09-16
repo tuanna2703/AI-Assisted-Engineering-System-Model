@@ -124,80 +124,29 @@ The environment provides access; it does not become the source of truth.
 
 Process Instance lifecycle is a universal AESM/PEM semantic dimension distinct from Process State, engineering completion, Runtime lifetime, Agent/conversation lifetime, and Execution Environment lifetime.
 
-The canonical lifecycle states are:
+Lifecycle state and lifecycle transitions affect whether a Process Instance may continue, while remaining distinct from engineering completion and Process State. Detailed lifecycle states, transition rules, suspension and resumption semantics, termination semantics, authority, preservation, and lifecycle traceability are defined by [Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md).
 
-```text
-ACTIVE
-SUSPENDED
-TERMINATED
-```
-
-The universal transition possibilities are:
-
-```text
-ACTIVE ──suspend──→ SUSPENDED
-  ↑                    │
-  └─────resume─────────┘
-
-ACTIVE ───────────────→ TERMINATED
-SUSPENDED ────────────→ TERMINATED
-```
-
-`TERMINATED` is terminal and cannot return to `ACTIVE` or `SUSPENDED` as the same lifecycle instance.
-
-Lifecycle transitions occur only when applicable execution semantics authorize or require them. Runtime shutdown, Agent departure, conversation closure, IDE closure, or Environment replacement do not themselves constitute suspension or termination unless applicable execution semantics explicitly establish that transition.
-
-Engineering completion remains distinct from lifecycle termination. Completion is governed by applicable EPM conditions; termination is governed by applicable lifecycle/execution semantics.
+For continuity purposes, lifecycle state is authoritative Process Instance state rather than a property of the current Agent, conversation, Runtime session, or Execution Environment. Lifecycle history therefore contributes to reconstructing the operational situation across interruptions and changes of participation or environment.
 
 ## Suspension and resumption
 
-Suspension is the lifecycle transition `ACTIVE → SUSPENDED`. It pauses Process Instance execution while preserving sufficient authoritative state for possible continuation.
-
-The preserved state should include, as applicable, pending work, unresolved conditions, current Process State, verification state, material failure and uncertainty information, lifecycle transition basis, and traceability required to reconstruct the executable situation.
-
-Resumption is not merely recovery. Recovery reconstructs authoritative state; resumption returns a suspended Process Instance to active execution only after reevaluation establishes that continuation is permissible.
-
-The semantic sequence is:
+Continuity depends on distinguishing recovery from resumption. Recovery reconstructs authoritative Process Instance and Execution Context state; it does not by itself establish that execution may continue. A recovered Process Instance must be reevaluated against applicable conditions before continuation is permitted.
 
 ```text
 Recover authoritative state
         ↓
-Observe current situation
+Reevaluate applicable conditions
         ↓
-Evaluate current conditions
-        ↓
-Determine permissible continuation
-        ↓
-Resume active execution when permitted
+Continue when permitted
 ```
 
-Persisted continuation information such as `next_action` is expected continuation information, not an imperative command. Stale or invalid pending work must not be blindly replayed.
-
-Reevaluation may result in continuation, different permissible activity, continued suspension, another applicable execution condition, or authorized termination.
+Persisted continuation information such as `next_action` is expected continuation information rather than an imperative command to replay a previous Runtime operation. Detailed suspension, resumption, preservation, and reevaluation semantics are defined by [Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md).
 
 ## Lifecycle traceability
 
-Every material lifecycle transition must remain reconstructable from authoritative history independently from the current lifecycle state, subject to applicable retention rules.
+Material lifecycle history contributes to the reconstructability required for continuity and traceability. Current lifecycle state alone is not sufficient to reconstruct the history of material lifecycle transitions.
 
-The reconstructable history should establish, where applicable:
-
-```text
-prior lifecycle state
-        ↓
-trigger / request / condition
-        ↓
-authority / actor
-        ↓
-applicable semantic basis
-        ↓
-transition
-        ↓
-resulting lifecycle state
-        ↓
-material consequence
-```
-
-Current lifecycle state alone is insufficient evidence of lifecycle traceability. Later lifecycle changes must not silently erase material transition history.
+The detailed requirements for lifecycle transition traceability, including the information required to reconstruct a material transition, are defined by [Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md).
 
 ## Failure and uncertainty
 
