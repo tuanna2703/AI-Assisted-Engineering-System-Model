@@ -10,14 +10,13 @@ Process Instance identity, Execution Context semantics, persistence, lifecycle
 authority, engineering semantics, or generalized Agent orchestration.
 
 Discovery of an existing Process Instance from an engineering objective is an
-explicitly deferred capability.  The bridge does not search for, index, select,
-or independently persist Process Instances.
+explicitly deferred capability.  The bridge does not search for, index,
+select, or independently persist Process Instances.
 """
 from __future__ import annotations
 
 from typing import Any
 
-from runtime.core.models import ExecutionContext, ProcessInstance
 from runtime.core.runtime import Runtime
 from runtime.core.store import ProcessStore
 from runtime.persistence.json_store import PersistenceError
@@ -29,6 +28,10 @@ from runtime.persistence.json_store import PersistenceError
 # Maps operation name → (runtime_method_name, param_keys).
 # param_keys is a tuple of the keyword argument names expected in `params`.
 # An empty tuple means the Runtime method takes no arguments beyond self.
+#
+# `reconsider` is explicitly authorized as an Agent-facing bridge capability.
+# `set_pending_execution` is intentionally absent: it remains a Runtime-owned
+# execution-state operation outside the Agent–Runtime Bridge boundary.
 
 _DISPATCH_TABLE: dict[str, tuple[str, tuple[str, ...]]] = {
     "start_investigation": ("start_investigation", ()),
@@ -38,6 +41,7 @@ _DISPATCH_TABLE: dict[str, tuple[str, tuple[str, ...]]] = {
     "record_artifact": ("record_artifact", ("artifact",)),
     "begin_verification": ("begin_verification", ()),
     "record_verification": ("record_verification", ("result",)),
+    "reconsider": ("reconsider", ("reason",)),
     "recognize_engineering_completion": (
         "recognize_engineering_completion",
         ("completion",),
@@ -123,7 +127,7 @@ class AgentRuntimeBridge:
             return _error_response("bridge_error", "objective must be a non-empty string")
 
         try:
-            pid = self._runtime.create_process(objective)
+            self._runtime.create_process(objective)
         except PersistenceError as exc:
             return _error_response("persistence_error", str(exc))
         except Exception as exc:
