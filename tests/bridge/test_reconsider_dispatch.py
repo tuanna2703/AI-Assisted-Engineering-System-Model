@@ -102,6 +102,29 @@ def test_successful_verification_rejection_is_propagated(
     assert result["context"]["process_state"] == "verification"
 
 
+def test_invalid_reconsideration_reason_is_rejected_by_runtime_without_mutation(
+    verification_ready_bridge: AgentRuntimeBridge,
+    store: ProcessStore,
+) -> None:
+    before = verification_ready_bridge.get_context()
+    assert before["success"] is True
+    process_instance_id = before["process_instance_id"]
+    persisted_before = store.load_context(process_instance_id).to_dict()
+    history_before = store.history(process_instance_id)
+
+    result = verification_ready_bridge.dispatch(
+        "reconsider", {"reason": {"source": "missing description"}}
+    )
+
+    assert result["success"] is False
+    assert result["error"]["type"] == "runtime_error"
+    assert "descriptive reason" in result["error"]["message"]
+    assert result["context"]["process_state"] == "verification"
+    assert result["context"] == before["context"]
+    assert store.load_context(process_instance_id).to_dict() == persisted_before
+    assert store.history(process_instance_id) == history_before
+
+
 def test_set_pending_execution_remains_outside_bridge_boundary(
     verification_ready_bridge: AgentRuntimeBridge,
 ) -> None:
@@ -112,4 +135,6 @@ def test_set_pending_execution_remains_outside_bridge_boundary(
     assert result["success"] is False
     assert result["error"]["type"] == "bridge_error"
     assert "unsupported operation" in result["error"]["message"]
-    assert "set_pending_execution" not in result["context"]["pending_execution"]
+    assert result["context"] is None
+    assert result["process_instance"] is None
+    assert result["process_instance_id"] is None
