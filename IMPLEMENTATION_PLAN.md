@@ -2,87 +2,85 @@
 
 ## Purpose
 
-This document is the controlled implementation plan for turning the currently agreed AESM model into a practical, executable implementation that can be used by an AI Agent in an existing Execution Environment.
+This document is the controlled implementation plan for turning the agreed AESM model into a practical, executable implementation that can be used by an AI Agent in an existing Execution Environment.
 
-The purpose of this plan is to prevent procedural drift, accidental implementation errors, and unauthorized expansion of AESM while implementation is underway.
-
-The plan is implementation-oriented. It does not redefine AESM semantics. The canonical AESM documentation remains the governing conceptual baseline.
+The plan is implementation-oriented. It does not redefine AESM semantics. The canonical `docs/` set remains the governing conceptual baseline.
 
 ## Implementation Objective
 
-Prove, through a real executable prototype, that an engineering request can be processed as a persistent AESM Process Instance and that an AI Agent can participate in that process using mechanisms already available in an Execution Environment.
+Prove, through real executable engineering work, that an engineering request can be represented as a persistent AESM Process Instance and that an AI Agent can participate in that process using mechanisms already available in an Execution Environment.
 
-The target end-to-end capability is:
+The target capability is:
 
 ```text
 Human Request
       ↓
 Create / identify Process Instance
       ↓
-Load / establish Execution Context
+Load / establish authoritative Execution Context
       ↓
-Provide AESM guidance to AI Agent
+Provide AESM guidance to Agent
       ↓
 Agent performs engineering work
-      ├── Evidence
+      ├── Investigation / Evidence
       ├── Decisions
-      ├── Artifacts
+      ├── Implementation / Artifacts
       └── Verification
       ↓
-Persist updated Process Instance / Execution Context
+Persist authoritative process state
       ↓
-Agent or environment stops
-      ↓
-Later resume
+Agent/session may stop
       ↓
 Recover Process Instance + Execution Context
       ↓
-Continue execution
-      ↓
-Complete / terminate Process Instance
+Continue or complete the engineering process
 ```
 
 ## Governing Principles
 
 1. **Implement before expanding.** Do not expand AESM concepts merely because implementation is difficult.
-2. **Use the existing AESM model as the baseline.** The Architecture Model, Operational Flow, and unified documentation set are the conceptual authority.
-3. **Build a vertical slice.** The first implementation must connect Process Instance, Execution Context, Runtime, Agent guidance, persistence, execution, verification, and resume rather than developing isolated subsystems in advance.
-4. **Use existing Execution Environment mechanisms.** Investigate instructions, skills, MCP, files, CLI/IDE capabilities, and equivalent mechanisms before creating AESM-specific infrastructure.
-5. **Do not make AESM a VS Code product.** VS Code may be one Execution Environment, but AESM must remain independent of it.
-6. **Keep Runtime, Agent, and Execution Environment distinct.** The Runtime manages process execution; the Agent performs engineering work; the Execution Environment supplies interaction and tooling capabilities.
-7. **Treat persistent Process Instance state as authoritative.** Conversation history must not become the authoritative continuity mechanism.
-8. **Separate guidance from enforcement.** Agent instructions guide behavior; Runtime-controlled state and constraints are used where reliable enforcement is required.
-9. **Use implementation findings to justify model changes.** A change to AESM semantics requires a concrete implementation finding, not speculation.
-10. **Keep the implementation minimal.** Do not add production-scale infrastructure until the prototype demonstrates that the capability is necessary.
+2. **Use the existing AESM model as the baseline.** Architecture, Operational Flow, EPM, PEM, and the unified documentation set are the conceptual authority.
+3. **Use vertical evidence.** Validate the complete interaction rather than accumulating isolated mechanisms without an end-to-end test.
+4. **Use existing Execution Environment mechanisms.** Do not create AESM-specific infrastructure unless evidence establishes a need.
+5. **Keep AESM independent of a specific IDE.** VS Code or another IDE may be an Execution Environment, not the AESM architecture.
+6. **Keep Agent, Runtime, and Execution Environment distinct.** The Agent performs engineering work; Runtime governs authoritative process execution; the Execution Environment supplies interaction and tooling mechanisms.
+7. **Treat persisted Process Instance / Execution Context state as authoritative.** Conversation history is not authoritative continuity state.
+8. **Separate guidance from enforcement.** Guidance can influence Agent behavior; Runtime state and constraints provide authoritative control where required.
+9. **Require implementation evidence before semantic change.** Do not change AESM semantics based on speculation or a single implementation inconvenience.
+10. **Keep the implementation minimal.** Add infrastructure only when demonstrated by the prototype.
 
 ## Scope
 
 ### In scope
 
 - Process Instance identity and persistence
-- Execution Context creation, loading, mutation, and persistence
+- Authoritative Execution Context
 - Minimal Runtime core
-- Agent/AESM guidance interface
-- Mapping AESM responsibilities to existing Execution Environment mechanisms
+- Agent/AESM guidance
+- Agent–Runtime interaction
+- Existing Execution Environment mechanisms
 - Evidence, decision, artifact, and verification recording
-- Process continuation after Agent/session loss
-- Feedback and reconsideration
-- Initial Runtime-controlled transition/constraint experiments
-- Validation in at least one real Execution Environment
-- Investigation of environment independence
+- Process continuation and fresh-session recovery
+- Feedback and reconsideration where justified
+- Runtime-controlled transition and constraint experiments
+- Validation in real Agent execution
+- Environment-independence investigation
 
-### Explicitly out of scope for the initial prototype
+### Explicitly out of scope unless separately authorized
 
-- A dedicated AESM IDE extension
-- A complete AESM graphical application
-- A general-purpose workflow designer
+- Dedicated AESM IDE extension
+- Complete AESM graphical application
+- General-purpose workflow designer
 - Multi-agent orchestration
 - Distributed execution
-- Enterprise authentication/authorization
-- Production-scale infrastructure
-- A new programming language or DSL
+- Enterprise infrastructure
+- New programming language or DSL
 - Automatic enforcement of every AESM rule
-- Speculative expansion of EPM, PEM, or the conceptual model
+- Normative MCP requirement
+- VS Code-specific architecture
+- Generalized Agent orchestration
+- Broad Runtime refactoring
+- Speculative EPM/PEM/AESM expansion
 
 ## Work Status Legend
 
@@ -91,466 +89,361 @@ Complete / terminate Process Instance
 - `[x]` Complete
 - `[!]` Blocked or requires explicit decision
 
-## Controlled Implementation Work Plan
+## Completed Foundations
 
 ### Baseline and Scope Control
 
-- [x] Confirm the unified `docs/` set is the canonical AESM knowledge surface.
-- [x] Confirm the implementation objective: make the existing AESM process executable rather than continuing conceptual expansion.
+- [x] Establish `docs/` as the canonical AESM knowledge surface.
 - [x] Establish this document as the controlled implementation plan.
-- [ ] Record the exact baseline commit/ref used for the first implementation experiment.
-- [ ] Record any implementation assumptions that are not explicitly specified by the canonical documentation.
-
-**Exit condition:** The implementation team can identify what is authoritative, what is experimental, and what is explicitly outside the first prototype.
-
-### Repository and Implementation Inventory
-
-- [x] Inventory the current repository against the implementation objective.
-- [x] Classify existing implementation-related components as `KEEP`, `ADAPT`, `REPLACE`, `DELETE`, or `CREATE`.
-- [x] Identify whether existing `runtime`, `tests`, `schemas`, `scripts`, `model`, or related components can be reused without importing obsolete semantics.
-- [x] Identify the smallest repository structure required for the prototype.
-- [x] Remove or isolate components that would introduce obsolete architectural assumptions.
-- [x] Record the resulting implementation boundary in the repository.
-
-**Exit condition:** Every retained implementation component has a current purpose tied to the executable AESM objective.
+- [x] Establish the objective of operationalizing the existing AESM model rather than continuing conceptual expansion.
 
 ### Process Instance Persistence
 
-- [x] Define the minimal implementation representation of a Process Instance from existing AESM semantics.
-- [x] Implement Process Instance creation.
-- [x] Implement stable Process Instance identification.
-- [x] Implement Process Instance loading.
-- [x] Implement persistent storage.
-- [x] Verify that Process Instance identity survives Agent/session termination.
+- [x] Define the minimal Process Instance representation.
+- [x] Implement Process Instance creation and stable identity.
+- [x] Implement loading and filesystem persistence.
+- [x] Demonstrate continuity without relying on conversation history.
 
-**Exit condition:** A Process Instance can be created, persisted, closed, and loaded again without relying on conversation history.
+### Authoritative Execution Context
 
-### Execution Context
+- [x] Define the minimal authoritative Execution Context.
+- [x] Implement creation, loading, mutation, and persistence.
+- [x] Represent continuation information explicitly.
+- [x] Demonstrate recovery from persisted Context after loss of the original Agent context.
 
-- [x] Define the minimal authoritative Execution Context representation from existing AESM semantics.
-- [x] Implement Context creation.
-- [x] Implement Context loading.
-- [x] Implement Context mutation.
-- [x] Implement Context persistence.
-- [x] Represent unresolved continuation information explicitly.
-- [x] Verify that a new Agent session can reconstruct the operational situation from persisted Context.
+### First Vertical Slice Semantics
 
-**Exit condition:** A Process Instance can be resumed from persisted Execution Context after loss of the original Agent context.
-
-### First Vertical Slice Definition
-
-- [x] Select one small but genuine engineering request in an existing repository.
-  - [x] Confirm the request is concrete enough to execute and verify end-to-end.
-  - [x] Confirm the request is sufficiently bounded to remain a practical first vertical slice.
-  - [x] Record the selected repository, component, and request boundary.
-- [x] Define the engineering objective and scope of the selected request.
-  - [x] Record the intended engineering outcome explicitly.
-  - [x] Identify relevant requirements.
-  - [x] Identify relevant constraints.
-  - [x] Identify explicit exclusions from the slice.
-- [x] Identify and bind the applicable EPM semantics.
-  - [x] Identify the applicable EPM definition and version/revision where applicable.
-  - [x] Identify only the EPM concepts actually required by the selected request.
-  - [x] Preserve the EPM binding as explicit and recoverable process information.
-- [x] Derive the actual Process States required by the selected request.
-  - [x] Define the engineering purpose of each required state.
-  - [x] Define permitted activities and expected outputs for each state.
-  - [x] Define completion conditions for each state.
-  - [x] Do not promote existing Runtime state strings into EPM semantics without evidence.
-- [x] Derive the valid Process State transitions.
-  - [x] Define the source state, transition condition, and destination state for each required transition.
-  - [x] Identify required evidence, decisions, verification, gates, or other conditions governing each transition.
-  - [x] Identify feedback or reconsideration paths actually required by the slice.
-  - [x] Distinguish EPM transition validity from Runtime state mutation.
-- [x] Derive engineering completion semantics for the selected request.
-  - [x] Define the conditions under which engineering completion is valid.
-  - [x] Distinguish engineering completion from Runtime termination and Agent/session termination.
-  - [x] Determine whether explicit Process Instance termination is required; no new termination semantics are justified by this slice.
-- [x] Derive the minimal Runtime lifecycle responsibilities from the established EPM semantics.
-  - [x] Identify which transitions Runtime must execute, record, validate, or reject.
-  - [x] Identify which conditions remain engineering judgments rather than Runtime responsibilities.
-  - [x] Compare the derived semantics with existing `initial`, `implementation`, and `engineering_complete` representations.
-  - [x] Record implementation gaps without generalizing lifecycle infrastructure prematurely.
-
-**Exit condition:** A concrete first vertical slice has an explicit objective, applicable EPM binding, derived state/transition semantics, completion/termination semantics, and a justified minimum Runtime lifecycle boundary.
-
-### Agent–Runtime Boundary Investigation
-
-- [x] Review the first real Agent execution as the control condition for AESM participation.
-- [x] Confirm whether a Process Instance and authoritative Execution Context participated in the observed execution.
-- [x] Identify the minimum information that must cross the Agent–Runtime boundary in both directions.
-- [x] Establish the responsibility boundary between Agent, Runtime, and Execution Environment.
-- [x] Determine whether a particular transport such as MCP or CLI is semantically required.
-- [x] Identify the minimum Agent-facing interaction surface without generalizing the Runtime API.
-- [x] Record the distinction between Agent guidance and Runtime-controlled authoritative mutation.
-- [x] Record the resulting implementation boundary and deferred questions.
-
-**Exit condition:** The minimum operational Agent–Runtime interaction required for an AESM-participating Agent execution is documented without introducing a normative transport or changing AESM semantics.
+- [x] Define a bounded engineering request and its objective/scope.
+- [x] Bind applicable EPM semantics.
+- [x] Derive required process states and valid transitions.
+- [x] Define engineering completion separately from Runtime/session termination.
+- [x] Derive the minimum Runtime responsibilities from the established semantics.
 
 ### Minimal Runtime Core
 
-- [x] Define the smallest Runtime interface required by the first vertical slice.
-- [x] Implement Process Instance creation/loading operations.
-- [x] Implement Context loading/saving operations.
-- [x] Implement the required process-state/lifecycle operations derived from the selected vertical slice.
-- [x] Implement evidence recording.
-- [x] Implement decision recording.
-- [x] Implement artifact association/recording.
-- [x] Implement verification recording.
-- [x] Implement process completion/termination handling required by the prototype. **Validated** (2026-09-17). 6/6 focused tests pass, 35/35 lifecycle regression tests pass, 137/137 full suite. Evidence: [`execution/COMPLETION-TERMINATION-VALIDATION.md`](execution/COMPLETION-TERMINATION-VALIDATION.md).
-- [x] Verify that Runtime responsibilities do not become Agent responsibilities. **Validated** (2026-09-17). Completion, termination, and lifecycle control remain exclusively Runtime-owned; bridge delegates all authority; no agent-side lifecycle mutation path exists. Evidence: [`execution/COMPLETION-TERMINATION-VALIDATION.md`](execution/COMPLETION-TERMINATION-VALIDATION.md).
+- [x] Process Instance creation/loading.
+- [x] Execution Context loading/saving.
+- [x] Process-state/lifecycle operations required by the prototype.
+- [x] Evidence recording.
+- [x] Decision recording.
+- [x] Artifact recording.
+- [x] Verification recording.
+- [x] Completion/termination handling required by the prototype.
+- [x] Preserve Runtime authority over lifecycle and completion semantics.
 
-#### Bounded Recording Capability Validation
+Evidence: [`execution/COMPLETION-TERMINATION-VALIDATION.md`](execution/COMPLETION-TERMINATION-VALIDATION.md).
 
-- [x] Inspect existing decision, artifact, and verification recording implementations against the first vertical slice.
-  - [x] Confirm whether each capability already exists in the current Runtime.
-  - [x] Identify state and lifecycle guards.
-  - [x] Identify persistence/history behavior.
-  - [x] Identify differences between structured and legacy verification paths.
-  - [x] Identify Runtime in-memory consistency behavior when persistence fails.
-- [x] Add and execute focused behavioral tests for decision recording.
-- [x] Add and execute focused behavioral tests for artifact association/recording.
-- [x] Add and execute focused behavioral tests for verification recording and its preconditions.
-- [x] Add and execute failure-path tests proving persisted and in-memory rollback consistency.
-  - [x] The initial 53-scenario validation exposed one common caller-level rollback defect in `recognize_decision()`, `record_artifact()`, and `record_verification()`. The defect was corrected following the existing `observe()` rollback pattern. The seven affected regression scenarios passed after correction; the complete recording suite passed 53/53 and the full repository suite passed 88/88 in the recorded validation run. Commit: `009b8e2`.
-- [x] Reconcile test results against the first vertical slice and decide whether implementation changes are required.
-  - Minimal implementation correction required: add caller-level rollback following the existing `observe()` pattern. No AESM semantic change involved.
+### Recording Behavioral Validation
 
-**Exit condition:** Behavioral validation of decision, artifact, and verification recording is complete, including failure-path consistency between live in-memory authoritative state and persisted state.
+- [x] Validate decision, artifact, and verification recording.
+- [x] Validate guards and persistence/history behavior.
+- [x] Validate failure-path consistency.
+- [x] Correct caller-level rollback defect discovered by behavioral testing, following the existing `observe()` rollback precedent.
+- [x] Accept the recorded regression evidence: 53/53 recording tests and 88/88 full suite in the correction validation.
 
-**Current status:** Complete. Decision, artifact, and verification recording are implemented and behaviorally validated. The caller-level rollback defect discovered during validation was corrected in `009b8e2` and merged into `main` through `48ad835`. The seven previously failing rollback scenarios, 53/53 recording tests, and 88/88 full-suite results are accepted as recorded execution evidence. No further recording or persistence-semantic change is authorized by the current evidence.
+No further recording or persistence-semantic change is authorized by this evidence.
 
-#### Caller-Level Recording Rollback Correction
-
-**Status: Complete**
-
-- [x] Restore the affected in-memory Context mutations when persistence fails in `recognize_decision()`, `record_artifact()`, and `record_verification()`.
-- [x] Use the existing `observe()` rollback behavior as the implementation precedent rather than introducing a new transaction abstraction.
-- [x] Verify that rollback restores the complete affected pre-operation in-memory state, including `process_state` where verification recording performs a state transition.
-- [x] Preserve the existing persisted-state rollback behavior; no persistence-layer change was required.
-- [x] Keep the correction implementation-only; no AESM/EPM/PEM semantic, lifecycle, or verification-path change was made.
-- [x] Treat the seven previously failing behavioral scenarios as regression acceptance tests.
-
-**Exit condition:** Satisfied. The corrected Runtime preserves consistency between in-memory authoritative state and persisted state when recording persistence fails.
+## Agent Guidance and Environment Work
 
 ### Agent Guidance Interface
 
-**Status: Analysis complete (2026-09-17). Implementation Decision: no implementation justified in this work unit. Evidence: [`execution/AGENT-GUIDANCE-INTERFACE.md`](execution/AGENT-GUIDANCE-INTERFACE.md).**
+**Status: Complete. Semantic contract closed.**
 
-- [x] Define the minimum general AESM guidance supplied to the Agent. **Complete.** AESM guidance content is fully specified in `docs/`. All EPM/PEM/Agent semantics, authority-preservation invariants, pre-action obligations, and operational guidance are present. The Agent can acquire this guidance by reading `docs/` files directly.
-- [x] Define how current Execution Context is exposed to the Agent. **Complete.** `bridge.get_context()` returns the complete serialized `ExecutionContext` to_dict() — all fields. This is Runtime-authoritative state.
-- [x] Ensure guidance does not silently redefine AESM semantics. **Verified.** `docs/` guidance preserves all AESM distinctions. No delivery mechanism introduces alternative semantics.
-- [x] Ensure Agent guidance does not make conversation history authoritative. **Verified.** All authoritative state paths go through Runtime/ProcessStore. Continuity obligation is documented explicitly in `docs/06` and `docs/08`.
-- [ ] Identify the mechanisms available in the selected Execution Environment for persistent instructions. **Deferred to Environment Mechanism Mapping.** No `.agents/` directory or equivalent exists in the AESM repository. This is the primary gap identified by the analysis.
-- [ ] Identify mechanisms for task/process-specific instructions. **Deferred to Environment Mechanism Mapping.**
-- [ ] Identify skill mechanisms and their appropriate scope. **Deferred to Environment Mechanism Mapping.**
-- [ ] Identify MCP or equivalent external capability mechanisms. **Deferred to Environment Mechanism Mapping.**
-- [ ] Define the minimum Process Instance-specific guidance supplied to the Agent. **Partially complete.** ExecutionContext fields supply process-specific guidance when obtained via `bridge.get_context()`. Automated delivery mechanism is not yet implemented — deferred to Environment Mechanism Mapping.
+Evidence: [`execution/AGENT-GUIDANCE-INTERFACE.md`](execution/AGENT-GUIDANCE-INTERFACE.md).
 
-**Findings (2026-09-17):**
+The guidance analysis established:
 
-1. **AESM guidance content:** Executable — all EPM/PEM/Agent semantics documented. No semantic gaps.
-2. **AESM guidance delivery mechanism:** Documentation only — no `.agents/rules/`, skill, or MCP server delivers guidance to Agent automatically. Belongs to Environment Mechanism Mapping.
-3. **EPM binding in Process Instance:** Evidence incomplete — `ProcessInstance.epm` field exists but is empty by default; no mechanism populates it.
-4. **All governed-execution capabilities (evidence, decisions, state transitions, artifacts, verification, reconsideration, completion):** Executable — bridge dispatch satisfies all nine operations.
-5. **Lifecycle observation:** Executable — `process_instance.lifecycle` returned in all bridge responses.
-6. **Lifecycle transition (bridged):** Specification Decision Required — `apply_lifecycle_determination` exists in Runtime but is not routed through bridge.
-7. **Process Instance ID delivery to fresh Agent:** Missing — no delivery mechanism; deferred gap.
-8. **End-to-end AI Agent participation:** Not demonstrated — requires First Real Vertical Slice.
-9. **DBP trace (Edit_Review_Form::business_id SELECT→POST_SELECT):** Traced completely through all 12 steps; all executable mechanisms exist; two material gaps (guidance delivery, discovery) do not block the trace.
+- AESM guidance content is available and executable through repository documentation.
+- Authoritative Execution Context is exposed by the Runtime bridge.
+- Conversation history must not be treated as authoritative state.
+- Governed execution capabilities are executable through the established bridge.
+- Lifecycle observation is executable.
+- Remaining semantic questions are not to be reopened merely for the empirical experiment.
 
-**Exit condition analysis:** The exit condition requires that a real Agent can receive sufficient AESM guidance to participate using existing environment mechanisms. The semantic contract is established and the governed-execution mechanisms are executable. The guidance delivery mechanism gap (no persistent instruction mechanism) means the exit condition is not fully satisfied at the mechanism level. The Environment Mechanism Mapping work unit must resolve which mechanism satisfies delivery before the exit condition can be fully met.
+The Agent Guidance Interface is not an open work unit. Subsequent work must use its established contract rather than redesigning it.
 
-### Agent–Runtime Execution Bridge Inspection
+### Agent–Runtime Boundary Investigation
 
 **Status: Complete.**
 
-Purpose: determine the smallest operational mechanism by which a real AI Agent can receive AESM guidance and authoritative Process Instance / Execution Context information, perform engineering work in an existing Execution Environment, and cause authoritative Runtime updates without collapsing Agent, Runtime, and Execution Environment responsibilities.
+The investigation established the responsibility boundary between Agent, Runtime, and Execution Environment and justified a thin Agent–Runtime bridge rather than Runtime redesign or a normative transport.
 
-Inspection targets:
-
-- [x] Identify the actual Agent interaction surface available in the selected Execution Environment.
-- [x] Trace how a real engineering request can create or identify a Process Instance.
-- [x] Trace how the Agent can obtain current authoritative Execution Context.
-- [x] Determine how Agent actions can invoke or otherwise interact with the Runtime without making a specific transport normative.
-- [x] Determine which Runtime mutations must be authoritative and which activities remain Agent responsibilities.
-- [x] Determine the minimum guidance/context exchange required for continuity.
-- [x] Use the Directories Builder Pro request as the empirical target where practical.
-- [x] Produce an inspection record with concrete evidence, constraints, and the smallest justified implementation boundary.
-
-**Exit condition:** The repository contains an evidence-based design boundary for operational Agent participation, with no speculative Runtime feature or transport introduced.
-
-**Completion:** The inspection established that the current Agent environment can invoke the existing AESM Runtime programmatically and demonstrated Process Instance creation, persistence, and cross-process recovery. However, no operational Agent–Runtime bridge exists: no mechanism currently creates a Process Instance when an engineering request arrives, no mechanism presents authoritative Execution Context to the Agent, and no mechanism connects Agent engineering activity to Runtime operations. The inspection concluded with **Outcome B — Thin Agent–Runtime Bridge Justified**, identifying the bounded bridge boundary defined later in this plan. No Runtime, specification, or DBP changes were made or required. Evidence: [`execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md`](execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md). Bridge implementation itself has **not** been authorized; the inspection produced a justified implementation direction, not a completed integration.
-
-### Environment Mechanism Mapping
-
-- [ ] Map each required AESM capability to a candidate Execution Environment mechanism.
-- [ ] Determine what belongs in persistent instructions.
-- [ ] Determine what belongs in skills.
-- [ ] Determine what belongs in MCP/tools.
-- [ ] Determine what belongs in persisted Process Instance/Execution Context state.
-- [ ] Determine what must be controlled by the Runtime instead of merely instructed to the Agent.
-- [ ] Record the mapping and its rationale.
-
-**Exit condition:** The implementation has an explicit, testable mapping between AESM responsibilities and Execution Environment mechanisms.
-
-#### Demonstrated mechanisms (established by bridge inspection)
-
-The Agent–Runtime Execution Bridge Inspection demonstrated that the current Agent environment can:
-
-- Read and write repository files.
-- Execute repository commands and Python code.
-- Use repository-level Agent instructions (`.agents/rules/`).
-- Invoke the AESM Runtime programmatically via `run_command`.
-- Create a Process Instance through Runtime invocation.
-- Persist and recover Process Instance / Execution Context state.
-- Recover state across separate Runtime/process execution (cross-process continuity).
-
-#### Not yet demonstrated mechanisms
-
-The bridge inspection did **not** demonstrate:
-
-- Automatic AESM Runtime participation when an engineering request arrives.
-- Automatic creation or discovery of the relevant Process Instance from an ordinary engineering request.
-- Automatic presentation of authoritative Execution Context to the Agent.
-- A functioning Agent–Runtime bridge.
-- End-to-end AESM participation in a real DBP engineering request.
-- Fresh-Agent continuation through such a bridge.
-
-These are implementation gaps identified by the inspection, not implementation defects in the existing Runtime. The existing Runtime correctly implements its responsibilities; the gap is the absence of a connecting mechanism between Agent activity and Runtime operations.
-
-### First Real Vertical Slice
-
-- [ ] Select one small but genuine engineering request in an existing repository.
-- [ ] Create its Process Instance.
-- [ ] Establish its initial Execution Context.
-- [ ] Start the Agent with AESM guidance.
-- [ ] Execute investigation.
-- [ ] Persist relevant evidence.
-- [ ] Establish and persist the resulting engineering decision.
-- [ ] Implement the requested change.
-- [ ] Persist implementation/artifact information required for continuity.
-- [ ] Perform verification.
-- [ ] Reach a valid completion state.
-
-**Exit condition:** One real engineering request has completed end-to-end under AESM process control.
-
-### Context-Loss and Resume Validation
-
-- [ ] Stop the original Agent session after meaningful process state has been established.
-- [ ] Close or otherwise terminate the Execution Environment session.
-- [ ] Start a fresh Agent session.
-- [ ] Load the existing Process Instance.
-- [ ] Recover the Execution Context.
-- [ ] Confirm that the new Agent can determine the objective, established knowledge, decisions, completed work, unresolved issues, and required continuation without the old conversation.
-- [ ] Continue and complete the process from the recovered state.
-
-**Exit condition:** The process remains operationally continuous across Agent/session loss.
-
-### Feedback and Reconsideration Validation
-
-- [ ] Introduce a realistic verification failure or human feedback event.
-- [ ] Persist the feedback/failure as part of process history/state as appropriate.
-- [ ] Reconsider the affected decision or implementation.
-- [ ] Produce an updated decision where required.
-- [ ] Re-implement as necessary.
-- [ ] Re-verify.
-- [ ] Confirm that the process remains iterative rather than becoming a linear checklist.
-
-**Exit condition:** The implementation demonstrates controlled feedback and reconsideration without losing prior process knowledge.
-
-### Runtime Control Experiment
-
-- [ ] Identify one rule that can initially be expressed as Agent guidance.
-- [ ] Test whether guidance alone is sufficiently reliable.
-- [ ] Identify one transition or condition that may require Runtime control.
-- [ ] Implement the smallest Runtime validation needed for that condition.
-- [ ] Verify the distinction between Agent guidance and Runtime enforcement.
-- [ ] Do not generalize the control mechanism beyond demonstrated need.
-
-**Exit condition:** The prototype provides evidence for which responsibilities require instructions and which require executable Runtime control.
-
-### Environment Independence Validation
-
-- [ ] Identify a second usable Execution Environment or execution mechanism.
-- [ ] Verify that the persisted Process Instance and Execution Context remain understandable outside the first environment.
-- [ ] Verify that environment-specific mechanisms are adapters/capabilities rather than AESM semantic definitions.
-- [ ] Record any genuine portability limitations.
-
-**Exit condition:** AESM remains conceptually and operationally independent of a particular Agent host or IDE.
-
-### Prototype Evaluation and Controlled Refinement
-
-- [ ] Review all implementation failures and unexpected behaviors.
-- [ ] Classify each finding as implementation defect, environment limitation, documentation ambiguity, or genuine AESM semantic deficiency.
-- [ ] Correct implementation defects without changing AESM semantics.
-- [ ] Resolve environment limitations through appropriate adapters/mechanisms where justified.
-- [ ] Clarify documentation only where the implementation exposed genuine ambiguity.
-- [ ] Propose AESM semantic changes only for demonstrated deficiencies.
-- [ ] Record every approved semantic change separately before applying it.
-
-**Exit condition:** The prototype has produced a documented evidence-based assessment of whether the current AESM model is implementable as intended.
-
-## Completion Criteria for the Initial Prototype
-
-The initial prototype is complete only when all of the following are demonstrated:
-
-- A real engineering request can be represented as a persistent Process Instance.
-- The authoritative Execution Context survives Agent/session loss.
-- The Agent receives sufficient AESM guidance to participate in the process.
-- The Agent performs engineering work using the existing Execution Environment.
-- Runtime-controlled state and constraints remain authoritative where required.
-- Evidence, decisions, artifacts, and verification are persisted.
-- Feedback and reconsideration can be handled without losing process knowledge.
-- The process can continue after the original Agent/session ends.
-- A valid engineering completion state can be reached and distinguished from Runtime/session termination.
-- The implementation remains independent of a specific IDE or transport.
-
-The prototype should be judged by demonstrated behavior and recorded evidence, not by the number of Runtime APIs or documentation pages created.
-
-## Canonical Agent–Runtime Bridge Boundary
-
-The following is the single canonical definition of the bounded bridge justified by the completed Agent–Runtime Execution Bridge Inspection. No alternative or expanded bridge definition is authorized elsewhere in this plan.
-
-The bridge may provide only these responsibilities:
-
-1. **Process Instance access** — Create or discover the relevant persistent Process Instance.
-2. **Execution Context access** — Obtain the authoritative Execution Context associated with that Process Instance and make its current state available to the Agent.
-3. **Runtime dispatch** — Dispatch already-supported Runtime operations on behalf of the Agent.
-4. **Authoritative result/state return** — Return the authoritative Runtime result and resulting Process Instance / Execution Context state to the Agent.
-
-The bridge is an **adapter/access boundary between the Agent and the existing Runtime**. It is not a replacement for the Runtime, Process Store, Execution Context, PEM, EPM, or Execution Environment. It must not become a generalized orchestration layer.
-
-## Explicit Bridge Exclusions
-
-The bounded bridge work does **not** authorize:
-
-- A new persistence store.
-- Replacement of the existing Process Store.
-- Changes to Process Instance persistence semantics.
-- Changes to Runtime lifecycle semantics.
-- Changes to EPM semantics.
-- Changes to PEM semantics.
-- Changes to Execution Context semantics.
-- Creation of a new lifecycle model.
-- An MCP server as a normative AESM requirement.
-- A VS Code extension.
-- VS Code-specific architecture.
-- Generalized Agent orchestration.
-- Broad Runtime refactoring.
-- Speculative AESM model expansion.
-- Automatic behavior not justified by the inspection evidence.
-
-If a future implementation appears to require any excluded capability, that requirement must become a separate design/authorization decision rather than being silently incorporated into the bridge.
-
-## Forward Work Sequence
-
-The completed inspection leads to the following bounded sequence of work units:
-
-- [x] **Controlled Plan Reconciliation** — Reconcile the implementation plan with the completed bridge inspection evidence. Establish the bounded bridge direction and authorization gate in the plan.
-- [x] **Bridge Implementation Authorization** — Explicit decision gate. **PASSED** (2026-09-14). Runtime API Inspection is authorized. Bridge implementation remains unauthorized.
-- [x] **Runtime API Inspection** — Inspect the actual existing Runtime API to determine the smallest concrete adapter contract. **Complete** (2026-09-14). Four-operation adapter surface determined. Evidence: [`execution/RUNTIME-API-INSPECTION.md`](execution/RUNTIME-API-INSPECTION.md).
-- [x] **Minimal Agent–Runtime Bridge Implementation** — Implement the bounded bridge per the canonical boundary above. **Complete** (2026-09-15). Bridge implemented, 38 focused tests pass, 126/126 total suite passes, continuity demonstrated, Agent-facing invocation validated. Evidence: [`execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md`](execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md).
-- [ ] **Bridge Behavioral Validation** — Validate that the bridge correctly connects Agent activity to Runtime operations.
-- [ ] **DBP Real-Request Execution** — Execute a real DBP engineering request end-to-end under AESM process control.
-- [ ] **Context-Loss / Fresh-Agent Validation** — Validate that a fresh Agent can resume from authoritative persisted state.
-- [ ] **Reconciliation and Decision Gate** — Evaluate results and determine next steps.
-
-### Bridge Implementation Authorization
-
-**Status: PASSED. Decision: `AUTHORIZE`.**
-
-**Authorization date:** 2026-09-14
-
-#### Authorization Decision
-
-The Bridge Implementation Authorization gate is **satisfied**. The bounded bridge boundary defined in "Canonical Agent–Runtime Bridge Boundary" above is explicitly accepted as the implementation scope. **Runtime API Inspection** is authorized to determine the concrete adapter contract.
-
-**Bridge implementation itself remains unauthorized.** Only Runtime API Inspection is authorized by this gate.
-
-#### Evidence Basis
-
-The authorization decision is based on the following observed repository evidence:
-
-1. **Bridge Inspection artifact** ([`execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md`](execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md)): Completed inspection establishing that the existing Runtime functions correctly, that the Agent can invoke it programmatically, and that no operational Agent–Runtime bridge currently exists. The inspection concluded with Outcome B — Thin Agent–Runtime Bridge Justified — identifying the four-part bounded bridge boundary now defined in this plan.
-
-2. **Runtime source code** ([`runtime/core/runtime.py`](runtime/core/runtime.py), [`runtime/core/store.py`](runtime/core/store.py), [`runtime/core/models.py`](runtime/core/models.py)): The Runtime provides `create_process()`, `attach()`, state-transition methods, recording methods with guards and rollback, and `stop()`. The `ProcessStore` provides filesystem-based persistence with atomic writes and rollback. The `ExecutionContext` and `ProcessInstance` models provide the authoritative data structures. All operations required by the four-part bridge boundary exist as current Runtime capabilities.
-
-3. **Test suite** (88/88 passing, freshly executed 2026-09-14): The complete test suite across continuity, lifecycle, and recording domains passes, confirming the Runtime is a stable foundation.
-
-4. **Independent check** (see below): Freshly executed programmatic verification confirming all four canonical bridge responsibilities are supported by existing Runtime capabilities.
-
-#### Independent Check
-
-**Claim checked:** The four canonical bridge responsibilities (Process Instance access, Execution Context access, Runtime dispatch, authoritative result/state return) are individually supported by existing Runtime operations without requiring Runtime modification.
-
-**Source inspected:** [`runtime/core/runtime.py`](runtime/core/runtime.py), [`runtime/core/store.py`](runtime/core/store.py), [`runtime/core/models.py`](runtime/core/models.py).
-
-**Method:** Freshly executed a targeted Python script that exercised:
-
-1. **Process Instance access:** `Runtime.create_process('Authorization check objective')` — created a Process Instance with UUID, verified `attached=True`, `lifecycle=active`.
-2. **Execution Context access:** Accessed `runtime.context` after creation — verified `process_state=initial`, `engineering_objective` matches, `process_instance_id` matches.
-3. **Runtime dispatch:** Called `start_investigation()` and `observe()` — verified state transition to `investigation` and evidence count incremented.
-4. **Authoritative result/state return:** After `stop()`, created a new `Runtime` instance, called `attach(pid)` — verified recovery of objective, state, evidence, and lifecycle from persisted store.
-
-**Result:** All four responsibilities are operationally supported by existing Runtime capabilities. No contradiction with the bridge inspection's claims was found.
-
-#### Disconfirmation Evaluation
-
-**A. Runtime modification risk:** No evidence was found that implementing the proposed four-part bridge would necessarily require modifying existing Runtime behavior or semantics. The bridge responsibilities map directly to existing public Runtime methods (`create_process`, `attach`, `observe`, `recognize_decision`, `begin_implementation`, `record_artifact`, `begin_verification`, `record_verification`, `reconsider`, `recognize_engineering_completion`, `stop`) and existing read access (`runtime.context`, `runtime.process_instance`). All guards, rollback, and persistence behavior remain as implemented. **No Runtime modification is necessarily required.**
-
-**B. Boundary sufficiency:** The four-part Canonical Bridge Boundary (Process Instance access, Execution Context access, Runtime dispatch, authoritative result/state return) covers the complete Agent–Runtime interaction surface identified by the inspection. Process Instance discovery (mapping engineering objectives to UUIDs) is an implementation detail of "Process Instance access" (responsibility 1), not a separate bridge responsibility. Context presentation format is an implementation detail of "Execution Context access" (responsibility 2), not a separate bridge responsibility. **The four-part boundary is sufficient.**
-
-**C. Existing Runtime contradiction:** No contradiction was found. The independently executed verification confirmed: `create_process()` creates Process Instances as claimed; `attach()` recovers them as claimed; `runtime.context` provides authoritative Execution Context as claimed; `start_investigation()` and `observe()` dispatch as claimed; re-attachment after `stop()` recovers full authoritative state as claimed. The 88/88 test suite further confirms Runtime operational correctness. **No Runtime contradiction was identified.**
-
-**D. Architectural contradiction:** The proposed bridge boundary is consistent with the canonical AESM architecture: the bridge is an adapter between Agent and existing Runtime (not a replacement for Runtime, Process Store, Execution Context, PEM, EPM, or Execution Environment). The AESM documentation separates Agent, Runtime, and Execution Environment responsibilities; the bridge preserves this separation by acting only as a connecting mechanism. **No architectural contradiction was identified.**
-
-**E. Evidence sufficiency:** The completed inspection and independent check together establish: (a) the Runtime exists and is operationally correct; (b) the Agent can invoke it; (c) no bridge currently connects them; (d) the gap is bounded and identifiable; (e) all four bridge responsibilities map to existing Runtime capabilities. This is sufficient evidence to justify bounded Runtime API Inspection — a systematic examination of the existing Runtime API surface to determine the concrete adapter contract. **Evidence is sufficient for the authorized next step.**
-
-**No material disconfirming evidence was identified across any of the five evaluation categories.**
-
-#### Canonical Bridge Boundary Confirmation
-
-The four responsibilities remain exactly as defined in the "Canonical Agent–Runtime Bridge Boundary" section of this plan:
-
-1. **Process Instance access** — Create or discover the relevant persistent Process Instance.
-2. **Execution Context access** — Obtain the authoritative Execution Context and make its current state available to the Agent.
-3. **Runtime dispatch** — Dispatch already-supported Runtime operations on behalf of the Agent.
-4. **Authoritative result/state return** — Return the authoritative Runtime result and resulting Process Instance / Execution Context state to the Agent.
-
-No responsibility was added, removed, or redefined during this authorization.
-
-#### Preserved Exclusions Confirmation
-
-All explicit bridge exclusions defined in the "Explicit Bridge Exclusions" section of this plan remain binding. No exclusion was relaxed or removed during this authorization. If a future implementation step appears to require any excluded capability, that requirement must become a separate design/authorization decision.
-
-#### Authorization Scope
-
-- **Authorized:** Runtime API Inspection — inspect the actual existing Runtime API to determine the smallest concrete adapter contract.
-- **Not authorized:** Bridge implementation, bridge tests, adapter creation, Runtime modification, Execution Environment integration, DBP real-request execution, or any other implementation work.
+Evidence: [`execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md`](execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md).
 
 ### Runtime API Inspection
 
 **Status: Complete.**
 
-Purpose: inspect the actual existing Runtime API and determine the smallest concrete adapter contract capable of implementing the already-authorized bridge boundary.
+The concrete adapter surface was determined as:
 
-**Completion:** The inspection examined all Runtime source modules (393 lines in `runtime.py`, 75 lines in `models.py`, 134 lines in `store.py`, 63 lines in `json_store.py`), executed 60 behavioral checks (all passed), and verified the 88/88 test suite. Four adapter operations were determined: `create_process`, `attach`, `get_context`, `dispatch`. Objective-to-Process-Instance discovery was classified as a separate design decision. Evidence: [`execution/RUNTIME-API-INSPECTION.md`](execution/RUNTIME-API-INSPECTION.md).
+- `create_process`
+- `attach`
+- `get_context`
+- `dispatch`
 
-### Minimal Agent–Runtime Bridge Implementation
+Objective-to-Process-Instance discovery remains a separate design concern and is not silently generalized into the bridge.
+
+Evidence: [`execution/RUNTIME-API-INSPECTION.md`](execution/RUNTIME-API-INSPECTION.md).
+
+### Minimal Agent–Runtime Bridge
 
 **Status: Complete.**
 
-Purpose: implement the bounded Agent–Runtime bridge per the canonical bridge boundary.
+The bounded bridge was implemented outside `runtime/` and delegates authority to the existing Runtime. It provides Process Instance access, authoritative Context access, Runtime dispatch, and authoritative result/state return.
 
-**Completion:** The bridge was implemented as `bridge/agent_runtime_bridge.py` (228 lines), a thin adapter/access boundary outside `runtime/`. It delegates all authority to the existing Runtime. 38 focused bridge tests pass covering creation, recovery, context access, dispatch, guard rejection, persistence failure, deferred discovery, and cross-bridge continuity. 126/126 total tests pass (88 existing + 38 new) with no regressions. Agent-facing invocation was demonstrated through a repository-local smoke test. Objective-to-Process-Instance discovery remains explicitly deferred. Evidence: [`execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md`](execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md).
+Evidence: [`execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md`](execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md).
 
-## Current Progress Position
+The bridge is not a new persistence layer, orchestration engine, lifecycle model, or transport requirement.
 
-The current implementation has established the persistent Process Instance, authoritative Execution Context, minimal Runtime boundary, lifecycle control, recording foundation, and the Agent–Runtime Bridge.
+### Environment Mechanism Mapping
 
-The Agent–Runtime Execution Bridge Inspection, Bridge Boundary Reconciliation, Environment Mechanism Mapping, Bridge Contract Determination, Runtime API Inspection, and Minimal Bridge Implementation are all complete.
+**Status: Complete and validated through the mechanism-validation work unit.**
 
-The bridge implementation (2026-09-15) provides Process Instance creation, known-ID recovery, authoritative Execution Context access, and Runtime dispatch for 8 supported operations. It delegates all authority to the existing Runtime. 126/126 tests pass (88 existing Runtime tests + 38 new bridge tests). Continuity across bridge instances and Agent-facing invocation have been demonstrated. Objective-to-Process-Instance discovery remains explicitly deferred as a separate design decision.
+The environment mapping established that the required minimum mechanism combination is:
 
-The next authorized work unit is **Bridge Behavioral Validation** — validate that the bridge correctly connects Agent activity to Runtime operations. The DBP real-request execution and context-loss/fresh-agent validation remain subsequent work units.
+```text
+Persistent Agent guidance
+        +
+Human task request
+        +
+Agent-accessible Runtime / bridge mechanism
+        +
+Persisted Process Instance / Execution Context
+        +
+Runtime-mediated authoritative operations
+```
+
+No dedicated VS Code extension, MCP server, second Process Instance store, or generalized Agent orchestrator is required by the current evidence.
+
+The prior Environment Mechanism Mapping findings are now superseded only where the subsequent mechanism validation demonstrated the capability empirically. The semantic contract itself is unchanged.
+
+## Agent-Boundary Mechanism Validation
+
+**Status: Complete — gate passed.**
+
+Evidence: [`execution/MECHANISM-VALIDATION.md`](execution/MECHANISM-VALIDATION.md).
+
+The validation combined two Agent sessions and established the complete operational chain:
+
+```text
+Fresh Agent session
+      ↓
+Persistent AESM guidance
+      ↓
+Process Instance establishment/recovery
+      ↓
+Authoritative Execution Context
+      ↓
+Agent-caused Runtime mutations
+      ↓
+Persisted evidence/state
+      ↓
+Independent fresh-session recovery
+```
+
+The validation demonstrated, among other capabilities:
+
+- persistent Agent guidance was actually loaded and affected Agent behavior;
+- a real Process Instance was created through the bridge;
+- authoritative Context was obtained through the Runtime;
+- Agent activity caused Runtime mutations through `dispatch()`;
+- Runtime operations produced persisted history and Context state;
+- a fresh Agent session recovered the same Process Instance and Context;
+- Agent narrative remained distinct from authoritative Runtime state.
+
+### Mechanism Validation Gate
+
+**Decision: READY FOR DBP EMPIRICAL EXECUTION.**
+
+The previous mechanism work is closed. Do not reopen Agent Guidance Interface semantics, Environment Mechanism Mapping, or bridge semantics as part of the DBP experiment unless new evidence directly requires a separate decision.
+
+The next work must test whether the established mechanism governs and records a real engineering task rather than merely demonstrating that the mechanism exists.
+
+## Current Work Unit — DBP Empirical Execution
+
+**Status: Prepared — execution not started.**
+
+The next authorized work is the real Directories Builder Pro engineering experiment.
+
+Controlled repository: `tuanna2703/directories-builder-pro`
+
+Controlled request:
+
+```text
+In modules/reviews/forms/add-review-form.php,
+class Add_Review_Form,
+change the $business_id field definition from
+Fields_Manager::SELECT to Fields_Manager::POST_SELECT.
+```
+
+The experiment is testing **AESM participation**, not merely successful DBP code modification.
+
+Detailed controlled boundary and evidence contract:
+
+[`execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md`](execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md)
+
+### DBP experiment constraints
+
+- Do not modify DBP before the controlled Agent execution begins.
+- Use a genuinely fresh Agent invocation.
+- Do not prescribe the AESM Runtime call sequence.
+- Do not preload expected Process Instance state, expected history, expected Runtime calls, or an expected result.
+- Allow the Agent to investigate the DBP repository normally.
+- Do not treat Agent statements as authoritative AESM state.
+- Do not fabricate missing Runtime participation or persisted evidence.
+- Do not broaden the requested DBP change.
+- Do not modify AESM Runtime/spec merely to make the experiment pass.
+- Do not declare AESM participation demonstrated merely because DBP tests pass.
+- Do not reduce the experiment to documentation reading.
+
+### DBP evidence contract
+
+The experiment must determine, independently where possible:
+
+- whether applicable persistent AESM guidance reached the Agent;
+- whether a real Process Instance was established or recovered;
+- whether authoritative Execution Context was obtained;
+- whether the Agent investigated the actual DBP implementation;
+- whether Agent activity caused actual Runtime operations;
+- whether evidence, decisions, artifacts, verification, and state were persisted;
+- whether the requested DBP implementation was actually made;
+- whether the implementation was verified;
+- whether the engineering trace is reconstructible from authoritative state;
+- whether Agent narrative can be distinguished from Runtime/persisted facts.
+
+Evidence authority must be treated in this order:
+
+```text
+Agent narrative
+      ↓
+Observed Agent actions
+      ↓
+Runtime responses
+      ↓
+Persisted Process Instance / Execution Context / history
+      ↓
+Independent DBP repository verification
+```
+
+The higher layers do not become authoritative merely because the Agent states that an action occurred.
+
+### DBP execution tasks
+
+- [ ] Launch the controlled request in a genuinely fresh Agent session.
+- [ ] Observe and record which persistent guidance mechanisms actually apply.
+- [ ] Observe Process Instance establishment/recovery without prescribing the mechanism sequence.
+- [ ] Observe authoritative Execution Context acquisition.
+- [ ] Observe actual Runtime participation and authoritative responses.
+- [ ] Observe persisted evidence, decisions, artifacts, verification, state, and history.
+- [ ] Independently verify the DBP code change and repository scope.
+- [ ] Independently verify AESM persistence and Runtime identifiers.
+- [ ] Reconstruct the engineering trace from request through investigation, finding, decision, implementation, verification, and completion where the authoritative state supports it.
+- [ ] Classify each required capability as `Demonstrated`, `Evidence Incomplete`, `Implementation Gap`, `Specification/Applicability Decision Required`, or `Not Applicable`.
+- [ ] Produce a dedicated empirical execution report under `execution/`.
+
+**Exit condition:** The DBP experiment has an evidence-based result describing actual AESM participation, independently verified DBP implementation, authoritative persisted state, discrepancies, and limitations.
+
+## Fresh-Agent Continuity Validation
+
+**Status: Pending.**
+
+This work is not to be conflated with the mechanism-validation fresh-session recovery that already passed. The later continuity work must determine whether a fresh Agent can continue a real DBP engineering process after meaningful work has already been persisted.
+
+- [ ] Stop the original DBP Agent session after meaningful process state exists.
+- [ ] Start a genuinely fresh Agent session.
+- [ ] Recover the existing Process Instance and authoritative Context.
+- [ ] Determine whether the fresh Agent can continue without relying on the old conversation.
+- [ ] Complete or otherwise resolve the DBP process as appropriate.
+- [ ] Verify continuity from persisted evidence rather than Agent narrative alone.
+
+**Exit condition:** A real DBP process remains operationally continuous across Agent/session loss.
+
+## Feedback and Reconsideration Validation
+
+**Status: Pending.**
+
+- [ ] Introduce a realistic verification failure or human feedback event.
+- [ ] Persist the event as appropriate.
+- [ ] Reconsider the affected decision or implementation.
+- [ ] Re-implement where necessary.
+- [ ] Re-verify.
+- [ ] Confirm that prior process knowledge remains traceable.
+
+**Exit condition:** The prototype demonstrates controlled iterative engineering rather than only a linear happy path.
+
+## Runtime Control Experiment
+
+**Status: Pending.**
+
+- [ ] Identify one rule initially expressible as Agent guidance.
+- [ ] Test guidance reliability.
+- [ ] Identify one condition that may require Runtime control.
+- [ ] Validate the smallest Runtime control justified by evidence.
+- [ ] Preserve the distinction between guidance and authoritative Runtime enforcement.
+
+**Exit condition:** Evidence identifies which responsibilities can remain guidance and which require executable Runtime control.
+
+## Environment Independence Validation
+
+**Status: Pending.**
+
+- [ ] Exercise a second usable Execution Environment or execution mechanism.
+- [ ] Verify persisted Process Instance and Execution Context remain meaningful outside the first environment.
+- [ ] Confirm environment-specific mechanisms remain adapters/capabilities rather than AESM semantic definitions.
+- [ ] Record genuine portability limitations.
+
+**Exit condition:** AESM remains conceptually and operationally independent of a particular Agent host or IDE.
+
+## Prototype Evaluation and Controlled Refinement
+
+**Status: Pending.**
+
+- [ ] Review implementation failures and unexpected behavior.
+- [ ] Classify each finding as implementation defect, environment limitation, documentation ambiguity, or genuine AESM semantic deficiency.
+- [ ] Correct implementation defects without changing AESM semantics.
+- [ ] Resolve environment limitations through justified mechanisms.
+- [ ] Clarify documentation only where implementation exposes genuine ambiguity.
+- [ ] Propose semantic changes only for demonstrated deficiencies.
+- [ ] Record any approved semantic change as a separate decision before applying it.
+
+**Exit condition:** The prototype provides an evidence-based assessment of whether the current AESM model is implementable as intended.
+
+## Completion Criteria for the Initial Prototype
+
+The initial prototype is complete only when the following are demonstrated by recorded evidence:
+
+- A real engineering request is represented as a persistent Process Instance.
+- Authoritative Execution Context survives Agent/session loss.
+- The Agent receives sufficient AESM guidance to participate.
+- The Agent performs real engineering work using an existing Execution Environment.
+- Runtime-controlled state and constraints remain authoritative where required.
+- Evidence, decisions, artifacts, and verification are persisted.
+- Feedback/reconsideration can be handled without losing process knowledge.
+- The process can continue after the original Agent/session ends.
+- Engineering completion is distinguishable from Runtime/session termination.
+- The implementation remains independent of a specific IDE or transport.
+
+The prototype is judged by demonstrated behavior and recorded evidence, not by the number of Runtime APIs or documentation pages created.
+
+## Controlled Forward Work Sequence
+
+The authorized sequence is now:
+
+- [x] **Plan Reconciliation and Mechanism Gate Closure** — reconcile this plan with the completed Agent-boundary mechanism validation and establish the DBP gate.
+- [x] **DBP Experiment Boundary Definition** — establish the controlled DBP request, evidence contract, authority model, and experiment constraints.
+- [ ] **DBP Empirical Execution** — run the real DBP request through a genuinely fresh Agent and observe actual AESM participation.
+- [ ] **DBP Evidence Reconciliation** — independently verify DBP implementation and AESM persistence, then classify the empirical result.
+- [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process across Agent/session loss.
+- [ ] **Feedback and Reconsideration Validation** — validate controlled iteration where justified.
+- [ ] **Environment Independence Validation** — test portability beyond the first Agent environment.
+- [ ] **Prototype Evaluation and Controlled Refinement** — reconcile findings and authorize only evidence-based changes.
+
+### Current Progress Position
+
+The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, and Agent-boundary mechanism validation work.
+
+**Current gate:** DBP Empirical Execution is authorized and prepared.
+
+**Next action:** Launch the controlled DBP request in a genuinely fresh Agent session using the boundary in [`execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md`](execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md).
+
+No further mechanism redesign is authorized before that empirical result unless the experiment itself produces evidence requiring a separate decision.
