@@ -197,8 +197,8 @@ Complete / terminate Process Instance
 - [x] Implement decision recording.
 - [x] Implement artifact association/recording.
 - [x] Implement verification recording.
-- [ ] Implement process completion/termination handling required by the prototype.
-- [ ] Verify that Runtime responsibilities do not become Agent responsibilities.
+- [x] Implement process completion/termination handling required by the prototype. **Validated** (2026-09-17). 6/6 focused tests pass, 35/35 lifecycle regression tests pass, 137/137 full suite. Evidence: [`execution/COMPLETION-TERMINATION-VALIDATION.md`](execution/COMPLETION-TERMINATION-VALIDATION.md).
+- [x] Verify that Runtime responsibilities do not become Agent responsibilities. **Validated** (2026-09-17). Completion, termination, and lifecycle control remain exclusively Runtime-owned; bridge delegates all authority; no agent-side lifecycle mutation path exists. Evidence: [`execution/COMPLETION-TERMINATION-VALIDATION.md`](execution/COMPLETION-TERMINATION-VALIDATION.md).
 
 #### Bounded Recording Capability Validation
 
