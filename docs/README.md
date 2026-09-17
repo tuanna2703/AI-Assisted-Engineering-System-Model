@@ -21,7 +21,7 @@ The documentation is organized around **what a reader needs to understand**, rat
 9. **[Operational Guide](09-Operational-Guide.md)** — how the pieces work together during an engineering effort.
 10. **[Reference](10-Reference.md)** — terminology, distinctions, invariants, and quick-reference relationships.
 11. **[Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md)** — detailed lifecycle states, transitions, authority, preservation, and conformance interpretation.
-12. **[Agent Execution Integration](Agent-Execution-Integration.md)** — how Agent guidance, Execution Environment mechanisms, the Agent–Runtime bridge, continuity, and empirical Agent participation fit together.
+12. **[Agent Execution Integration](Agent-Execution-Integration.md)** — the architectural relationship between Agent participation, Execution Environment mechanisms, the Agent–Runtime bridge, and persistent process state.
 
 ## Reading paths
 
