@@ -21,6 +21,7 @@ The documentation is organized around **what a reader needs to understand**, rat
 9. **[Operational Guide](09-Operational-Guide.md)** — how the pieces work together during an engineering effort.
 10. **[Reference](10-Reference.md)** — terminology, distinctions, invariants, and quick-reference relationships.
 11. **[Applicable Process Instance Lifecycle Semantics](11-Applicable-Process-Instance-Lifecycle-Semantics.md)** — detailed lifecycle states, transitions, authority, preservation, and conformance interpretation.
+12. **[Agent Execution Integration](Agent-Execution-Integration.md)** — how Agent guidance, Execution Environment mechanisms, the Agent–Runtime bridge, continuity, and empirical Agent participation fit together.
 
 ## Reading paths
 
@@ -34,11 +35,11 @@ The documentation is organized around **what a reader needs to understand**, rat
 
 ### AI Agent
 
-`Overview → System Model → Participants and Agent Participation → Execution Model → Continuity`
+`Overview → System Model → Participants and Agent Participation → Agent Execution Integration → Execution Model → Continuity`
 
 ### Runtime implementer
 
-`System Model → Engineering Model → Execution Model → Process Instance and Execution Context → Runtime and Conformance → Applicable Process Instance Lifecycle Semantics`
+`System Model → Engineering Model → Execution Model → Process Instance and Execution Context → Runtime and Conformance → Applicable Process Instance Lifecycle Semantics → Agent Execution Integration`
 
 The Runtime implementer path intentionally includes the Engineering Model because EPM defines the engineering validity that the Runtime must preserve; a Runtime cannot implement PEM correctly by reading execution semantics in isolation.
 
@@ -48,7 +49,7 @@ Use **Reference** first, then follow the concept to the governing model.
 
 ## Documentation status and authority
 
-This is a **unified replacement documentation set**. The former `docs/` and `specifications/` document organization is no longer part of the canonical AESM knowledge surface.
+This is a **unified canonical documentation set**. Historical analysis, validation reports, decision records, and other work-unit artifacts are not themselves part of the canonical conceptual knowledge surface.
 
 The documents contain both explanatory and normative material. Explanatory material exists to make AESM understandable; normative statements define or preserve AESM semantics and must not be weakened by implementation convenience.
 
@@ -80,6 +81,7 @@ The layers above represent distinct semantic responsibilities, not a simple comm
 - Process Instance is not the same semantic concept as Execution Context.
 - A Process Instance has an explicit, recoverable binding to its applicable EPM.
 - Runtime technical capability does not establish engineering validity.
+- Execution Environment mechanisms do not become AESM semantics merely because they are used to deliver them.
 
 ## Documentation principles
 
@@ -91,6 +93,7 @@ The final documentation follows these rules:
 4. Every substantive concept remains traceable to the validated AESM model.
 5. The documentation describes an iterative engineering system, not a waterfall checklist.
 6. Persistent Process Instance state is treated as the continuity boundary.
-7. AI Agent and Runtime implementer guidance is integrated into the participant and conformance documents rather than maintained as separate alternative semantics.
+7. AI Agent and Runtime implementer guidance is integrated into the participant, runtime, and Agent-integration documents rather than maintained as separate alternative semantics.
 8. Semantic requirements are specified independently of implementation mechanisms.
 9. Conformance requires preservation of authority, recognition, mutation, transition, gate, continuity, concurrency, and lifecycle semantics.
+10. Execution artifacts are temporary working records; durable conclusions are consolidated into canonical documentation or retained as implementation/test evidence where they are still operationally required.
