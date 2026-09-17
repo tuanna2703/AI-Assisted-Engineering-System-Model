@@ -235,17 +235,31 @@ Complete / terminate Process Instance
 
 ### Agent Guidance Interface
 
-- [ ] Identify the mechanisms available in the selected Execution Environment for persistent instructions.
-- [ ] Identify mechanisms for task/process-specific instructions.
-- [ ] Identify skill mechanisms and their appropriate scope.
-- [ ] Identify MCP or equivalent external capability mechanisms.
-- [ ] Define the minimum general AESM guidance supplied to the Agent.
-- [ ] Define the minimum Process Instance-specific guidance supplied to the Agent.
-- [ ] Define how current Execution Context is exposed to the Agent.
-- [ ] Ensure guidance does not silently redefine AESM semantics.
-- [ ] Ensure Agent guidance does not make conversation history authoritative.
+**Status: Analysis complete (2026-09-17). Implementation Decision: no implementation justified in this work unit. Evidence: [`execution/AGENT-GUIDANCE-INTERFACE.md`](execution/AGENT-GUIDANCE-INTERFACE.md).**
 
-**Exit condition:** A real Agent can receive sufficient AESM guidance to participate in the Process Instance using existing environment mechanisms.
+- [x] Define the minimum general AESM guidance supplied to the Agent. **Complete.** AESM guidance content is fully specified in `docs/`. All EPM/PEM/Agent semantics, authority-preservation invariants, pre-action obligations, and operational guidance are present. The Agent can acquire this guidance by reading `docs/` files directly.
+- [x] Define how current Execution Context is exposed to the Agent. **Complete.** `bridge.get_context()` returns the complete serialized `ExecutionContext` to_dict() — all fields. This is Runtime-authoritative state.
+- [x] Ensure guidance does not silently redefine AESM semantics. **Verified.** `docs/` guidance preserves all AESM distinctions. No delivery mechanism introduces alternative semantics.
+- [x] Ensure Agent guidance does not make conversation history authoritative. **Verified.** All authoritative state paths go through Runtime/ProcessStore. Continuity obligation is documented explicitly in `docs/06` and `docs/08`.
+- [ ] Identify the mechanisms available in the selected Execution Environment for persistent instructions. **Deferred to Environment Mechanism Mapping.** No `.agents/` directory or equivalent exists in the AESM repository. This is the primary gap identified by the analysis.
+- [ ] Identify mechanisms for task/process-specific instructions. **Deferred to Environment Mechanism Mapping.**
+- [ ] Identify skill mechanisms and their appropriate scope. **Deferred to Environment Mechanism Mapping.**
+- [ ] Identify MCP or equivalent external capability mechanisms. **Deferred to Environment Mechanism Mapping.**
+- [ ] Define the minimum Process Instance-specific guidance supplied to the Agent. **Partially complete.** ExecutionContext fields supply process-specific guidance when obtained via `bridge.get_context()`. Automated delivery mechanism is not yet implemented — deferred to Environment Mechanism Mapping.
+
+**Findings (2026-09-17):**
+
+1. **AESM guidance content:** Executable — all EPM/PEM/Agent semantics documented. No semantic gaps.
+2. **AESM guidance delivery mechanism:** Documentation only — no `.agents/rules/`, skill, or MCP server delivers guidance to Agent automatically. Belongs to Environment Mechanism Mapping.
+3. **EPM binding in Process Instance:** Evidence incomplete — `ProcessInstance.epm` field exists but is empty by default; no mechanism populates it.
+4. **All governed-execution capabilities (evidence, decisions, state transitions, artifacts, verification, reconsideration, completion):** Executable — bridge dispatch satisfies all nine operations.
+5. **Lifecycle observation:** Executable — `process_instance.lifecycle` returned in all bridge responses.
+6. **Lifecycle transition (bridged):** Specification Decision Required — `apply_lifecycle_determination` exists in Runtime but is not routed through bridge.
+7. **Process Instance ID delivery to fresh Agent:** Missing — no delivery mechanism; deferred gap.
+8. **End-to-end AI Agent participation:** Not demonstrated — requires First Real Vertical Slice.
+9. **DBP trace (Edit_Review_Form::business_id SELECT→POST_SELECT):** Traced completely through all 12 steps; all executable mechanisms exist; two material gaps (guidance delivery, discovery) do not block the trace.
+
+**Exit condition analysis:** The exit condition requires that a real Agent can receive sufficient AESM guidance to participate using existing environment mechanisms. The semantic contract is established and the governed-execution mechanisms are executable. The guidance delivery mechanism gap (no persistent instruction mechanism) means the exit condition is not fully satisfied at the mechanism level. The Environment Mechanism Mapping work unit must resolve which mechanism satisfies delivery before the exit condition can be fully met.
 
 ### Agent–Runtime Execution Bridge Inspection
 
