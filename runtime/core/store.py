@@ -131,3 +131,11 @@ class ProcessStore:
 
     def history(self, process_instance_id: str) -> list[dict[str, Any]]:
         return JsonlStore(self._dir(process_instance_id) / "history.jsonl").read_all()
+
+    def history_entry_count(self, process_instance_id: str) -> int:
+        """Return the number of history entries for a Process Instance.
+
+        Delegates to ``history()`` so callers do not need to load and measure
+        the full list themselves.  Returns 0 when no history file exists yet.
+        """
+        return len(self.history(process_instance_id))
