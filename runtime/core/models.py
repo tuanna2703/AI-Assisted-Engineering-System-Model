@@ -12,6 +12,13 @@ def now() -> str:
 
 
 VALID_LIFECYCLE_VALUES = {"active", "suspended", "terminated"}
+VALID_SCOPE_RESOLUTION_STATUSES = {
+    "UNRESOLVED",
+    "RESOLVED",
+    "AMBIGUOUS",
+    "CONFLICTING",
+    "INVALID",
+}
 
 
 @dataclass
@@ -22,13 +29,31 @@ class ProcessInstance:
     execution_context_ref: str = ""
     epm: dict[str, str] = field(default_factory=dict)
     pem: dict[str, str] = field(default_factory=dict)
+    engineering_scope_identity: str | None = None
+    engineering_scope_resolution: str = "UNRESOLVED"
+    engineering_scope_evidence: list[dict[str, Any]] = field(default_factory=list)
     created_at: str = field(default_factory=now)
     updated_at: str = field(default_factory=now)
 
     @classmethod
-    def create(cls, objective: str, epm: dict[str, str] | None = None, pem: dict[str, str] | None = None) -> "ProcessInstance":
+    def create(
+        cls,
+        objective: str,
+        epm: dict[str, str] | None = None,
+        pem: dict[str, str] | None = None,
+        engineering_scope_identity: str | None = None,
+    ) -> "ProcessInstance":
         pid = str(uuid4())
-        return cls(pid, objective, execution_context_ref=f"process-instance/{pid}/context.json", epm=epm or {}, pem=pem or {})
+        scope_status = "RESOLVED" if engineering_scope_identity else "UNRESOLVED"
+        return cls(
+            pid,
+            objective,
+            execution_context_ref=f"process-instance/{pid}/context.json",
+            epm=epm or {},
+            pem=pem or {},
+            engineering_scope_identity=engineering_scope_identity,
+            engineering_scope_resolution=scope_status,
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
