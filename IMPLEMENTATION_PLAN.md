@@ -461,7 +461,7 @@ The authorized sequence is now:
 - [ ] **Project / Scope Resolution Design** — define deterministic scope resolution, ambiguity handling, Process Instance selection/creation, and authority boundaries.
 - [ ] **Process Binding Design** — define the normative scope-to-Process-Instance relationship and discovery model.
 - [ ] **Persistence Scope Design** — determine where authoritative scope/process state is persisted.
-- [ ] **Agent / Environment Mechanism Design** — define how scope evidence reaches the Agent while Runtime retains authority.
+- [x] **Agent / Environment Mechanism Design** — define how scope evidence reaches the Agent while Runtime retains authority. **Gate complete.** Evidence: `execution/AGENT-ENVIRONMENT-MECHANISM-DESIGN.md`. The existing guidance + Execution Environment + Agent–Runtime bridge + ProcessStore combination is sufficient for known-PI governed execution; scope-unknown execution still requires the later implementation of authoritative scope resolution, PI discovery/binding, ambiguity/conflict handling, and scope/binding persistence. No new transport, orchestration layer, or IDE-specific mechanism is justified.
 - [ ] **Normative Documentation Reconciliation** — update only the canonical documents affected by resolved semantic decisions.
 - [ ] **Project Identity and Process Binding Implementation** — implement the approved mechanism after all semantic gates pass.
 - [ ] **Multi-Project Empirical Validation** — validate continuity, isolation, ambiguity handling, and cross-session discovery through real Agent execution.
