@@ -458,11 +458,11 @@ The authorized sequence is now:
 - [x] **DBP Evidence Reconciliation** — independently reconcile DBP implementation evidence, AESM participation evidence, and project/process binding findings.
 - [x] **Project/Scope Semantics Investigation** — inspect the existing AESM model and determine whether the current semantic concepts are sufficient to identify engineering scope.
 - [x] **Project/Scope Semantic Clarification** — define Engineering Scope Identity; establish scope invariants; determine that a first-class Project entity is not yet semantically required.
-- [ ] **Project / Scope Resolution Design** — define deterministic scope resolution, ambiguity handling, Process Instance selection/creation, and authority boundaries.
-- [ ] **Process Binding Design** — define the normative scope-to-Process-Instance relationship and discovery model.
-- [ ] **Persistence Scope Design** — determine where authoritative scope/process state is persisted.
-- [x] **Agent / Environment Mechanism Design** — define how scope evidence reaches the Agent while Runtime retains authority. **Gate complete.** Evidence: `execution/AGENT-ENVIRONMENT-MECHANISM-DESIGN.md`. The existing guidance + Execution Environment + Agent–Runtime bridge + ProcessStore combination is sufficient for known-PI governed execution; scope-unknown execution still requires the later implementation of authoritative scope resolution, PI discovery/binding, ambiguity/conflict handling, and scope/binding persistence. No new transport, orchestration layer, or IDE-specific mechanism is justified.
-- [ ] **Normative Documentation Reconciliation** — update only the canonical documents affected by resolved semantic decisions.
+- [x] **Project / Scope Resolution Design** — deterministic scope resolution, ambiguity handling, Process Instance selection/creation, and authority boundaries established. Gate complete.
+- [x] **Process Binding Design** — normative scope-to-Process-Instance relationship and discovery model established. Gate complete.
+- [x] **Persistence Scope Design** — authoritative scope/process persistence requirements established. Gate complete.
+- [x] **Agent / Environment Mechanism Design** — scope evidence, Agent/Runtime authority boundaries, and minimum mechanism combination established. Gate complete. Evidence: `execution/AGENT-ENVIRONMENT-MECHANISM-DESIGN.md`.
+- [x] **Normative Documentation Reconciliation** — canonical Process Instance, Agent, operational, and Agent-integration documentation reconciled with the completed scope/binding/persistence/mechanism decisions. Evidence: `execution/NORMATIVE-DOCUMENTATION-RECONCILIATION.md`. No implementation mechanism or new authority layer introduced.
 - [ ] **Project Identity and Process Binding Implementation** — implement the approved mechanism after all semantic gates pass.
 - [ ] **Multi-Project Empirical Validation** — validate continuity, isolation, ambiguity handling, and cross-session discovery through real Agent execution.
 - [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process after project binding is available.
