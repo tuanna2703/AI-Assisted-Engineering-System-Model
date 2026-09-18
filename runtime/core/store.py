@@ -73,6 +73,52 @@ class ProcessStore:
             raise PersistenceError("context identity does not match Process Instance")
         return context
 
+    def save_process_instance(
+        self,
+        instance: ProcessInstance,
+        event: dict[str, Any],
+    ) -> None:
+        """Persist authoritative Process Instance identity/binding and history."""
+        directory = self._dir(instance.process_instance_id)
+        if not directory.exists():
+            raise PersistenceError("Process Instance does not exist")
+        if instance.lifecycle not in VALID_LIFECYCLE_VALUES:
+            raise PersistenceError(
+                f"invalid lifecycle value: {instance.lifecycle!r}"
+            )
+        if instance.engineering_scope_resolution not in VALID_SCOPE_RESOLUTION_STATUSES:
+            raise PersistenceError(
+                "invalid Engineering Scope resolution status: "
+                f"{instance.engineering_scope_resolution!r}"
+            )
+        if instance.engineering_scope_resolution == "RESOLVED":
+            if not instance.engineering_scope_identity:
+                raise PersistenceError(
+                    "resolved Engineering Scope is missing its identity"
+                )
+        elif instance.engineering_scope_identity is not None:
+            raise PersistenceError(
+                "unresolved Engineering Scope cannot contain an authoritative identity"
+            )
+
+        process_path = directory / "process.json"
+        history_path = directory / "history.jsonl"
+        snapshots = {
+            process_path: process_path.read_bytes() if process_path.exists() else None,
+            history_path: history_path.read_bytes() if history_path.exists() else None,
+        }
+        prior_updated_at = instance.updated_at
+
+        try:
+            instance.updated_at = now()
+            JsonStore(process_path).save(instance.to_dict())
+            JsonlStore(history_path).append({**event, "at": now()})
+        except Exception:
+            instance.updated_at = prior_updated_at
+            self._restore_file(process_path, snapshots[process_path])
+            self._restore_file(history_path, snapshots[history_path])
+            raise
+
     def save_context(self, context: ExecutionContext, event: dict[str, Any]) -> None:
         directory = self._dir(context.process_instance_id)
         if not directory.exists():
