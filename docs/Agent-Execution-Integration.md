@@ -140,6 +140,34 @@ The transport and interface technology are not AESM semantics. What matters arch
 
 Reusable procedures or skills may package repeatable interaction patterns. They remain Execution Environment mechanisms and must not become a second process state machine, authoritative Context store, or substitute for Runtime guards and semantic decisions.
 
+## Scope resolution and Process Instance binding
+
+The Agent–Runtime integration must preserve the distinction between **supporting scope evidence** and **authoritative Engineering Scope Identity**.
+
+The Execution Environment may expose repository/workspace/Git metadata, artifact locations, explicit human input, and other evidence. The Agent may collect and submit that information through the available Runtime interaction surface.
+
+Those observations do not themselves establish scope:
+
+```
+Environment evidence
+        ↓
+Agent request / evidence submission
+        ↓
+Runtime scope resolution
+        ↓
+Authoritative Engineering Scope Identity
+        ↓
+Process Instance discovery / evaluation
+        ↓
+Binding, recovery, or authorized creation
+```
+
+Runtime remains responsible for authoritative scope resolution and Process Instance binding. The bridge and environment must propagate outcomes such as `UNRESOLVED`, `AMBIGUOUS`, `CONFLICTING`, and `INVALID` without converting them into local Agent decisions.
+
+Known Process Instance identity remains a direct recovery path, subject to Runtime validation. An existing authoritative binding must not be silently replaced by repository, workspace, or Agent observations.
+
+No transport, discovery API, storage technology, or environment product is prescribed by this integration rule.
+
 ## Continuity integration consequence
 
 Continuity is provided by the persistent Process Instance and Runtime-owned Execution Context, not by the lifetime of an Agent session or conversation.
