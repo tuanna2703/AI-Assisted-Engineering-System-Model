@@ -261,183 +261,234 @@ The next work must test whether the established mechanism governs and records a 
 
 ## Current Work Unit — DBP Empirical Execution
 
-**Status: Prepared — execution not started.**
+**Status: Complete — empirical result reconciled.**
 
-The next authorized work is the real Directories Builder Pro engineering experiment.
+The controlled Directories Builder Pro experiment was executed against:
 
-Controlled repository: `tuanna2703/directories-builder-pro`
+- Controlled repository: `tuanna2703/directories-builder-pro`
+- Controlled request: **Requirements: Hierarchical Categories Filter — REQ-01 through REQ-26**
+- Controlled boundary: `execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md`
+- Observer protocol: `execution/DBP-EMPIRICAL-EXECUTION-OBSERVER-PROTOCOL.md`
 
-Controlled request:
+The empirical result established a necessary distinction:
 
-> **Requirements: Hierarchical Categories Filter — REQ-01 through REQ-26**
-
-The complete controlled request is defined in:
-
-[`execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md`](execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md)
-
-The experiment is testing **AESM participation**, not merely successful DBP code modification.
-
-### Experiment Preparation
-
-**Status: Complete — ready for pre-execution baseline.**
-
-The preparation work established and reconciled:
-
-- the finalized observer-only evidence protocol;
-- the current REQ-01–REQ-26 controlled request;
-- the fresh-Agent engineering prompt boundary;
-- the experiment constraints and anti-contamination rules;
-- the AESM persistence observation procedure;
-- the requirement reconciliation and evidence-classification model.
-
-Observer protocol:
-
-[`execution/DBP-EMPIRICAL-EXECUTION-OBSERVER-PROTOCOL.md`](execution/DBP-EMPIRICAL-EXECUTION-OBSERVER-PROTOCOL.md)
-
-The Observer Protocol is not Agent guidance and must not be supplied to the Agent.
-
-### Pre-Execution Baseline
-
-The repository baselines currently established from the authoritative remote repositories are:
-
-| Repository | Branch | Baseline commit |
-|---|---|---|
-| AESM | `main` | `a4975e9d6a92ff59c2317a29a0ef98faae5bed17` |
-| DBP | `main` | `deaabeb175593ec2c607b816eb80b7d16f4f01c5` |
-
-The AESM baseline includes the finalized Observer Protocol. The DBP baseline includes the previously completed `business_id` change and precedes the new Hierarchical Categories Filter experiment.
-
-The actual local DBP working-tree cleanliness and local Execution Environment details must be confirmed in the environment that will launch the fresh Agent; the GitHub repository state alone cannot establish local uncommitted changes.
-
-The AESM Runtime persistence observation root is environment-configured. The implementation persists each Process Instance beneath the configured ProcessStore root as:
-
-- `process-instance/<process_instance_id>/process.json`
-- `process-instance/<process_instance_id>/context.json`
-- `process-instance/<process_instance_id>/history.jsonl`
-
-The observer must establish the actual configured root in the execution environment before the Agent starts and record the discovery method.
-
-### DBP Experiment Constraints
-
-- Do not modify DBP before the controlled Agent execution begins.
-- Use a genuinely fresh Agent invocation.
-- Do not prescribe the AESM Runtime call sequence.
-- Do not preload expected Process Instance state, expected history, expected Runtime calls, or an expected result.
-- Allow the Agent to investigate the DBP repository normally.
-- Do not treat Agent statements as authoritative AESM state.
-- Do not fabricate missing Runtime participation or persisted evidence.
-- Do not broaden the requested DBP change.
-- Do not modify AESM Runtime/spec merely to make the experiment pass.
-- Do not declare AESM participation demonstrated merely because DBP tests pass.
-- Do not reduce the experiment to documentation reading.
-
-### DBP Evidence Contract
-
-The experiment must determine, independently where possible:
-
-- whether applicable persistent AESM guidance reached the Agent;
-- whether a real Process Instance was established or recovered;
-- whether authoritative Execution Context was obtained;
-- whether the Agent investigated the actual DBP implementation;
-- whether Agent activity caused actual Runtime operations;
-- whether evidence, decisions, artifacts, verification, and state were persisted;
-- whether the requested DBP implementation was actually made;
-- whether the implementation was verified;
-- whether the engineering trace is reconstructible from authoritative state;
-- whether Agent narrative can be distinguished from Runtime/persisted facts.
-
-Evidence authority must be treated as an evidence-capability model rather than an automatic conflict resolver:
-
-```text
-Agent narrative
-      ↓
-Observed Agent actions
-      ↓
-Runtime responses
-      ↓
-Persisted Process Instance / Execution Context / history
-      ↓
-Independent DBP repository verification
+```
+DBP engineering activity
+        +
+AESM operational participation
+        +
+project/process binding
 ```
 
-Conflicting observations must remain explicit discrepancies.
+The DBP Agent reported implementation of the controlled request and reported syntax/structural checks. Independent evidence also established the observed implementation change in `modules/reviews/forms/add-review-form.php`, where `business_id` was changed to `Fields_Manager::POST_SELECT` targeting `dbp_business`, with `save()` translating the WordPress post ID through `Business_Repository::find_by_post_id()`.
 
-### DBP Execution Tasks
+However, the execution did **not** provide sufficient evidence that the Agent actually participated in AESM through the established Runtime/Process Instance mechanism. No authoritative Process Instance, Execution Context, Runtime operation, or ProcessStore persistence attributable to the DBP execution was established by the available evidence.
 
-- [ ] Launch the controlled request in a genuinely fresh Agent session.
-- [ ] Observe and record which persistent guidance mechanisms actually apply.
-- [ ] Observe Process Instance establishment/recovery without prescribing the mechanism sequence.
-- [ ] Observe authoritative Execution Context acquisition.
-- [ ] Observe actual Runtime participation and authoritative responses.
-- [ ] Observe persisted evidence, decisions, artifacts, verification, state, and history.
-- [ ] Independently verify the DBP code change and repository scope.
-- [ ] Independently verify AESM persistence and Runtime identifiers.
-- [ ] Reconstruct the engineering trace from request through investigation, finding, decision, implementation, verification, and completion where the authoritative state supports it.
-- [ ] Classify each required capability as `Demonstrated`, `Evidence Incomplete`, `Implementation Gap`, `Specification/Applicability Decision Required`, or `Not Applicable`.
-- [ ] Produce a dedicated empirical execution report under `execution/`.
+The Agent's claimed completion and the independently observed AESM non-participation must remain separate findings.
 
-**Exit condition:** The DBP experiment has an evidence-based result describing actual AESM participation, independently verified DBP implementation, authoritative persisted state, discrepancies, and limitations.
+Evidence record:
 
-### DBP experiment constraints
+[`execution/DBP-EMPIRICAL-EXECUTION-REPORT.md`](execution/DBP-EMPIRICAL-EXECUTION-REPORT.md)
 
-- Do not modify DBP before the controlled Agent execution begins.
-- Use a genuinely fresh Agent invocation.
-- Do not prescribe the AESM Runtime call sequence.
-- Do not preload expected Process Instance state, expected history, expected Runtime calls, or an expected result.
-- Allow the Agent to investigate the DBP repository normally.
-- Do not treat Agent statements as authoritative AESM state.
-- Do not fabricate missing Runtime participation or persisted evidence.
-- Do not broaden the requested DBP change.
-- Do not modify AESM Runtime/spec merely to make the experiment pass.
-- Do not declare AESM participation demonstrated merely because DBP tests pass.
-- Do not reduce the experiment to documentation reading.
+The original Agent completion report, where preserved outside this repository, remains source evidence and must not be rewritten as an AESM result.
 
-### DBP evidence contract
+### DBP Evidence Reconciliation
 
-The experiment must determine, independently where possible:
+**Status: Complete — gap identified.**
 
-- whether applicable persistent AESM guidance reached the Agent;
-- whether a real Process Instance was established or recovered;
-- whether authoritative Execution Context was obtained;
-- whether the Agent investigated the actual DBP implementation;
-- whether Agent activity caused actual Runtime operations;
-- whether evidence, decisions, artifacts, verification, and state were persisted;
-- whether the requested DBP implementation was actually made;
-- whether the implementation was verified;
-- whether the engineering trace is reconstructible from authoritative state;
-- whether Agent narrative can be distinguished from Runtime/persisted facts.
+The reconciliation established:
 
-Evidence authority must be treated in this order:
+- DBP implementation activity occurred.
+- The Agent reported completion of REQ-01–REQ-26, but the available evidence does not independently establish every requirement as fully behaviorally verified.
+- Syntax/structural checks were reported; full runtime form/AJAX/end-to-end behavior and a comprehensive automated test suite were not demonstrated.
+- No executable AESM Runtime participation was visibly established during the observed execution.
+- No authoritative Process Instance or Execution Context attributable to the execution was established.
+- No AESM ProcessStore persistence attributable to the execution was established.
+- The `.akg/` directory must not be interpreted as AESM state; it is an Architectural Knowledge Graph mechanism.
+- The execution therefore does not establish how a real Agent determines which engineering project/scope it is operating within or which Process Instance should govern that work.
 
-```text
-Agent narrative
-      ↓
-Observed Agent actions
-      ↓
-Runtime responses
-      ↓
-Persisted Process Instance / Execution Context / history
-      ↓
-Independent DBP repository verification
-```
+The unresolved project/process binding is now treated as a distinct architectural work unit rather than as a reason to retrofit AESM state into the completed DBP execution.
 
-The higher layers do not become authoritative merely because the Agent states that an action occurred.
+**Exit condition:** Satisfied. The empirical evidence is preserved as a bounded finding and the resulting architectural question is explicitly separated from the DBP implementation result.
 
-### DBP execution tasks
+## Current Work Unit — Project Identity and Process Binding
 
-- [ ] Launch the controlled request in a genuinely fresh Agent session.
-- [ ] Observe and record which persistent guidance mechanisms actually apply.
-- [ ] Observe Process Instance establishment/recovery without prescribing the mechanism sequence.
-- [ ] Observe authoritative Execution Context acquisition.
-- [ ] Observe actual Runtime participation and authoritative responses.
-- [ ] Observe persisted evidence, decisions, artifacts, verification, state, and history.
-- [ ] Independently verify the DBP code change and repository scope.
-- [ ] Independently verify AESM persistence and Runtime identifiers.
-- [ ] Reconstruct the engineering trace from request through investigation, finding, decision, implementation, verification, and completion where the authoritative state supports it.
-- [ ] Classify each required capability as `Demonstrated`, `Evidence Incomplete`, `Implementation Gap`, `Specification/Applicability Decision Required`, or `Not Applicable`.
-- [ ] Produce a dedicated empirical execution report under `execution/`.
+**Status: Active — semantic investigation authorized; implementation not yet authorized.**
 
-**Exit condition:** The DBP experiment has an evidence-based result describing actual AESM participation, independently verified DBP implementation, authoritative persisted state, discrepancies, and limitations.
+### Objective
+
+Establish a reliable mechanism by which AESM can answer:
+
+> Which engineering project does this Agent request belong to, and which Process Instance should govern that work?
+
+The work must support:
+
+- single-project execution;
+- multiple projects;
+- multiple repositories in one workspace;
+- fresh Agent sessions;
+- Process Instance continuity;
+- project/process isolation;
+- Runtime-authoritative Process Instance discovery;
+- a justified persistence scope;
+- independence from a specific IDE or Execution Environment.
+
+### Evidence Gate
+
+- [x] Preserve the DBP empirical finding separately from the DBP engineering result.
+- [x] Identify the absence of demonstrated project/process binding during the DBP execution.
+- [ ] Confirm the precise current project/scope semantics already present in AESM.
+- [ ] Determine whether an existing AESM concept is sufficient or a distinct project/scope concept is required.
+
+**Exit condition:** A documented definition of engineering project/scope identity, or an evidence-based conclusion that an existing AESM concept is sufficient.
+
+### Project Resolution
+
+Investigate and define deterministic resolution for:
+
+- [ ] single-repository workspace;
+- [ ] multi-repository workspace;
+- [ ] nested repositories;
+- [ ] CLI execution inside a repository;
+- [ ] IDE opened at a repository;
+- [ ] IDE opened above multiple repositories;
+- [ ] explicit project identity in a request;
+- [ ] ambiguous project requests;
+- [ ] fresh-session recovery.
+
+The resolution model must explicitly prevent silent selection among multiple plausible projects.
+
+**Exit condition:** A deterministic project-resolution model exists, including ambiguity handling.
+
+### Process Binding
+
+Define the relationship:
+
+`Engineering Project / Scope → Process Instance → Execution Context`
+
+Resolve:
+
+- [ ] whether Process Instance requires an explicit project/scope reference;
+- [ ] the representation of that reference;
+- [ ] binding immutability or permitted changes;
+- [ ] discovery of existing processes for a project;
+- [ ] distinction among multiple active processes in one project;
+- [ ] Runtime validation of the binding;
+- [ ] preservation of Runtime authority over Process Instance discovery.
+
+**Exit condition:** A normative project-to-Process-Instance binding and discovery model exists.
+
+### Persistence Scope
+
+Evaluate persistence alternatives only after project identity and Process Instance binding are resolved.
+
+Evaluate:
+
+- [ ] project-local persistence;
+- [ ] external AESM persistence;
+- [ ] repository portability and project moves;
+- [ ] shared workspaces and multiple repositories;
+- [ ] multiple Execution Environments;
+- [ ] backup/restore implications;
+- [ ] continuity and discovery;
+- [ ] accidental cross-project attachment.
+
+Do not select `.aesm/` or another mechanism by convention alone.
+
+**Exit condition:** A justified persistence-scope decision exists.
+
+### Agent / Execution Environment Boundary
+
+Determine how a real Agent receives and uses project identity without making the Execution Environment the semantic authority.
+
+Resolve:
+
+- [ ] project identity available to the Agent;
+- [ ] Runtime capability accepting/validating that identity;
+- [ ] Process Instance discovery;
+- [ ] starting versus continuing work;
+- [ ] no-existing-Process-Instance behavior;
+- [ ] multiple candidate behavior;
+- [ ] ambiguity behavior;
+- [ ] IDE/CLI independence.
+
+The Agent must not be given an experiment-specific Runtime call sequence.
+
+**Exit condition:** A concrete, environment-independent Agent-boundary contract exists.
+
+### Normative Documentation Reconciliation
+
+**Status: Deferred until semantic decisions are complete.**
+
+After the semantic gates pass:
+
+- [ ] determine whether `docs/AESM Architecture Model.md` must change;
+- [ ] determine Process Instance / Execution Context documentation impact;
+- [ ] determine Runtime/conformance documentation impact;
+- [ ] determine continuity documentation impact;
+- [ ] determine Agent execution integration documentation impact;
+- [ ] determine operational-flow impact.
+
+No normative document should be changed merely because it mentions a related concept.
+
+**Exit condition:** The affected canonical documentation set is explicitly identified and changes are traceable to resolved decisions.
+
+### Implementation
+
+**Status: Blocked pending semantic gates.**
+
+Only after the preceding gates pass:
+
+- [ ] implement approved project/scope identity mechanism;
+- [ ] implement deterministic project resolution;
+- [ ] implement Process Instance binding/discovery;
+- [ ] implement justified persistence mechanism;
+- [ ] integrate through the established Agent–Runtime boundary;
+- [ ] preserve EPM/PEM separation;
+- [ ] preserve Runtime authority;
+- [ ] avoid a second persistence system;
+- [ ] avoid IDE-specific architecture.
+
+**Exit condition:** The approved mechanism is implemented with targeted tests.
+
+### Multi-Project Empirical Validation
+
+**Status: Pending implementation.**
+
+Validate through real Agent execution:
+
+- [ ] single-project execution;
+- [ ] fresh-session continuation;
+- [ ] two projects in one shared workspace;
+- [ ] independent Process Instance association;
+- [ ] no cross-project attachment;
+- [ ] ambiguous request requiring explicit resolution rather than silent selection.
+
+**Exit condition:** Project identity, binding, continuity, and isolation are demonstrated through authoritative evidence.
+
+### Conformance
+
+Evaluate independently:
+
+- [ ] Project identity;
+- [ ] Project resolution;
+- [ ] Process binding;
+- [ ] Process discovery;
+- [ ] Persistence;
+- [ ] Continuity;
+- [ ] Isolation;
+- [ ] Agent boundary;
+- [ ] Execution Environment independence.
+
+Use the established classifications:
+
+- **Conformant — Demonstrated**
+- **Conformant — Evidence Incomplete**
+- **Implementation Gap — Semantically Required**
+- **Specification / Applicability Decision Required**
+- **Not Applicable**
+
+**Exit condition:** Each applicable capability has an evidence-backed conformance classification.
 
 ## Fresh-Agent Continuity Validation
 
@@ -527,9 +578,13 @@ The authorized sequence is now:
 
 - [x] **Plan Reconciliation and Mechanism Gate Closure** — reconcile this plan with the completed Agent-boundary mechanism validation and establish the DBP gate.
 - [x] **DBP Experiment Boundary Definition** — establish the controlled DBP request, evidence contract, authority model, and experiment constraints.
-- [ ] **DBP Empirical Execution** — run the real DBP request through a genuinely fresh Agent and observe actual AESM participation.
-- [ ] **DBP Evidence Reconciliation** — independently verify DBP implementation and AESM persistence, then classify the empirical result.
-- [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process across Agent/session loss.
+- [x] **DBP Empirical Execution** — execute the controlled DBP request and record the observed engineering and AESM participation results.
+- [x] **DBP Evidence Reconciliation** — independently reconcile DBP implementation evidence, AESM participation evidence, and project/process binding findings.
+- [ ] **Project Identity and Process Binding** — establish project/scope identity, deterministic resolution, Process Instance binding, persistence scope, and Agent-boundary semantics.
+- [ ] **Normative Documentation Reconciliation** — update only the canonical documents affected by resolved semantic decisions.
+- [ ] **Project Identity and Process Binding Implementation** — implement the approved mechanism after the semantic gates pass.
+- [ ] **Multi-Project Empirical Validation** — validate continuity, isolation, ambiguity handling, and cross-session discovery through real Agent execution.
+- [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process after project binding is available.
 - [ ] **Feedback and Reconsideration Validation** — validate controlled iteration where justified.
 - [ ] **Environment Independence Validation** — test portability beyond the first Agent environment.
 - [ ] **Prototype Evaluation and Controlled Refinement** — reconcile findings and authorize only evidence-based changes.
@@ -538,8 +593,10 @@ The authorized sequence is now:
 
 The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, and Agent-boundary mechanism validation work.
 
-**Current gate:** DBP Empirical Execution is authorized and prepared.
+The DBP empirical execution is also complete as an evidence-producing experiment. Its principal architectural finding is that successful DBP engineering activity did not, by itself, establish a demonstrated project-to-Process-Instance binding or visible AESM Runtime participation.
 
-**Next action:** Launch the controlled DBP request in a genuinely fresh Agent session using the boundary in [`execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md`](execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md).
+**Current gate:** Project Identity and Process Binding semantic investigation.
 
-No further mechanism redesign is authorized before that empirical result unless the experiment itself produces evidence requiring a separate decision.
+**Next action:** Establish the existing project/scope semantics and determine whether AESM requires a distinct project identity/binding concept before changing normative documentation or implementation.
+
+No implementation of project identity, project resolution, Process Instance binding, or persistence scope is authorized until the corresponding semantic gates pass.
