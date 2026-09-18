@@ -269,18 +269,114 @@ Controlled repository: `tuanna2703/directories-builder-pro`
 
 Controlled request:
 
-```text
-In modules/reviews/forms/add-review-form.php,
-class Add_Review_Form,
-change the $business_id field definition from
-Fields_Manager::SELECT to Fields_Manager::POST_SELECT.
-```
+> **Requirements: Hierarchical Categories Filter — REQ-01 through REQ-26**
+
+The complete controlled request is defined in:
+
+[`execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md`](execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md)
 
 The experiment is testing **AESM participation**, not merely successful DBP code modification.
 
-Detailed controlled boundary and evidence contract:
+### Experiment Preparation
 
-[`execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md`](execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md)
+**Status: Complete — ready for pre-execution baseline.**
+
+The preparation work established and reconciled:
+
+- the finalized observer-only evidence protocol;
+- the current REQ-01–REQ-26 controlled request;
+- the fresh-Agent engineering prompt boundary;
+- the experiment constraints and anti-contamination rules;
+- the AESM persistence observation procedure;
+- the requirement reconciliation and evidence-classification model.
+
+Observer protocol:
+
+[`execution/DBP-EMPIRICAL-EXECUTION-OBSERVER-PROTOCOL.md`](execution/DBP-EMPIRICAL-EXECUTION-OBSERVER-PROTOCOL.md)
+
+The Observer Protocol is not Agent guidance and must not be supplied to the Agent.
+
+### Pre-Execution Baseline
+
+The repository baselines currently established from the authoritative remote repositories are:
+
+| Repository | Branch | Baseline commit |
+|---|---|---|
+| AESM | `main` | `a4975e9d6a92ff59c2317a29a0ef98faae5bed17` |
+| DBP | `main` | `deaabeb175593ec2c607b816eb80b7d16f4f01c5` |
+
+The AESM baseline includes the finalized Observer Protocol. The DBP baseline includes the previously completed `business_id` change and precedes the new Hierarchical Categories Filter experiment.
+
+The actual local DBP working-tree cleanliness and local Execution Environment details must be confirmed in the environment that will launch the fresh Agent; the GitHub repository state alone cannot establish local uncommitted changes.
+
+The AESM Runtime persistence observation root is environment-configured. The implementation persists each Process Instance beneath the configured ProcessStore root as:
+
+- `process-instance/<process_instance_id>/process.json`
+- `process-instance/<process_instance_id>/context.json`
+- `process-instance/<process_instance_id>/history.jsonl`
+
+The observer must establish the actual configured root in the execution environment before the Agent starts and record the discovery method.
+
+### DBP Experiment Constraints
+
+- Do not modify DBP before the controlled Agent execution begins.
+- Use a genuinely fresh Agent invocation.
+- Do not prescribe the AESM Runtime call sequence.
+- Do not preload expected Process Instance state, expected history, expected Runtime calls, or an expected result.
+- Allow the Agent to investigate the DBP repository normally.
+- Do not treat Agent statements as authoritative AESM state.
+- Do not fabricate missing Runtime participation or persisted evidence.
+- Do not broaden the requested DBP change.
+- Do not modify AESM Runtime/spec merely to make the experiment pass.
+- Do not declare AESM participation demonstrated merely because DBP tests pass.
+- Do not reduce the experiment to documentation reading.
+
+### DBP Evidence Contract
+
+The experiment must determine, independently where possible:
+
+- whether applicable persistent AESM guidance reached the Agent;
+- whether a real Process Instance was established or recovered;
+- whether authoritative Execution Context was obtained;
+- whether the Agent investigated the actual DBP implementation;
+- whether Agent activity caused actual Runtime operations;
+- whether evidence, decisions, artifacts, verification, and state were persisted;
+- whether the requested DBP implementation was actually made;
+- whether the implementation was verified;
+- whether the engineering trace is reconstructible from authoritative state;
+- whether Agent narrative can be distinguished from Runtime/persisted facts.
+
+Evidence authority must be treated as an evidence-capability model rather than an automatic conflict resolver:
+
+```text
+Agent narrative
+      ↓
+Observed Agent actions
+      ↓
+Runtime responses
+      ↓
+Persisted Process Instance / Execution Context / history
+      ↓
+Independent DBP repository verification
+```
+
+Conflicting observations must remain explicit discrepancies.
+
+### DBP Execution Tasks
+
+- [ ] Launch the controlled request in a genuinely fresh Agent session.
+- [ ] Observe and record which persistent guidance mechanisms actually apply.
+- [ ] Observe Process Instance establishment/recovery without prescribing the mechanism sequence.
+- [ ] Observe authoritative Execution Context acquisition.
+- [ ] Observe actual Runtime participation and authoritative responses.
+- [ ] Observe persisted evidence, decisions, artifacts, verification, state, and history.
+- [ ] Independently verify the DBP code change and repository scope.
+- [ ] Independently verify AESM persistence and Runtime identifiers.
+- [ ] Reconstruct the engineering trace from request through investigation, finding, decision, implementation, verification, and completion where the authoritative state supports it.
+- [ ] Classify each required capability as `Demonstrated`, `Evidence Incomplete`, `Implementation Gap`, `Specification/Applicability Decision Required`, or `Not Applicable`.
+- [ ] Produce a dedicated empirical execution report under `execution/`.
+
+**Exit condition:** The DBP experiment has an evidence-based result describing actual AESM participation, independently verified DBP implementation, authoritative persisted state, discrepancies, and limitations.
 
 ### DBP experiment constraints
 
