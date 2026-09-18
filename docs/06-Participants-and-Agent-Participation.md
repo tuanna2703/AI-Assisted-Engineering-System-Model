@@ -61,6 +61,32 @@ AI Agent
 
 The Agent's conversation history may be useful working memory, but it is not authoritative merely because it is available to the Agent.
 
+## Scope and Process Instance authority
+
+Before material work begins, the Agent should distinguish:
+
+- Engineering Scope Identity;
+- Process Instance Identity;
+- Engineering Objective;
+- Execution Context;
+- supporting environment evidence.
+
+The Agent may gather or submit scope evidence, known Process Instance identifiers, human clarification, and other permitted inputs. It must not independently declare the authoritative scope, select among ambiguous candidates, rewrite an established Process Instance binding, or treat repository/workspace observations as universal scope identity.
+
+The authoritative interaction is:
+
+```
+Agent / Environment evidence
+        ↓
+Runtime scope resolution
+        ↓
+Process Instance binding / recovery / authorized creation
+        ↓
+Authoritative Execution Context
+```
+
+If Runtime reports `UNRESOLVED`, `AMBIGUOUS`, `CONFLICTING`, or `INVALID`, the Agent must preserve that result, gather permissible additional evidence, or request human clarification through the applicable authority path. It must not convert uncertainty into a local selection merely to continue execution.
+
 ## What the Agent should establish before acting
 
 Before making a material contribution, the Agent should understand, from authoritative state and applicable process/execution semantics:
