@@ -4,7 +4,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from runtime.core.models import ExecutionContext, ProcessInstance, VALID_LIFECYCLE_VALUES, now
+from runtime.core.models import (
+    ExecutionContext,
+    ProcessInstance,
+    VALID_LIFECYCLE_VALUES,
+    VALID_SCOPE_RESOLUTION_STATUSES,
+    now,
+)
 from runtime.persistence.json_store import JsonStore, JsonlStore, PersistenceError
 
 
@@ -19,14 +25,41 @@ class ProcessStore:
         directory = self._dir(instance.process_instance_id)
         JsonStore(directory / "process.json").save(instance.to_dict())
         JsonStore(directory / "context.json").save(context.to_dict())
-        JsonlStore(directory / "history.jsonl").append({"type": "process_created", "process_instance_id": instance.process_instance_id, "version": context.version, "at": now()})
+        JsonlStore(directory / "history.jsonl").append(
+            {
+                "type": "process_created",
+                "process_instance_id": instance.process_instance_id,
+                "version": context.version,
+                "engineering_scope_resolution": instance.engineering_scope_resolution,
+                "engineering_scope_identity": instance.engineering_scope_identity,
+                "at": now(),
+            }
+        )
 
     def load_instance(self, process_instance_id: str) -> ProcessInstance:
         data = JsonStore(self._dir(process_instance_id) / "process.json").load()
-        instance = ProcessInstance(**data)
+        try:
+            instance = ProcessInstance(**data)
+        except (TypeError, ValueError) as exc:
+            raise PersistenceError(f"Process Instance is invalid: {process_instance_id}") from exc
+
         if instance.lifecycle not in VALID_LIFECYCLE_VALUES:
             raise PersistenceError(
                 f"invalid persisted lifecycle value: {instance.lifecycle!r}"
+            )
+        if instance.engineering_scope_resolution not in VALID_SCOPE_RESOLUTION_STATUSES:
+            raise PersistenceError(
+                "invalid persisted Engineering Scope resolution status: "
+                f"{instance.engineering_scope_resolution!r}"
+            )
+        if instance.engineering_scope_resolution == "RESOLVED":
+            if not instance.engineering_scope_identity:
+                raise PersistenceError(
+                    "resolved Engineering Scope is missing its identity"
+                )
+        elif instance.engineering_scope_identity is not None:
+            raise PersistenceError(
+                "unresolved Engineering Scope cannot contain an authoritative identity"
             )
         return instance
 
@@ -74,14 +107,7 @@ class ProcessStore:
         *,
         context_modified: bool = False,
     ) -> None:
-        """Persist a lifecycle transition as one recoverable consistency boundary.
-
-        The JSON stores use atomic file replacement individually, while the
-        lifecycle operation spans process state, optional Context mutation, and
-        history. Snapshotting the affected files allows the complete operation
-        to be rolled back if any write fails, including a partially appended
-        history record.
-        """
+        """Persist a lifecycle transition as one recoverable consistency boundary."""
         directory = self._dir(instance.process_instance_id)
         if not directory.exists():
             raise PersistenceError("Process Instance does not exist")
@@ -133,9 +159,5 @@ class ProcessStore:
         return JsonlStore(self._dir(process_instance_id) / "history.jsonl").read_all()
 
     def history_entry_count(self, process_instance_id: str) -> int:
-        """Return the number of history entries for a Process Instance.
-
-        Delegates to ``history()`` so callers do not need to load and measure
-        the full list themselves.  Returns 0 when no history file exists yet.
-        """
+        """Return the number of history entries for a Process Instance."""
         return len(self.history(process_instance_id))
