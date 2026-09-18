@@ -4,23 +4,45 @@
 
 This guide shows how the major AESM concepts work together during an engineering effort. It is explanatory; the governing semantics remain in the applicable EPM and PEM concepts.
 
-## 1. Receive an engineering objective
+## 1. Receive an engineering request
 
 A user or other authorized participant initiates engineering work.
 
-The system creates or loads a Process Instance representing that work.
+The request is first evaluated for its applicable Engineering Scope. Repository, workspace, Git, artifact, and Agent observations may provide supporting evidence, but they do not by themselves establish authoritative scope.
 
-## 2. Establish authoritative state
+## 2. Resolve Engineering Scope and Process Instance
 
-The Runtime establishes or restores the Execution Context required to continue the Process Instance.
+The authoritative sequence is:
 
-The system must not substitute conversation memory for missing authoritative state.
+```
+Engineering Request
+        ↓
+Scope evidence / explicit scope identity
+        ↓
+Runtime scope resolution
+        ↓
+Process Instance discovery / evaluation
+        ↓
+Binding, recovery, or authorized creation
+        ↓
+Authoritative Process Instance + Execution Context
+```
 
-## 3. Interpret the engineering situation
+If scope or Process Instance resolution is unresolved, ambiguous, conflicting, or invalid, the condition remains explicit. The Agent must not silently select a candidate.
+
+Known Process Instance identity remains a direct recovery path, subject to Runtime validation.
+
+## 3. Establish authoritative state
+
+The Runtime establishes or restores the Execution Context required to continue the bound Process Instance.
+
+The system must not substitute conversation memory, workspace identity, or Agent reasoning for missing authoritative state.
+
+## 4. Interpret the engineering situation
 
 The current objective, Requirements, Constraints, Process State, Artifacts, Evidence, Decisions, risks, assumptions, and unresolved questions are examined according to EPM.
 
-## 4. Execute according to PEM
+## 5. Execute according to PEM
 
 The Runtime applies the execution cycle:
 
@@ -28,7 +50,7 @@ The Runtime applies the execution cycle:
 Observe → Evaluate → Plan → Execute → Verify → Update Context → Repeat
 ```
 
-## 5. Perform engineering work
+## 6. Perform engineering work
 
 Depending on the current engineering situation, work may include:
 
@@ -44,7 +66,7 @@ Depending on the current engineering situation, work may include:
 
 There is no universal fixed sequence that every engineering task must follow.
 
-## 6. Maintain the boundary between engineering and execution
+## 7. Maintain the boundary between engineering and execution
 
 During execution, keep these distinctions explicit:
 
@@ -64,13 +86,13 @@ Agent authority
 
 EPM determines engineering validity. PEM and the Runtime govern execution.
 
-## 7. Record results
+## 8. Record results
 
 Engineering and execution results are incorporated into authoritative state through applicable recognition and mutation rules.
 
 The Runtime should preserve sufficient traceability to understand what happened and why.
 
-## 8. Verify
+## 9. Verify
 
 Verification evaluates whether the current result satisfies applicable conditions.
 
@@ -78,7 +100,7 @@ If verification succeeds, progression may be possible.
 
 If verification fails, the process may need more investigation, revision, reconsideration, or return to an earlier concern.
 
-## 9. Determine progress
+## 10. Determine progress
 
 Progress is determined from engineering conditions rather than from elapsed time or Agent activity.
 
@@ -93,7 +115,7 @@ The Process Instance may:
 - complete;
 - terminate according to applicable semantics.
 
-## 10. Continue across interruptions
+## 11. Continue across interruptions
 
 When an Agent session ends or an environment closes, the Process Instance does not automatically end.
 
