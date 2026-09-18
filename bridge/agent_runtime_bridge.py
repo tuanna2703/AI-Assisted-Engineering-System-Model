@@ -34,6 +34,7 @@ from runtime.persistence.json_store import PersistenceError
 # execution-state operation outside the Agent–Runtime Bridge boundary.
 
 _DISPATCH_TABLE: dict[str, tuple[str, tuple[str, ...]]] = {
+    "apply_scope_resolution": ("apply_scope_resolution", ("resolution",)),
     "start_investigation": ("start_investigation", ()),
     "observe": ("observe", ("observation",)),
     "recognize_decision": ("recognize_decision", ("decision", "recognition")),
