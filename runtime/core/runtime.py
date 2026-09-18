@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from runtime.core.models import ExecutionContext, ProcessInstance, VALID_LIFECYCLE_VALUES
+from runtime.core.models import ExecutionContext, ProcessInstance, VALID_LIFECYCLE_VALUES, now
 from runtime.core.store import ProcessStore
 
 
@@ -38,8 +38,20 @@ class Runtime:
         self.context: ExecutionContext | None = None
         self.attached = False
 
-    def create_process(self, objective: str) -> str:
-        instance = ProcessInstance.create(objective)
+    def create_process(
+        self,
+        objective: str,
+        engineering_scope_identity: str | None = None,
+    ) -> str:
+        if not objective or not str(objective).strip():
+            raise ValueError("objective must be a non-empty string")
+        if engineering_scope_identity is not None and not str(engineering_scope_identity).strip():
+            raise ValueError("engineering_scope_identity must be non-empty when provided")
+
+        instance = ProcessInstance.create(
+            objective,
+            engineering_scope_identity=engineering_scope_identity,
+        )
         context = ExecutionContext.create(instance)
         self.store.create(instance, context)
         self.process_instance, self.context, self.attached = instance, context, True
@@ -49,6 +61,102 @@ class Runtime:
         instance = self.store.load_instance(process_instance_id)
         context = self.store.load_context(process_instance_id)
         self.process_instance, self.context, self.attached = instance, context, True
+
+    def apply_scope_resolution(self, resolution: dict[str, Any]) -> None:
+        """Record an authoritative Engineering Scope resolution outcome.
+
+        The Runtime is the authority boundary. The Agent may submit evidence or
+        a proposed outcome through the bridge, but only a recognized Runtime
+        resolution becomes the Process Instance binding.
+        """
+        self._require_attached()
+        if not isinstance(resolution, dict):
+            raise TypeError("scope resolution must be a mapping")
+
+        required_fields = {
+            "status",
+            "recognized",
+            "basis",
+            "actor",
+            "evidence",
+        }
+        missing = required_fields - resolution.keys()
+        if missing:
+            raise ValueError(
+                f"scope resolution missing required fields: {sorted(missing)}"
+            )
+
+        status = resolution["status"]
+        if status not in {
+            "UNRESOLVED",
+            "RESOLVED",
+            "AMBIGUOUS",
+            "CONFLICTING",
+            "INVALID",
+        }:
+            raise ValueError(f"invalid Engineering Scope resolution status: {status!r}")
+        if resolution["recognized"] is not True:
+            raise RuntimeError(
+                "Engineering Scope resolution must be explicitly recognized by "
+                "the governing execution semantics"
+            )
+        if not resolution["basis"]:
+            raise RuntimeError("Engineering Scope resolution requires an explicit basis")
+        if not isinstance(resolution["evidence"], list):
+            raise TypeError("Engineering Scope resolution evidence must be a list")
+
+        identity = resolution.get("engineering_scope_identity")
+        if status == "RESOLVED":
+            if not isinstance(identity, str) or not identity.strip():
+                raise ValueError(
+                    "RESOLVED Engineering Scope requires a non-empty identity"
+                )
+        elif identity is not None:
+            raise ValueError(
+                f"{status} Engineering Scope resolution cannot contain an identity"
+            )
+
+        current_status = self.process_instance.engineering_scope_resolution
+        current_identity = self.process_instance.engineering_scope_identity
+        if current_status == "RESOLVED":
+            if status != "RESOLVED" or identity != current_identity:
+                raise RuntimeError(
+                    "an established Engineering Scope binding cannot be silently "
+                    "replaced or invalidated"
+                )
+            return
+
+        prior_status = current_status
+        prior_identity = current_identity
+        prior_evidence = list(self.process_instance.engineering_scope_evidence)
+        prior_updated_at = self.process_instance.updated_at
+
+        self.process_instance.engineering_scope_resolution = status
+        self.process_instance.engineering_scope_identity = identity
+        self.process_instance.engineering_scope_evidence = list(resolution["evidence"])
+        self.process_instance.updated_at = now()
+
+        event = {
+            "type": "engineering_scope_resolution",
+            "process_instance_id": self.process_instance.process_instance_id,
+            "prior_status": prior_status,
+            "prior_identity": prior_identity,
+            "resulting_status": status,
+            "resulting_identity": identity,
+            "basis": resolution["basis"],
+            "actor": resolution["actor"],
+            "evidence": resolution["evidence"],
+            "runtime_id": self.runtime_id,
+        }
+
+        try:
+            self.store.save_process_instance(self.process_instance, event)
+        except Exception:
+            self.process_instance.engineering_scope_resolution = prior_status
+            self.process_instance.engineering_scope_identity = prior_identity
+            self.process_instance.engineering_scope_evidence = prior_evidence
+            self.process_instance.updated_at = prior_updated_at
+            raise
 
     def start_investigation(self) -> None:
         self._require_attached()
