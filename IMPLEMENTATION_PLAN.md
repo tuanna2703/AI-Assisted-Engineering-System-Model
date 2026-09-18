@@ -463,12 +463,28 @@ The authorized sequence is now:
 - [x] **Persistence Scope Design** — authoritative scope/process persistence requirements established. Gate complete.
 - [x] **Agent / Environment Mechanism Design** — scope evidence, Agent/Runtime authority boundaries, and minimum mechanism combination established. Gate complete. Evidence: `execution/AGENT-ENVIRONMENT-MECHANISM-DESIGN.md`.
 - [x] **Normative Documentation Reconciliation** — canonical Process Instance, Agent, operational, and Agent-integration documentation reconciled with the completed scope/binding/persistence/mechanism decisions. Evidence: `execution/NORMATIVE-DOCUMENTATION-RECONCILIATION.md`. No implementation mechanism or new authority layer introduced.
-- [ ] **Project Identity and Process Binding Implementation** — implement the approved mechanism after all semantic gates pass.
+- [x] **Project Identity and Process Binding Implementation** — implemented the smallest vertical slice for authoritative Engineering Scope Identity, explicit resolution outcomes, Process Instance binding, persistence, recovery, and Agent–Runtime delegation. Evidence: `execution/PROJECT-IDENTITY-AND-PROCESS-BINDING-IMPLEMENTATION.md`. Implementation-validation gate remains open because the targeted tests were added but not executed in the available environment.
 - [ ] **Multi-Project Empirical Validation** — validate continuity, isolation, ambiguity handling, and cross-session discovery through real Agent execution.
 - [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process after project binding is available.
 - [ ] **Feedback and Reconsideration Validation** — validate controlled iteration where justified.
 - [ ] **Environment Independence Validation** — test portability beyond the first Agent environment.
 - [ ] **Prototype Evaluation and Controlled Refinement** — reconcile findings and authorize only evidence-based changes.
+
+### Project Identity and Process Binding Implementation
+
+**Status: Implementation complete — validation pending.**
+
+The Runtime and existing ProcessStore now operationalize the Engineering Scope Identity binding boundary without introducing a second authority layer.
+
+Implemented evidence:
+- `runtime/core/models.py` — authoritative scope identity, resolution status, and evidence fields.
+- `runtime/core/runtime.py` — Runtime-mediated scope resolution and binding.
+- `runtime/core/store.py` — authoritative Process Instance binding persistence and recovery validation.
+- `bridge/agent_runtime_bridge.py` — delegated Agent-facing scope-resolution operation.
+- `tests/project_identity/test_scope_binding.py` — targeted behavioral coverage.
+- `execution/PROJECT-IDENTITY-AND-PROCESS-BINDING-IMPLEMENTATION.md` — implementation record and validation boundary.
+
+The targeted tests have not been executed in the available repository integration environment. No test result is inferred.
 
 ### Current Progress Position
 
