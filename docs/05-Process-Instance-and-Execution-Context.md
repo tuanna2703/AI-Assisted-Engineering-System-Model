@@ -23,6 +23,39 @@ A Process Instance must have a stable identity that remains unchanged across con
 
 The Process Instance must also retain an explicit binding to the applicable EPM definition. Where the EPM is versioned, the applicable version or revision must be recoverable. The binding is part of authoritative process state and must not be inferred solely from the current Runtime, Agent, or environment.
 
+## Engineering Scope and Process Instance binding
+
+A Process Instance must retain an explicit, recoverable binding to the applicable **Engineering Scope Identity** in addition to its Engineering Objective and applicable EPM definition.
+
+Engineering Scope Identity identifies the stable engineering boundary in which related engineering work is performed. It is distinct from:
+
+- Process Instance Identity;
+- Engineering Objective;
+- Execution Context;
+- Execution Environment;
+- repository identity;
+- workspace identity.
+
+One Engineering Scope may contain multiple Process Instances. A Process Instance has one authoritative scope binding at a given point in its authoritative history.
+
+The binding must not be inferred solely from the current Agent, Runtime session, repository, workspace, or conversation. Changes in those execution-layer conditions do not silently change the authoritative binding.
+
+For a new Process Instance, scope binding must be established through the applicable authority path when scope is required. For an existing Process Instance, recovery must restore the authoritative binding rather than reconstructing it from environmental evidence.
+
+Scope resolution and Process Instance resolution remain distinct:
+
+```
+Engineering Request
+        ↓
+Engineering Scope resolution
+        ↓
+Process Instance resolution
+        ↓
+Context recovery or authorized creation
+```
+
+If scope evidence is insufficient, ambiguous, conflicting, or invalid, the Runtime must preserve that condition explicitly rather than silently selecting a scope or Process Instance.
+
 ## Process Instance lifecycle
 
 Process Instance lifecycle describes the lifecycle condition of the Process Instance itself. The canonical lifecycle states are `ACTIVE`, `SUSPENDED`, and `TERMINATED`.
