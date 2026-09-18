@@ -313,183 +313,163 @@ The unresolved project/process binding is now treated as a distinct architectura
 
 ## Current Work Unit — Project Identity and Process Binding
 
-**Status: Active — semantic investigation authorized; implementation not yet authorized.**
+**Status: Semantic investigation complete — new scope-identity concept required; project mechanism design authorized.**
 
-### Objective
+Evidence record: [`execution/PROJECT-SCOPE-SEMANTICS-INVESTIGATION.md`](execution/PROJECT-SCOPE-SEMANTICS-INVESTIGATION.md)
 
-Establish a reliable mechanism by which AESM can answer:
+### Semantic Investigation Result
 
-> Which engineering project does this Agent request belong to, and which Process Instance should govern that work?
+The investigation inspected the current canonical model, Process Instance / Execution Context representation, Runtime responsibilities, Agent participation boundary, Agent–Runtime integration, continuity semantics, and the concrete Runtime implementation.
 
-The work must support:
+The established model already provides a persistent identity for **one engineering execution for a specific engineering objective**. The Engineering Objective is explicit and traceable, and the Process Instance remains authoritative across Agent, Runtime, and Execution Environment changes.
 
-- single-project execution;
-- multiple projects;
-- multiple repositories in one workspace;
-- fresh Agent sessions;
-- Process Instance continuity;
-- project/process isolation;
-- Runtime-authoritative Process Instance discovery;
-- a justified persistence scope;
-- independence from a specific IDE or Execution Environment.
+However, the current model does **not** define a stable semantic identity for the **engineering scope in which that objective is being executed**.
 
-### Evidence Gate
+In particular:
 
-- [x] Preserve the DBP empirical finding separately from the DBP engineering result.
-- [x] Identify the absence of demonstrated project/process binding during the DBP execution.
-- [ ] Confirm the precise current project/scope semantics already present in AESM.
-- [ ] Determine whether an existing AESM concept is sufficient or a distinct project/scope concept is required.
+- Engineering Objective identifies the intended purpose of a Process Instance.
+- Process Instance ID identifies the concrete engineering execution.
+- Execution Context identifies the authoritative operational state of that execution.
+- Execution Environment represents the interaction/tooling surface.
+- Repository and workspace are not currently AESM semantic entities with authoritative identity.
+- The Runtime currently supports discovery by known Process Instance ID, but no objective/scope-based discovery contract exists.
+- The concrete Process Instance model contains no project/scope reference.
+- The concrete Runtime `create_process(objective)` operation therefore cannot distinguish two otherwise similar objectives belonging to different engineering scopes.
 
-**Exit condition:** A documented definition of engineering project/scope identity, or an evidence-based conclusion that an existing AESM concept is sufficient.
+The DBP empirical finding is consistent with this gap: the execution did not establish how the request's engineering scope could be bound to a Process Instance before Runtime discovery/continuation.
 
-### Project Resolution
+### Decision
 
-Investigate and define deterministic resolution for:
+The investigation does **not** justify defining:
 
-- [ ] single-repository workspace;
-- [ ] multi-repository workspace;
-- [ ] nested repositories;
-- [ ] CLI execution inside a repository;
-- [ ] IDE opened at a repository;
-- [ ] IDE opened above multiple repositories;
-- [ ] explicit project identity in a request;
-- [ ] ambiguous project requests;
-- [ ] fresh-session recovery.
+`Project = Git repository`
 
-The resolution model must explicitly prevent silent selection among multiple plausible projects.
+or:
 
-**Exit condition:** A deterministic project-resolution model exists, including ambiguity handling.
+`Project = workspace`
 
-### Process Binding
+It also does not justify immediately introducing a concrete `Project` entity.
 
-Define the relationship:
+Instead, the next design gate is:
 
-`Engineering Project / Scope → Process Instance → Execution Context`
+> **Define a stable Engineering Scope Identity semantic concept that can bind a Process Instance to the engineering scope of its objective, then determine whether that concept requires a named Project entity or can be represented more generally.**
 
-Resolve:
+The distinction is intentional:
 
-- [ ] whether Process Instance requires an explicit project/scope reference;
-- [ ] the representation of that reference;
-- [ ] binding immutability or permitted changes;
-- [ ] discovery of existing processes for a project;
-- [ ] distinction among multiple active processes in one project;
-- [ ] Runtime validation of the binding;
-- [ ] preservation of Runtime authority over Process Instance discovery.
+```
+Engineering Objective
+        ↓
+Engineering Scope Identity
+        ↓
+Process Instance
+        ↓
+Execution Context
+```
 
-**Exit condition:** A normative project-to-Process-Instance binding and discovery model exists.
+The scope identity must be independent of any particular IDE, CLI, repository layout, or persistence mechanism. Execution Environment information may provide evidence used to resolve scope, but it must not become the semantic authority.
 
-### Persistence Scope
+### Findings by Existing Concept
 
-Evaluate persistence alternatives only after project identity and Process Instance binding are resolved.
+| Concept | Current role | Scope-identity adequacy |
+|---|---|---|
+| Engineering Objective | Purpose of one Process Instance | Insufficient by itself |
+| Process Instance ID | Identity of one engineering execution | Identifies execution, not external engineering scope |
+| Execution Context | Authoritative operational state | Does not currently contain scope identity |
+| EPM binding | Identifies applicable engineering semantics | Does not identify the target engineering project/scope |
+| Execution Environment | Interaction/tooling surface | Not an authoritative project identity |
+| Repository | Environment/tooling information where available | Not currently defined as AESM identity |
+| Workspace | Environment/tooling information where available | Not currently defined as AESM identity |
+| Runtime | Owns Process Instance discovery and authoritative state | No current scope-resolution contract |
+| Agent | Participant | Must not independently establish authoritative binding |
 
-Evaluate:
+### Layer Responsibility Finding
 
-- [ ] project-local persistence;
-- [ ] external AESM persistence;
-- [ ] repository portability and project moves;
-- [ ] shared workspaces and multiple repositories;
-- [ ] multiple Execution Environments;
-- [ ] backup/restore implications;
-- [ ] continuity and discovery;
-- [ ] accidental cross-project attachment.
+The investigation preserves the existing separation:
 
-Do not select `.aesm/` or another mechanism by convention alone.
+```
+EPM
+  engineering meaning
+        ↓
+PEM
+  execution semantics
+        ↓
+Runtime
+  authoritative execution and Process Instance discovery
+        ↓
+Process Instance / Execution Context
+  persistent execution identity and state
+        ↓
+Agent / Execution Environment
+  participation and environmental evidence
+```
 
-**Exit condition:** A justified persistence-scope decision exists.
+The missing concept is therefore not a Runtime-only feature. Its semantic definition must precede Runtime implementation.
 
-### Agent / Execution Environment Boundary
+### Process Binding Finding
 
-Determine how a real Agent receives and uses project identity without making the Execution Environment the semantic authority.
+A Process Instance currently has:
 
-Resolve:
+```
+Process Instance
+    ├── process_instance_id
+    ├── engineering_objective
+    ├── EPM binding
+    ├── PEM metadata
+    └── authoritative Execution Context
+```
 
-- [ ] project identity available to the Agent;
-- [ ] Runtime capability accepting/validating that identity;
-- [ ] Process Instance discovery;
-- [ ] starting versus continuing work;
-- [ ] no-existing-Process-Instance behavior;
-- [ ] multiple candidate behavior;
-- [ ] ambiguity behavior;
-- [ ] IDE/CLI independence.
+It does not currently have:
 
-The Agent must not be given an experiment-specific Runtime call sequence.
+```
+Engineering Scope Identity
+```
 
-**Exit condition:** A concrete, environment-independent Agent-boundary contract exists.
+Consequently, a Runtime cannot currently prove that:
 
-### Normative Documentation Reconciliation
+```
+request A in scope X
+        ≠
+request A in scope Y
+```
 
-**Status: Deferred until semantic decisions are complete.**
+when both have equivalent or similar objectives.
 
-After the semantic gates pass:
+### Agent / Environment Finding
 
-- [ ] determine whether `docs/AESM Architecture Model.md` must change;
-- [ ] determine Process Instance / Execution Context documentation impact;
-- [ ] determine Runtime/conformance documentation impact;
-- [ ] determine continuity documentation impact;
-- [ ] determine Agent execution integration documentation impact;
-- [ ] determine operational-flow impact.
+The current Agent–Runtime integration correctly states that:
 
-No normative document should be changed merely because it mentions a related concept.
+- Runtime remains responsible for Process Instance discovery;
+- the Execution Environment provides capabilities rather than semantic authority;
+- an Agent may recover a Process Instance when its authoritative identity is known.
 
-**Exit condition:** The affected canonical documentation set is explicitly identified and changes are traceable to resolved decisions.
+The unresolved boundary is how the Agent/environment obtains or establishes that authoritative identity for a new or ambiguous request.
 
-### Implementation
+That is now a **scope-resolution problem**, not a reason to transfer discovery authority to the Agent or Execution Environment.
 
-**Status: Blocked pending semantic gates.**
+### Persistence Finding
 
-Only after the preceding gates pass:
+No persistence mechanism was selected.
 
-- [ ] implement approved project/scope identity mechanism;
-- [ ] implement deterministic project resolution;
-- [ ] implement Process Instance binding/discovery;
-- [ ] implement justified persistence mechanism;
-- [ ] integrate through the established Agent–Runtime boundary;
-- [ ] preserve EPM/PEM separation;
-- [ ] preserve Runtime authority;
-- [ ] avoid a second persistence system;
-- [ ] avoid IDE-specific architecture.
+The investigation establishes only that persistence must ultimately preserve enough information to recover the Process Instance's scope binding. The physical location — repository-local, external, or another mechanism — remains a downstream design decision.
 
-**Exit condition:** The approved mechanism is implemented with targeted tests.
+### Gate Result
 
-### Multi-Project Empirical Validation
+**Decision: Project/Scope Semantic Clarification is required before Project Resolution Design can be finalized.**
 
-**Status: Pending implementation.**
+The next work must define the semantics and representation of **Engineering Scope Identity** and establish:
 
-Validate through real Agent execution:
+1. what constitutes a stable scope identity;
+2. what information is required to identify it;
+3. whether one scope may contain multiple repositories;
+4. whether one Process Instance may span multiple repositories/scopes;
+5. whether multiple Process Instances may exist concurrently within one scope;
+6. how scope identity remains stable when repository/workspace paths change;
+7. whether a named `Project` entity is required;
+8. what evidence an Execution Environment may provide;
+9. what authority the Runtime retains when resolving scope;
+10. how ambiguity is represented and handled.
 
-- [ ] single-project execution;
-- [ ] fresh-session continuation;
-- [ ] two projects in one shared workspace;
-- [ ] independent Process Instance association;
-- [ ] no cross-project attachment;
-- [ ] ambiguous request requiring explicit resolution rather than silent selection.
-
-**Exit condition:** Project identity, binding, continuity, and isolation are demonstrated through authoritative evidence.
-
-### Conformance
-
-Evaluate independently:
-
-- [ ] Project identity;
-- [ ] Project resolution;
-- [ ] Process binding;
-- [ ] Process discovery;
-- [ ] Persistence;
-- [ ] Continuity;
-- [ ] Isolation;
-- [ ] Agent boundary;
-- [ ] Execution Environment independence.
-
-Use the established classifications:
-
-- **Conformant — Demonstrated**
-- **Conformant — Evidence Incomplete**
-- **Implementation Gap — Semantically Required**
-- **Specification / Applicability Decision Required**
-- **Not Applicable**
-
-**Exit condition:** Each applicable capability has an evidence-backed conformance classification.
-
+**Implementation remains blocked.** No Runtime, schema, persistence, Agent guidance, or environment mechanism changes are authorized by this gate alone.
 ## Fresh-Agent Continuity Validation
 
 **Status: Pending.**
@@ -580,9 +560,14 @@ The authorized sequence is now:
 - [x] **DBP Experiment Boundary Definition** — establish the controlled DBP request, evidence contract, authority model, and experiment constraints.
 - [x] **DBP Empirical Execution** — execute the controlled DBP request and record the observed engineering and AESM participation results.
 - [x] **DBP Evidence Reconciliation** — independently reconcile DBP implementation evidence, AESM participation evidence, and project/process binding findings.
-- [ ] **Project Identity and Process Binding** — establish project/scope identity, deterministic resolution, Process Instance binding, persistence scope, and Agent-boundary semantics.
+- [x] **Project/Scope Semantics Investigation** — inspect the existing AESM model and determine whether the current semantic concepts are sufficient to identify engineering scope.
+- [ ] **Project/Scope Semantic Clarification** — define Engineering Scope Identity and determine whether a named Project concept is semantically required.
+- [ ] **Project Resolution Design** — define deterministic resolution and ambiguity handling after scope semantics are settled.
+- [ ] **Process Binding Design** — define the normative scope-to-Process-Instance relationship and discovery model.
+- [ ] **Persistence Scope Design** — determine where authoritative scope/process state is persisted.
+- [ ] **Agent / Environment Mechanism Design** — define how scope evidence reaches the Agent while Runtime retains authority.
 - [ ] **Normative Documentation Reconciliation** — update only the canonical documents affected by resolved semantic decisions.
-- [ ] **Project Identity and Process Binding Implementation** — implement the approved mechanism after the semantic gates pass.
+- [ ] **Project Identity and Process Binding Implementation** — implement the approved mechanism after all semantic gates pass.
 - [ ] **Multi-Project Empirical Validation** — validate continuity, isolation, ambiguity handling, and cross-session discovery through real Agent execution.
 - [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process after project binding is available.
 - [ ] **Feedback and Reconsideration Validation** — validate controlled iteration where justified.
@@ -591,12 +576,12 @@ The authorized sequence is now:
 
 ### Current Progress Position
 
-The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, and Agent-boundary mechanism validation work.
+The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, Agent-boundary mechanism validation, and DBP empirical investigation.
 
-The DBP empirical execution is also complete as an evidence-producing experiment. Its principal architectural finding is that successful DBP engineering activity did not, by itself, establish a demonstrated project-to-Process-Instance binding or visible AESM Runtime participation.
+The Project/Scope Semantics Investigation established that the current AESM model identifies engineering execution by objective and Process Instance identity, but does not yet define a stable identity for the engineering scope in which that objective is performed.
 
-**Current gate:** Project Identity and Process Binding semantic investigation.
+**Current gate:** Project/Scope Semantic Clarification.
 
-**Next action:** Establish the existing project/scope semantics and determine whether AESM requires a distinct project identity/binding concept before changing normative documentation or implementation.
+**Next action:** Define Engineering Scope Identity before deciding whether AESM requires a named Project entity, repository identity, workspace identity, or another scope representation.
 
-No implementation of project identity, project resolution, Process Instance binding, or persistence scope is authorized until the corresponding semantic gates pass.
+No Runtime, schema, persistence, Agent guidance, or environment mechanism implementation should proceed until the scope semantics are resolved.
