@@ -19,6 +19,62 @@ It is populated by the Human Controller, not generated retrospectively by Sessio
 
 ---
 
+## Pre-Session Gate Closure Record
+
+This section is the execution gate for the current work unit. It is intentionally
+recorded before Session A and does not authorize Session A unless every mandatory
+gate is explicitly satisfied.
+
+### Gate A — Authorized Target
+
+| Field | Required record |
+| ----- | --------------- |
+| Approved target | `modules/reviews/forms/edit-review-form.php` / `Edit_Review_Form` / `business_id` |
+| Approved change | `Fields_Manager::SELECT` → `Fields_Manager::POST_SELECT`, with `post_type => 'dbp_business'`, `multiple => false` |
+| Human approval | *(record Yes/No)* |
+| Approval timestamp | *(record exact timestamp)* |
+| Controller identity | *(record)* |
+
+**Gate rule:** Session A is blocked unless Human approval is explicitly recorded as
+**Yes** with a timestamp.
+
+### Gate B — Separate Agent Session Capability
+
+| Check | Required evidence | Result |
+| ----- | ----------------- | ------ |
+| Separate Agent session can be started | Fresh-session launch demonstrated | *(record Pass/Fail)* |
+| Session identity is independently distinguishable | Conversation/session identifier or equivalent | *(record)* |
+| Session A context can be ended without reusing the Agent conversation | Controller observation | *(record Pass/Fail)* |
+
+**Gate rule:** A failure is **Environment Defect** and stops the experiment.
+
+### Gate C — ProcessStore Boundary Persistence
+
+| Check | Required evidence | Result |
+| ----- | ----------------- | ------ |
+| ProcessStore root is filesystem-persistent across Agent sessions | Controller verifies the same persistence location is available to both sessions | *(record Pass/Fail)* |
+| A Process Instance can be written before the boundary | Authoritative `process.json`, `context.json`, `history.jsonl` exist | *(record Pass/Fail)* |
+| The persisted Process Instance can be read after the boundary | Independent post-boundary read/recovery | *(record Pass/Fail)* |
+| No transcript or copied Execution Context is required for persistence | Controller observation | *(record Pass/Fail)* |
+
+**Gate rule:** A failure is **Environment Defect** and stops the experiment.
+
+### Gate Closure Decision
+
+| Gate | Status | Evidence reference | Closed? |
+| ---- | ------ | ------------------ | ------- |
+| Authorized target | *(Pending)* | *(record)* | *(Yes/No)* |
+| Separate Agent session | *(Pending)* | *(record)* | *(Yes/No)* |
+| ProcessStore persistence across boundary | *(Pending)* | *(record)* | *(Yes/No)* |
+
+**Session-A authorization:** *(BLOCKED until all three gates are Yes.)*
+
+> The Human Controller must complete this section from direct observation. The Agent
+> must not claim that an environment capability has passed merely because repository
+> code or documentation suggests that the capability exists.
+
+---
+
 ## Pre-Session Target Approval
 
 ### Target Determination
