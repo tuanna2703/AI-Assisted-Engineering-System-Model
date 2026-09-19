@@ -29,6 +29,7 @@ from pathlib import Path
 import pytest
 
 from bridge.agent_runtime_bridge import AgentRuntimeBridge
+from runtime.core import ActiveRepositoryContext
 from runtime.core.store import ProcessStore
 
 
@@ -42,8 +43,8 @@ class TestAgentInvocationSmokeTest:
         """Simulate an Agent invoking the bridge entry point end-to-end."""
 
         # ── Step 1: Agent creates a Process Instance ──────────────────────
-        store = ProcessStore(tmp_path)
-        bridge_1 = AgentRuntimeBridge(store, runtime_id="agent-session-1")
+        ctx = ActiveRepositoryContext(tmp_path)
+        bridge_1 = AgentRuntimeBridge(ctx, runtime_id="agent-session-1")
 
         create_result = bridge_1.create_process(
             "Change business_id query type from SELECT to POST_SELECT in Add_Review_Form"
@@ -67,7 +68,7 @@ class TestAgentInvocationSmokeTest:
         del bridge_1
 
         # ── Step 4: Create a second bridge instance ───────────────────────
-        bridge_2 = AgentRuntimeBridge(store, runtime_id="agent-session-2")
+        bridge_2 = AgentRuntimeBridge(ctx, runtime_id="agent-session-2")
 
         # ── Step 5: Attach using the known ID ─────────────────────────────
         attach_result = bridge_2.attach(pid)

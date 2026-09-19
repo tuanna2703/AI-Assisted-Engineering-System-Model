@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime.core import ProcessStore, Runtime
+from runtime.core import ActiveRepositoryContext, ProcessStore, Runtime
 from runtime.core.store import JsonlStore
 
 
@@ -12,7 +12,8 @@ COMPLETION = {"recognized": True, "basis": "applicable engineering completion co
 
 
 def build_runtime(tmp_path: Path) -> Runtime:
-    runtime = Runtime(ProcessStore(tmp_path), "runtime-test")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "runtime-test")
     runtime.create_process("Implement Add_Review_Form business_id conversion")
     return runtime
 

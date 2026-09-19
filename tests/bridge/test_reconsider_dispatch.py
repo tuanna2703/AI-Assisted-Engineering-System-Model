@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from bridge.agent_runtime_bridge import AgentRuntimeBridge
+from runtime.core import ActiveRepositoryContext
 from runtime.core.store import ProcessStore
 
 
@@ -28,12 +29,12 @@ RECONSIDERATION_REASON = {
 
 
 @pytest.fixture
-def store(tmp_path: Path) -> ProcessStore:
-    return ProcessStore(tmp_path)
+def store(tmp_path: Path) -> ActiveRepositoryContext:
+    return ActiveRepositoryContext(tmp_path)
 
 
 @pytest.fixture
-def verification_ready_bridge(store: ProcessStore) -> AgentRuntimeBridge:
+def verification_ready_bridge(store: ActiveRepositoryContext) -> AgentRuntimeBridge:
     bridge = AgentRuntimeBridge(store, runtime_id="reconsider-test")
     assert bridge.create_process("Test reconsider bridge dispatch")["success"] is True
     assert bridge.dispatch("start_investigation")["success"] is True

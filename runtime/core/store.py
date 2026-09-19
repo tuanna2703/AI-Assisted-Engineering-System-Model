@@ -1,6 +1,19 @@
-"""Process Instance and authoritative Context persistence boundary."""
+"""Process Instance and authoritative Context persistence boundary.
+
+Storage layout (repository-local):
+
+    <repository-root>/.aesm/<process-instance-id>/
+        process.json
+        context.json
+        history.jsonl
+
+The ProcessStore receives an already-established ActiveRepositoryContext.
+It never discovers or selects the repository independently.
+The workspace-level `.aesm-process-store/` layout is superseded.
+"""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -11,15 +24,53 @@ from runtime.core.models import (
     VALID_SCOPE_RESOLUTION_STATUSES,
     now,
 )
+from runtime.core.repository_context import ActiveRepositoryContext
 from runtime.persistence.json_store import JsonStore, JsonlStore, PersistenceError
 
 
+# ---------------------------------------------------------------------------
+# Git conflict marker detection
+# ---------------------------------------------------------------------------
+
+_CONFLICT_MARKERS: tuple[bytes, ...] = (b"<<<<<<<", b"=======", b">>>>>>>")
+
+
+def _check_conflict(path: Path) -> None:
+    """Raise PersistenceError if the file contains Git conflict markers.
+
+    An unresolved Git conflict in AESM PI state must not be executed against.
+    The caller is required to resolve the conflict before accessing the PI.
+    """
+    if not path.exists():
+        return
+    content = path.read_bytes()
+    if any(marker in content for marker in _CONFLICT_MARKERS):
+        raise PersistenceError(
+            f"unresolved Git conflict in PI state: {path}; "
+            "resolve conflict before executing this Process Instance"
+        )
+
+
 class ProcessStore:
-    def __init__(self, root: str | Path) -> None:
-        self.root = Path(root)
+    """Repository-local Process Instance persistence boundary.
+
+    Receives a validated ``ActiveRepositoryContext`` and resolves all PI
+    storage relative to ``context.aesm_root() / <process_instance_id>``.
+
+    The store does not discover the repository independently.  The context
+    is the single authoritative source of the persistence root.
+    """
+
+    def __init__(self, repository_context: ActiveRepositoryContext) -> None:
+        self._repository_context = repository_context
+        self.root = repository_context.aesm_root()
 
     def _dir(self, process_instance_id: str) -> Path:
-        return self.root / "process-instance" / process_instance_id
+        """Return the authoritative storage directory for a Process Instance.
+
+        Layout: ``<repository-root>/.aesm/<process-instance-id>/``
+        """
+        return self.root / process_instance_id
 
     def create(self, instance: ProcessInstance, context: ExecutionContext) -> None:
         directory = self._dir(instance.process_instance_id)
@@ -37,7 +88,9 @@ class ProcessStore:
         )
 
     def load_instance(self, process_instance_id: str) -> ProcessInstance:
-        data = JsonStore(self._dir(process_instance_id) / "process.json").load()
+        process_path = self._dir(process_instance_id) / "process.json"
+        _check_conflict(process_path)
+        data = JsonStore(process_path).load()
         try:
             instance = ProcessInstance(**data)
         except (TypeError, ValueError) as exc:
@@ -64,7 +117,9 @@ class ProcessStore:
         return instance
 
     def load_context(self, process_instance_id: str) -> ExecutionContext:
-        data = JsonStore(self._dir(process_instance_id) / "context.json").load()
+        context_path = self._dir(process_instance_id) / "context.json"
+        _check_conflict(context_path)
+        data = JsonStore(context_path).load()
         try:
             context = ExecutionContext.from_dict(data)
         except (TypeError, ValueError) as exc:
@@ -126,6 +181,23 @@ class ProcessStore:
 
         context_path = directory / "context.json"
         history_path = directory / "history.jsonl"
+
+        # Stale-write guard: reject if persisted state is newer than in-memory state.
+        # This protects against a Runtime loaded at version N overwriting a newer
+        # version N+1 written by another environment.
+        if context_path.exists():
+            try:
+                persisted_data = json.loads(context_path.read_text(encoding="utf-8"))
+                persisted_version = persisted_data.get("version", 0)
+            except (OSError, json.JSONDecodeError):
+                persisted_version = 0
+            if persisted_version > context.version:
+                raise PersistenceError(
+                    f"stale write rejected: persisted context version {persisted_version} "
+                    f"is newer than in-memory version {context.version}; "
+                    "reload the Process Instance before writing"
+                )
+
         snapshots = {
             context_path: context_path.read_bytes() if context_path.exists() else None,
             history_path: history_path.read_bytes() if history_path.exists() else None,
@@ -202,7 +274,9 @@ class ProcessStore:
         path.write_bytes(content)
 
     def history(self, process_instance_id: str) -> list[dict[str, Any]]:
-        return JsonlStore(self._dir(process_instance_id) / "history.jsonl").read_all()
+        history_path = self._dir(process_instance_id) / "history.jsonl"
+        _check_conflict(history_path)
+        return JsonlStore(history_path).read_all()
 
     def history_entry_count(self, process_instance_id: str) -> int:
         """Return the number of history entries for a Process Instance."""

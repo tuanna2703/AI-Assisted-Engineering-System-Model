@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from bridge.agent_runtime_bridge import AgentRuntimeBridge
-from runtime.core import ProcessStore, Runtime
+from runtime.core import ActiveRepositoryContext, ProcessStore, Runtime
 from runtime.persistence.json_store import PersistenceError
 
 
@@ -31,7 +31,8 @@ def resolved_scope(identity="project:directories-builder-pro"):
 
 
 def test_new_process_starts_with_explicit_unresolved_scope(tmp_path: Path):
-    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "runtime-a")
     pid = runtime.create_process("Implement feature X")
 
     instance = runtime.store.load_instance(pid)
@@ -40,8 +41,9 @@ def test_new_process_starts_with_explicit_unresolved_scope(tmp_path: Path):
 
 
 def test_scope_resolution_binds_identity_and_persists(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     pid = runtime.create_process("Implement feature X")
 
     runtime.apply_scope_resolution(resolved_scope())
@@ -57,13 +59,14 @@ def test_scope_resolution_binds_identity_and_persists(tmp_path: Path):
 
 
 def test_scope_binding_survives_runtime_replacement(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime_a = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime_a = Runtime(ctx, "runtime-a")
     pid = runtime_a.create_process("Implement feature X")
     runtime_a.apply_scope_resolution(resolved_scope())
     runtime_a.stop()
 
-    runtime_b = Runtime(store, "runtime-b")
+    runtime_b = Runtime(ctx, "runtime-b")
     runtime_b.attach(pid)
 
     assert runtime_b.process_instance.engineering_scope_resolution == "RESOLVED"
@@ -77,7 +80,8 @@ def test_scope_binding_survives_runtime_replacement(tmp_path: Path):
     ["UNRESOLVED", "AMBIGUOUS", "CONFLICTING", "INVALID"],
 )
 def test_nonresolved_scope_outcomes_remain_explicit(tmp_path: Path, status: str):
-    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "runtime-a")
     runtime.create_process("Implement feature X")
 
     runtime.apply_scope_resolution(
@@ -95,8 +99,9 @@ def test_nonresolved_scope_outcomes_remain_explicit(tmp_path: Path, status: str)
 
 
 def test_nonresolved_scope_outcome_survives_recovery(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     pid = runtime.create_process("Implement feature X")
     runtime.apply_scope_resolution(
         {
@@ -109,7 +114,7 @@ def test_nonresolved_scope_outcome_survives_recovery(tmp_path: Path):
     )
     runtime.stop()
 
-    recovered = Runtime(store, "runtime-b")
+    recovered = Runtime(ctx, "runtime-b")
     recovered.attach(pid)
 
     assert recovered.process_instance.engineering_scope_resolution == "AMBIGUOUS"
@@ -117,7 +122,8 @@ def test_nonresolved_scope_outcome_survives_recovery(tmp_path: Path):
 
 
 def test_established_scope_cannot_be_silently_rebound(tmp_path: Path):
-    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "runtime-a")
     runtime.create_process("Implement feature X")
     runtime.apply_scope_resolution(resolved_scope("project:first"))
 
@@ -128,7 +134,8 @@ def test_established_scope_cannot_be_silently_rebound(tmp_path: Path):
 
 
 def test_invalid_resolution_does_not_mutate_binding(tmp_path: Path):
-    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "runtime-a")
     runtime.create_process("Implement feature X")
 
     with pytest.raises(ValueError):
@@ -147,7 +154,8 @@ def test_invalid_resolution_does_not_mutate_binding(tmp_path: Path):
 
 
 def test_scope_resolution_requires_explicit_recognition(tmp_path: Path):
-    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "runtime-a")
     runtime.create_process("Implement feature X")
 
     with pytest.raises(RuntimeError):
@@ -166,7 +174,8 @@ def test_scope_resolution_requires_explicit_recognition(tmp_path: Path):
 
 
 def test_bridge_can_submit_scope_resolution_without_owning_binding(tmp_path: Path):
-    bridge = AgentRuntimeBridge(ProcessStore(tmp_path), "bridge-runtime")
+    ctx = ActiveRepositoryContext(tmp_path)
+    bridge = AgentRuntimeBridge(ctx, "bridge-runtime")
     created = bridge.create_process("Implement feature X")
     pid = created["process_instance_id"]
 
@@ -178,16 +187,17 @@ def test_bridge_can_submit_scope_resolution_without_owning_binding(tmp_path: Pat
         "project:directories-builder-pro"
     )
 
-    recovered = ProcessStore(tmp_path).load_instance(pid)
+    recovered = ProcessStore(ctx).load_instance(pid)
     assert recovered.engineering_scope_identity == "project:directories-builder-pro"
 
 
 def test_store_rejects_corrupt_scope_binding(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     pid = runtime.create_process("Implement feature X")
 
-    process_path = tmp_path / "process-instance" / pid / "process.json"
+    process_path = tmp_path / ".aesm" / pid / "process.json"
     data = process_path.read_text()
     data = data.replace('"engineering_scope_resolution": "UNRESOLVED"', '"engineering_scope_resolution": "RESOLVED"')
     process_path.write_text(data)

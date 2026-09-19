@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 from bridge.agent_runtime_bridge import AgentRuntimeBridge
+from runtime.core import ActiveRepositoryContext
 from runtime.core.store import ProcessStore
 
 
@@ -27,10 +28,10 @@ class TestContinuityDemonstration:
 
     def test_full_continuity_sequence(self, tmp_path: Path) -> None:
         """The canonical continuity demonstration required by the contract."""
-        store = ProcessStore(tmp_path)
+        ctx = ActiveRepositoryContext(tmp_path)
 
         # ── Bridge A: create and advance ──────────────────────────────────
-        bridge_a = AgentRuntimeBridge(store, runtime_id="continuity-bridge-a")
+        bridge_a = AgentRuntimeBridge(ctx, runtime_id="continuity-bridge-a")
 
         create_result = bridge_a.create_process(
             "Demonstrate cross-bridge continuity"
@@ -71,7 +72,7 @@ class TestContinuityDemonstration:
         del bridge_a
 
         # ── Bridge B: recover and continue ────────────────────────────────
-        bridge_b = AgentRuntimeBridge(store, runtime_id="continuity-bridge-b")
+        bridge_b = AgentRuntimeBridge(ctx, runtime_id="continuity-bridge-b")
 
         # Attach using the known Process Instance ID.
         attach_result = bridge_b.attach(pid)
@@ -126,20 +127,20 @@ class TestContinuityDemonstration:
         assert final["context"]["verification"]["passed"] is True
 
     def test_continuity_with_fresh_store_instance(self, tmp_path: Path) -> None:
-        """Demonstrate that even a fresh ProcessStore instance (pointing to
+        """Demonstrate that even a fresh ActiveRepositoryContext (pointing to
         the same filesystem root) can recover the Process Instance, proving
         continuity belongs to the filesystem, not in-memory objects."""
-        store_a = ProcessStore(tmp_path)
-        bridge_a = AgentRuntimeBridge(store_a, runtime_id="store-a-bridge")
+        ctx_a = ActiveRepositoryContext(tmp_path)
+        bridge_a = AgentRuntimeBridge(ctx_a, runtime_id="store-a-bridge")
 
         create_result = bridge_a.create_process("Fresh store continuity test")
         pid = create_result["process_instance_id"]
         bridge_a.dispatch("start_investigation")
         del bridge_a
 
-        # Create an entirely fresh ProcessStore and bridge.
-        store_b = ProcessStore(tmp_path)
-        bridge_b = AgentRuntimeBridge(store_b, runtime_id="store-b-bridge")
+        # Create an entirely fresh context and bridge.
+        ctx_b = ActiveRepositoryContext(tmp_path)
+        bridge_b = AgentRuntimeBridge(ctx_b, runtime_id="store-b-bridge")
 
         attach_result = bridge_b.attach(pid)
         assert attach_result["success"] is True

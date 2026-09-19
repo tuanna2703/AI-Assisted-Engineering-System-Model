@@ -12,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from runtime.core import ProcessStore, Runtime
+from runtime.core import ActiveRepositoryContext, ProcessStore, Runtime
 
 
 DECISION = {"recognized": True, "basis": "applicable decision gate satisfied"}
@@ -23,7 +23,8 @@ COMPLETION = {
 
 
 def build_runtime(tmp_path: Path) -> Runtime:
-    runtime = Runtime(ProcessStore(tmp_path), "completion-termination-test")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "completion-termination-test")
     runtime.create_process("Completion and termination boundary validation")
     return runtime
 
@@ -85,17 +86,19 @@ def test_engineering_completion_requires_successful_verification(tmp_path: Path)
 
 
 def test_runtime_stop_does_not_terminate_process_instance(tmp_path: Path):
+    ctx = ActiveRepositoryContext(tmp_path)
     runtime = build_runtime(tmp_path)
     process_id = runtime.process_instance.process_instance_id
 
     runtime.stop()
 
-    recovered = Runtime(ProcessStore(tmp_path), "replacement-runtime")
+    recovered = Runtime(ctx, "replacement-runtime")
     recovered.attach(process_id)
     assert recovered.process_instance.lifecycle == "active"
 
 
 def test_explicit_termination_is_persisted_and_recovered(tmp_path: Path):
+    ctx = ActiveRepositoryContext(tmp_path)
     runtime = build_runtime(tmp_path)
     process_id = runtime.process_instance.process_instance_id
 
@@ -110,7 +113,7 @@ def test_explicit_termination_is_persisted_and_recovered(tmp_path: Path):
     assert runtime.process_instance.lifecycle == "terminated"
     assert runtime.store.load_instance(process_id).lifecycle == "terminated"
 
-    recovered = Runtime(ProcessStore(tmp_path), "replacement-runtime")
+    recovered = Runtime(ctx, "replacement-runtime")
     recovered.attach(process_id)
     assert recovered.process_instance.lifecycle == "terminated"
 

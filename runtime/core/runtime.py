@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from runtime.core.models import ExecutionContext, ProcessInstance, VALID_LIFECYCLE_VALUES, now
+from runtime.core.repository_context import ActiveRepositoryContext
 from runtime.core.store import ProcessStore
 
 
@@ -24,19 +25,44 @@ _SEMANTIC_TO_CANONICAL = {
 
 
 class Runtime:
-    """Small, inspectable Runtime implementation; not a normative semantic layer."""
+    """Small, inspectable Runtime implementation; not a normative semantic layer.
+
+    Architectural contract:
+
+        Execution Environment
+                │
+                │ establishes repository context
+                ▼
+        Runtime(repository_context, runtime_id)
+                │
+                ▼ constructs
+        ProcessStore
+                │
+                ▼
+        <repository-root>/.aesm
+
+    The ``repository_context`` is the sole ingress for repository identity.
+    It is immutable for the lifetime of this Runtime instance.
+    Changing repositories requires a new Runtime/session context.
+    """
 
     INVESTIGATION = "investigation"
     IMPLEMENTATION = "implementation"
     VERIFICATION = "verification"
     ENGINEERING_COMPLETE = "engineering_complete"
 
-    def __init__(self, store: ProcessStore, runtime_id: str) -> None:
-        self.store = store
+    def __init__(self, repository_context: ActiveRepositoryContext, runtime_id: str) -> None:
+        self._repository_context = repository_context
+        self.store = ProcessStore(repository_context)
         self.runtime_id = runtime_id
         self.process_instance: ProcessInstance | None = None
         self.context: ExecutionContext | None = None
         self.attached = False
+
+    @property
+    def repository_context(self) -> ActiveRepositoryContext:
+        """Return the active repository context for this Runtime session (read-only)."""
+        return self._repository_context
 
     def create_process(
         self,

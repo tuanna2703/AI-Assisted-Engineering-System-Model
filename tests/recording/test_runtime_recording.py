@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from runtime.core import ProcessStore, Runtime
+from runtime.core import ActiveRepositoryContext, ProcessStore, Runtime
 from runtime.core.models import ExecutionContext
 from runtime.persistence.json_store import PersistenceError
 
@@ -40,7 +40,7 @@ COMPLETION_RECOGNITION = {
 
 def build_runtime(tmp_path: Path, runtime_id: str = "recording-test") -> Runtime:
     """Create a new Runtime with a fresh Process Instance."""
-    runtime = Runtime(ProcessStore(tmp_path), runtime_id)
+    runtime = Runtime(ActiveRepositoryContext(tmp_path), runtime_id)
     runtime.create_process("Recording behavioral validation")
     return runtime
 
@@ -103,8 +103,9 @@ class TestDecisionRecordingSuccess:
 
     def test_decision_is_persisted(self, tmp_path: Path):
         """A recognized decision survives reload from persistence."""
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_investigation(runtime)
 
@@ -112,14 +113,15 @@ class TestDecisionRecordingSuccess:
         runtime.recognize_decision(decision, DECISION_RECOGNITION)
         runtime.stop()
 
-        runtime_b = Runtime(store, "recording-test-b")
+        runtime_b = Runtime(ctx, "recording-test-b")
         runtime_b.attach(pid)
         assert runtime_b.context.engineering_decisions == [decision]
 
     def test_decision_generates_history_event(self, tmp_path: Path):
         """Decision recording produces an engineering_decision_recognized event."""
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_investigation(runtime)
 
@@ -265,8 +267,9 @@ class TestDecisionRecordingPersistenceFailure:
 
         This test empirically establishes the actual behavior.
         """
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_investigation(runtime)
 
@@ -281,7 +284,7 @@ class TestDecisionRecordingPersistenceFailure:
         persisted_version_before = persisted_before.version
 
         # Install controlled failure
-        monkeypatch.setattr(store, "save_context", fail_save_context)
+        monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
         # Attempt decision recording — expect failure
         with pytest.raises(PersistenceError, match="simulated persistence failure"):
@@ -304,7 +307,7 @@ class TestDecisionRecordingPersistenceFailure:
         persisted_version_after = persisted_after.version
 
         # --- Inspect fresh Runtime recovery ---
-        fresh_runtime = Runtime(store, "recording-test-fresh")
+        fresh_runtime = Runtime(ctx, "recording-test-fresh")
         fresh_runtime.attach(pid)
         fresh_decisions = list(fresh_runtime.context.engineering_decisions)
         fresh_version = fresh_runtime.context.version
@@ -380,8 +383,9 @@ class TestArtifactRecordingSuccess:
 
     def test_artifact_is_persisted(self, tmp_path: Path):
         """A recorded artifact survives reload from persistence."""
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_implementation(runtime)
 
@@ -389,14 +393,15 @@ class TestArtifactRecordingSuccess:
         runtime.record_artifact(artifact)
         runtime.stop()
 
-        runtime_b = Runtime(store, "recording-test-b")
+        runtime_b = Runtime(ctx, "recording-test-b")
         runtime_b.attach(pid)
         assert runtime_b.context.artifacts == [artifact]
 
     def test_artifact_generates_history_event(self, tmp_path: Path):
         """Artifact recording produces an artifact_recorded event."""
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_implementation(runtime)
 
@@ -500,8 +505,9 @@ class TestArtifactRecordingPersistenceFailure:
         context.artifacts before calling save_context() and does NOT restore
         on failure.
         """
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_implementation(runtime)
 
@@ -516,7 +522,7 @@ class TestArtifactRecordingPersistenceFailure:
         persisted_version_before = persisted_before.version
 
         # Install controlled failure
-        monkeypatch.setattr(store, "save_context", fail_save_context)
+        monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
         # Attempt artifact recording — expect failure
         with pytest.raises(PersistenceError, match="simulated persistence failure"):
@@ -536,7 +542,7 @@ class TestArtifactRecordingPersistenceFailure:
         persisted_version_after = persisted_after.version
 
         # --- Fresh Runtime recovery ---
-        fresh_runtime = Runtime(store, "recording-test-fresh")
+        fresh_runtime = Runtime(ctx, "recording-test-fresh")
         fresh_runtime.attach(pid)
         fresh_artifacts = list(fresh_runtime.context.artifacts)
         fresh_version = fresh_runtime.context.version
@@ -584,8 +590,9 @@ class TestVerificationStructuredPathSuccess:
 
     def test_structured_verification_is_persisted(self, tmp_path: Path):
         """Verification result survives reload from persistence."""
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_verification(runtime)
 
@@ -593,14 +600,15 @@ class TestVerificationStructuredPathSuccess:
         runtime.record_verification(result)
         runtime.stop()
 
-        runtime_b = Runtime(store, "recording-test-b")
+        runtime_b = Runtime(ctx, "recording-test-b")
         runtime_b.attach(pid)
         assert runtime_b.context.verification == result
 
     def test_structured_verification_generates_history_event(self, tmp_path: Path):
         """Verification recording produces a verification_recorded event."""
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_verification(runtime)
 
@@ -827,8 +835,9 @@ class TestVerificationRecordingPersistenceFailure:
         context.verification (not process_state). Test whether this mutation
         is rolled back on persistence failure.
         """
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_verification(runtime)
 
@@ -844,7 +853,7 @@ class TestVerificationRecordingPersistenceFailure:
         persisted_version_before = persisted_before.version
 
         # Install controlled failure
-        monkeypatch.setattr(store, "save_context", fail_save_context)
+        monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
         # Attempt verification recording
         with pytest.raises(PersistenceError, match="simulated persistence failure"):
@@ -862,7 +871,7 @@ class TestVerificationRecordingPersistenceFailure:
         persisted_version_after = persisted_after.version
 
         # --- Fresh Runtime recovery ---
-        fresh_runtime = Runtime(store, "recording-test-fresh")
+        fresh_runtime = Runtime(ctx, "recording-test-fresh")
         fresh_runtime.attach(pid)
 
         # === Persisted state assertions ===
@@ -896,8 +905,9 @@ class TestVerificationRecordingPersistenceFailure:
         also mutates process_state to VERIFICATION. Test whether BOTH mutations
         (verification result AND state transition) are rolled back.
         """
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Recording behavioral validation")
         advance_to_implementation(runtime)
 
@@ -911,7 +921,7 @@ class TestVerificationRecordingPersistenceFailure:
         persisted_before = store.load_context(pid)
 
         # Install controlled failure
-        monkeypatch.setattr(store, "save_context", fail_save_context)
+        monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
         # Attempt direct verification recording from IMPLEMENTATION state
         with pytest.raises(PersistenceError, match="simulated persistence failure"):
@@ -927,7 +937,7 @@ class TestVerificationRecordingPersistenceFailure:
         persisted_after = store.load_context(pid)
 
         # --- Fresh Runtime recovery ---
-        fresh_runtime = Runtime(store, "recording-test-fresh")
+        fresh_runtime = Runtime(ctx, "recording-test-fresh")
         fresh_runtime.attach(pid)
 
         # === Persisted state assertions ===
@@ -969,14 +979,15 @@ class TestCrossCapabilityConsistency:
         This reconfirms the existing evidence recording rollback behavior
         as the reference standard for comparing decision/artifact/verification.
         """
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         pid = runtime.create_process("Cross-capability validation")
 
         prior_evidence = list(runtime.context.evidence)
         prior_version = runtime.context.version
 
-        monkeypatch.setattr(store, "save_context", fail_save_context)
+        monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
         with pytest.raises(PersistenceError):
             runtime.observe({
@@ -996,14 +1007,15 @@ class TestCrossCapabilityConsistency:
         If this test fails, it confirms asymmetric rollback behavior between
         observe() and recognize_decision().
         """
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         runtime.create_process("Cross-capability validation")
 
         prior_decisions = list(runtime.context.engineering_decisions)
         prior_version = runtime.context.version
 
-        monkeypatch.setattr(store, "save_context", fail_save_context)
+        monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
         with pytest.raises(PersistenceError):
             runtime.recognize_decision(
@@ -1024,15 +1036,16 @@ class TestCrossCapabilityConsistency:
         self, tmp_path: Path, monkeypatch
     ):
         """Compare whether artifact recording has the same rollback property as evidence."""
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         runtime.create_process("Cross-capability validation")
         advance_to_implementation(runtime)
 
         prior_artifacts = list(runtime.context.artifacts)
         prior_version = runtime.context.version
 
-        monkeypatch.setattr(store, "save_context", fail_save_context)
+        monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
         with pytest.raises(PersistenceError):
             runtime.record_artifact({"path": "phantom.py"})
@@ -1048,15 +1061,16 @@ class TestCrossCapabilityConsistency:
         self, tmp_path: Path, monkeypatch
     ):
         """Compare whether verification recording has the same rollback property as evidence."""
-        store = ProcessStore(tmp_path)
-        runtime = Runtime(store, "recording-test")
+        ctx = ActiveRepositoryContext(tmp_path)
+        store = ProcessStore(ctx)
+        runtime = Runtime(ctx, "recording-test")
         runtime.create_process("Cross-capability validation")
         advance_to_verification(runtime)
 
         prior_verification = dict(runtime.context.verification)
         prior_version = runtime.context.version
 
-        monkeypatch.setattr(store, "save_context", fail_save_context)
+        monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
         with pytest.raises(PersistenceError):
             runtime.record_verification({"passed": True, "checks": ["phantom"]})

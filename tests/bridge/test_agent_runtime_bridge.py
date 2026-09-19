@@ -27,6 +27,7 @@ import pytest
 from pathlib import Path
 
 from bridge.agent_runtime_bridge import AgentRuntimeBridge
+from runtime.core import ActiveRepositoryContext
 from runtime.core.store import ProcessStore
 
 
@@ -35,14 +36,14 @@ from runtime.core.store import ProcessStore
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
-def store(tmp_path: Path) -> ProcessStore:
-    """Provide a fresh ProcessStore rooted in a temp directory."""
-    return ProcessStore(tmp_path)
+def store(tmp_path: Path) -> ActiveRepositoryContext:
+    """Provide an ActiveRepositoryContext rooted in a temp directory."""
+    return ActiveRepositoryContext(tmp_path)
 
 
 @pytest.fixture
-def bridge(store: ProcessStore) -> AgentRuntimeBridge:
-    """Provide a fresh bridge with a fresh store."""
+def bridge(store: ActiveRepositoryContext) -> AgentRuntimeBridge:
+    """Provide a fresh bridge with a fresh repository context."""
     return AgentRuntimeBridge(store, runtime_id="test-bridge")
 
 

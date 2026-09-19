@@ -11,6 +11,7 @@ from __future__ import annotations
 import pytest
 from pathlib import Path
 
+from runtime.core import ActiveRepositoryContext
 from runtime.core.store import ProcessStore
 from runtime.core.models import ProcessInstance, ExecutionContext
 
@@ -21,7 +22,8 @@ from runtime.core.models import ProcessInstance, ExecutionContext
 
 @pytest.fixture
 def store(tmp_path: Path) -> ProcessStore:
-    return ProcessStore(tmp_path)
+    ctx = ActiveRepositoryContext(tmp_path)
+    return ProcessStore(ctx)
 
 
 def _make_process(store: ProcessStore, objective: str = "test objective") -> str:
@@ -40,7 +42,7 @@ def test_returns_zero_for_empty_instance(store: ProcessStore, tmp_path: Path) ->
     """history_entry_count returns 0 when no history file exists."""
     # Manufacture a directory but do NOT write a history.jsonl inside it.
     pid = "00000000-0000-0000-0000-000000000000"
-    (tmp_path / "process-instance" / pid).mkdir(parents=True)
+    (tmp_path / ".aesm" / pid).mkdir(parents=True)
 
     assert store.history_entry_count(pid) == 0
 

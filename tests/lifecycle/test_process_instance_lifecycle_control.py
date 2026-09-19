@@ -12,7 +12,7 @@ from typing import Any, Callable
 
 import pytest
 
-from runtime.core import ProcessStore, Runtime
+from runtime.core import ActiveRepositoryContext, ProcessStore, Runtime
 
 
 DECISION = {"recognized": True, "basis": "applicable decision gate satisfied"}
@@ -23,7 +23,8 @@ COMPLETION = {
 
 
 def build_runtime(tmp_path: Path, runtime_id: str = "lifecycle-test") -> Runtime:
-    runtime = Runtime(ProcessStore(tmp_path), runtime_id)
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, runtime_id)
     runtime.create_process("Targeted Process Instance lifecycle validation")
     return runtime
 
@@ -79,7 +80,8 @@ def apply_lifecycle_determination(
 
 
 def reload_runtime(tmp_path: Path, process_instance_id: str, runtime_id: str) -> Runtime:
-    runtime = Runtime(ProcessStore(tmp_path), runtime_id)
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, runtime_id)
     runtime.attach(process_instance_id)
     return runtime
 

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime.core import ProcessInstance, ProcessStore, Runtime
+from runtime.core import ActiveRepositoryContext, ProcessInstance, ProcessStore, Runtime
 from runtime.core.models import ExecutionContext
 from runtime.persistence.json_store import PersistenceError
 
@@ -88,7 +88,8 @@ def test_execution_context_round_trip_preserves_semantic_state():
 
 
 def test_evidence_requires_explicit_recognition(tmp_path: Path):
-    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "runtime-a")
     runtime.create_process("Implement feature X")
 
     with pytest.raises(TypeError):
@@ -110,8 +111,9 @@ def test_evidence_requires_explicit_recognition(tmp_path: Path):
 
 
 def test_recognized_evidence_is_recorded_without_process_state_mutation(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     pid = runtime.create_process("Implement feature X")
 
     runtime.observe({
@@ -131,7 +133,8 @@ def test_recognized_evidence_is_recorded_without_process_state_mutation(tmp_path
 
 
 def test_assumption_or_claim_is_not_silently_promoted_to_evidence(tmp_path: Path):
-    runtime = Runtime(ProcessStore(tmp_path), "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    runtime = Runtime(ctx, "runtime-a")
     runtime.create_process("Implement feature X")
 
     with pytest.raises(RuntimeError):
@@ -152,8 +155,9 @@ def test_assumption_or_claim_is_not_silently_promoted_to_evidence(tmp_path: Path
 
 
 def test_failed_evidence_persistence_restores_in_memory_authoritative_state(tmp_path: Path, monkeypatch):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     pid = runtime.create_process("Implement feature X")
     prior_version = runtime.context.version
 
@@ -161,7 +165,7 @@ def test_failed_evidence_persistence_restores_in_memory_authoritative_state(tmp_
         context.version += 1
         raise PersistenceError("simulated evidence persistence failure")
 
-    monkeypatch.setattr(store, "save_context", fail_save_context)
+    monkeypatch.setattr(runtime.store, "save_context", fail_save_context)
 
     with pytest.raises(PersistenceError):
         runtime.observe({
@@ -176,8 +180,9 @@ def test_failed_evidence_persistence_restores_in_memory_authoritative_state(tmp_
 
 
 def test_process_and_context_survive_runtime_replacement(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime_a = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime_a = Runtime(ctx, "runtime-a")
     pid = runtime_a.create_process("Implement feature X")
     runtime_a.start_investigation()
     runtime_a.observe({
@@ -198,7 +203,7 @@ def test_process_and_context_survive_runtime_replacement(tmp_path: Path):
     )
     runtime_a.stop()
 
-    runtime_b = Runtime(store, "runtime-b")
+    runtime_b = Runtime(ctx, "runtime-b")
     runtime_b.attach(pid)
 
     assert runtime_b.process_instance.process_instance_id == pid
@@ -213,8 +218,9 @@ def test_process_and_context_survive_runtime_replacement(tmp_path: Path):
 
 
 def test_decision_requires_explicit_recognition(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     runtime.create_process("Implement feature X")
 
     with pytest.raises(RuntimeError):
@@ -225,8 +231,9 @@ def test_decision_requires_explicit_recognition(tmp_path: Path):
 
 
 def test_engineering_completion_requires_explicit_recognition(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     runtime.create_process("Implement feature X")
 
     with pytest.raises(RuntimeError):
@@ -241,18 +248,20 @@ def test_engineering_completion_requires_explicit_recognition(tmp_path: Path):
 
 
 def test_missing_context_fails_recovery(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     pid = runtime.create_process("Implement feature X")
-    (tmp_path / "process-instance" / pid / "context.json").unlink()
+    (tmp_path / ".aesm" / pid / "context.json").unlink()
 
     with pytest.raises(PersistenceError):
-        Runtime(store, "runtime-b").attach(pid)
+        Runtime(ctx, "runtime-b").attach(pid)
 
 
 def test_history_is_preserved(tmp_path: Path):
-    store = ProcessStore(tmp_path)
-    runtime = Runtime(store, "runtime-a")
+    ctx = ActiveRepositoryContext(tmp_path)
+    store = ProcessStore(ctx)
+    runtime = Runtime(ctx, "runtime-a")
     pid = runtime.create_process("Implement feature X")
     runtime.observe({"fact": "A", "recognition": EVIDENCE_RECOGNITION})
     runtime.recognize_decision({"id": "D1"}, DECISION_RECOGNITION)

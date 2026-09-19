@@ -17,8 +17,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from runtime.core.repository_context import ActiveRepositoryContext
 from runtime.core.runtime import Runtime
-from runtime.core.store import ProcessStore
 from runtime.persistence.json_store import PersistenceError
 
 
@@ -112,8 +112,8 @@ class AgentRuntimeBridge:
     state, its own persistence, or a process state machine.
     """
 
-    def __init__(self, store: ProcessStore, runtime_id: str = "bridge") -> None:
-        self._runtime = Runtime(store, runtime_id)
+    def __init__(self, repository_context: ActiveRepositoryContext, runtime_id: str = "bridge") -> None:
+        self._runtime = Runtime(repository_context, runtime_id)
 
     # -- Bridge responsibility 1: Process Instance access (creation) --------
 
