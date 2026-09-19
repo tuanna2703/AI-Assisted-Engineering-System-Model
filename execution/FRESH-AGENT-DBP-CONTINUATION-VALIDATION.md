@@ -34,6 +34,30 @@
 
 ---
 
+## Pre-Session Gate Closure
+
+The validation run is **blocked** until the Human Controller closes all mandatory
+pre-session gates.
+
+| Gate | Required evidence | Status |
+| ---- | ----------------- | ------ |
+| Authorized target | Human approval + timestamp for the `Edit_Review_Form` target | *(Pending)* |
+| Separate Agent session | Independently distinguishable fresh session capability | *(Pending)* |
+| ProcessStore boundary persistence | Persistence and recovery across the session boundary | *(Pending)* |
+
+### Stop Rule
+
+If the separate-session capability or ProcessStore boundary persistence check fails,
+classify the failure as **Environment Defect** and stop. Do not begin Session A and
+do not alter AESM implementation to compensate for the environment failure.
+
+Repository inspection alone does not close either environment gate. Closure requires
+direct Controller observation of the execution environment.
+
+### Authorization State
+
+**Session-A execution authorized:** **No — pending Controller gate closure.**
+
 ## Pre-Registered Target
 
 ### Original Target — Already Implemented
