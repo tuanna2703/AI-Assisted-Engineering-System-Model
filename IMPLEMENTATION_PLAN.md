@@ -464,7 +464,7 @@ The authorized sequence is now:
 - [x] **Agent / Environment Mechanism Design** — scope evidence, Agent/Runtime authority boundaries, and minimum mechanism combination established. Gate complete. Evidence: `execution/AGENT-ENVIRONMENT-MECHANISM-DESIGN.md`.
 - [x] **Normative Documentation Reconciliation** — canonical Process Instance, Agent, operational, and Agent-integration documentation reconciled with the completed scope/binding/persistence/mechanism decisions. Evidence: `execution/NORMATIVE-DOCUMENTATION-RECONCILIATION.md`. No implementation mechanism or new authority layer introduced.
 - [x] **Project Identity and Process Binding Implementation** — implemented the smallest vertical slice for authoritative Engineering Scope Identity, explicit resolution outcomes, Process Instance binding, persistence, recovery, and Agent–Runtime delegation. Evidence: `execution/PROJECT-IDENTITY-AND-PROCESS-BINDING-IMPLEMENTATION.md`. Implementation-validation gate remains open because the targeted tests were added but not executed in the available environment.
-- [ ] **Multi-Project Empirical Validation** — execute the defined multi-project isolation/recovery scenarios against the existing Runtime, ProcessStore, and Agent–Runtime Bridge; implementation boundary prepared in `execution/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`.
+- [x] **Multi-Project Empirical Validation** — executed the defined multi-project isolation/recovery scenarios against the existing Runtime, ProcessStore, and Agent–Runtime Bridge. 9/9 scenarios demonstrated. Gate: **Conformant — Demonstrated**. Evidence: `execution/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`. Revision: `ed7e8980522c336862bb5c732a1134a2df9a6af5`.
 - [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process after project binding is available.
 - [ ] **Feedback and Reconsideration Validation** — validate controlled iteration where justified.
 - [ ] **Environment Independence Validation** — test portability beyond the first Agent environment.
@@ -472,9 +472,9 @@ The authorized sequence is now:
 
 ### Project Identity and Process Binding Implementation
 
-**Status: Implementation complete — targeted multi-project validation coverage prepared; empirical execution pending.**
+**Status: Implementation complete — multi-project behavioral validation executed and gate closed.**
 
-The Runtime and existing ProcessStore now operationalize the Engineering Scope Identity binding boundary without introducing a second authority layer.
+The Runtime and existing ProcessStore operationalize the Engineering Scope Identity binding boundary without introducing a second authority layer.
 
 Implemented evidence:
 - `runtime/core/models.py` — authoritative scope identity, resolution status, and evidence fields.
@@ -484,14 +484,14 @@ Implemented evidence:
 - `tests/project_identity/test_scope_binding.py` — targeted behavioral coverage.
 - `execution/PROJECT-IDENTITY-AND-PROCESS-BINDING-IMPLEMENTATION.md` — implementation record and validation boundary.
 
-The multi-project targeted tests have been added, but executable results are not claimed because the available repository integration environment does not provide a local checkout or runnable Python environment. The required commands are recorded in `execution/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`.
+The multi-project targeted tests were executed on `ed7e8980522c336862bb5c732a1134a2df9a6af5` (branch `main`). All 9 scenarios passed. All 41 regression tests (project_identity + lifecycle + continuity + multi_project) passed. Full evidence: `execution/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`.
 
 ### Current Progress Position
 
-The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, Agent-boundary mechanism validation, and DBP empirical investigation.
+The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, Agent-boundary mechanism validation, DBP empirical investigation, project/scope semantics, scope resolution design, process binding design, persistence scope design, agent/environment mechanism design, normative documentation reconciliation, project identity and process binding implementation, and multi-project behavioral validation.
 
-The Project/Scope Semantics Investigation established that the current AESM model identifies engineering execution by objective and Process Instance identity, but does not yet define a stable identity for the engineering scope in which that objective is performed.
+**Closed gate:** Multi-Project Behavioral Validation — **Conformant — Demonstrated**.
 
-**Current gate:** Multi-Project Empirical Validation.
+**Current gate:** Fresh-Agent DBP Continuation.
 
-**Next action:** Execute the targeted multi-project scenarios in a runnable repository environment and record empirical evidence before making any semantic or mechanism changes.
+**Next action:** Validate continuation of a real DBP process in a fresh Agent session after project binding is available.
