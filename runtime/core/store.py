@@ -139,6 +139,8 @@ class ProcessStore:
         self,
         instance: ProcessInstance,
         event: dict[str, Any],
+        *,
+        expected_updated_at: str | None = None,
     ) -> None:
         """Persist authoritative Process Instance identity/binding and history."""
         directory = self._dir(instance.process_instance_id)
@@ -175,7 +177,8 @@ class ProcessStore:
             except (OSError, json.JSONDecodeError) as exc:
                 raise PersistenceError("cannot validate Process Instance concurrency state") from exc
             persisted_updated_at = persisted_data.get("updated_at")
-            if persisted_updated_at != instance.updated_at:
+            expected = instance.updated_at if expected_updated_at is None else expected_updated_at
+            if persisted_updated_at != expected:
                 raise PersistenceError(
                     "stale Process Instance write rejected: persisted Process Instance "
                     "has changed since this Runtime loaded it; reload before writing"
