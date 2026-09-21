@@ -262,6 +262,10 @@ def main() -> dict:
                     "source": "process_b_continuation",
                     "fact": "Process B successfully recovered and can operate on the Process Instance",
                     "runtime_id": runtime_id,
+                    "recognition": {
+                        "recognized": True,
+                        "basis": "independent Process B recovery confirms continuation evidence",
+                    },
                 })
                 continuation["alternative_action"] = "observe"
                 continuation["alternative_result"] = "SUCCESS"
