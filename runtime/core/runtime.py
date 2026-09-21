@@ -176,7 +176,11 @@ class Runtime:
         }
 
         try:
-            self.store.save_process_instance(self.process_instance, event)
+            self.store.save_process_instance(
+                self.process_instance,
+                event,
+                expected_updated_at=prior_updated_at,
+            )
         except Exception:
             self.process_instance.engineering_scope_resolution = prior_status
             self.process_instance.engineering_scope_identity = prior_identity
