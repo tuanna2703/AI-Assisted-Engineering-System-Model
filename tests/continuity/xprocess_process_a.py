@@ -76,11 +76,13 @@ def main() -> dict:
         "source": "experimental_probe",
         "fact": "cross-process persistence boundary is testable",
         "detail": "JSON persistence store supports independent process access",
+        "recognition": DECISION_RECOGNITION,
     }
     observation_2 = {
         "source": "experimental_probe",
         "fact": "process instance discovery is possible via objective marker",
         "detail": "persisted process.json contains engineering_objective field",
+        "recognition": DECISION_RECOGNITION,
     }
     rt.observe(observation_1)
     rt.observe(observation_2)
