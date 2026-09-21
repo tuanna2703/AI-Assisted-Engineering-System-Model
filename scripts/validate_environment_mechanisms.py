@@ -9,7 +9,7 @@ It intentionally validates only observable repository/runtime capabilities:
 - Process Instance creation and known-ID recovery through fresh bridge objects;
 - authoritative Execution Context access.
 
-The probe uses a temporary ProcessStore so it cannot mutate the repository's
+The probe uses a temporary repository context so it cannot mutate the repository's
 normal persisted process state.
 """
 from __future__ import annotations
