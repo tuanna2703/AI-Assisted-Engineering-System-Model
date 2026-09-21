@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -79,13 +78,6 @@ def main():
         "python_version": sys.version,
         "persistence_repository_root": experiment_root,
         "persistence_store": os.path.join(experiment_root, ".aesm"),
-    }
-
-    # ── Step 1: Clean persistence store ──────────────────────────────────
-    report["store_cleaned"] = {
-        "previous_store_existed": store_existed,
-        "store_path": PERSISTENCE_STORE,
-        "cleaned_before_experiment": True,
     }
 
     # ── Run Process A ────────────────────────────────────────────
