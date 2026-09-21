@@ -266,6 +266,18 @@ class ProcessStore:
         process_path = directory / "process.json"
         context_path = directory / "context.json"
         history_path = directory / "history.jsonl"
+
+        if process_path.exists():
+            try:
+                persisted_data = json.loads(process_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise PersistenceError("cannot validate Process Instance concurrency state") from exc
+            if persisted_data.get("updated_at") != instance.updated_at:
+                raise PersistenceError(
+                    "stale Process Instance lifecycle write rejected: persisted Process Instance "
+                    "has changed since this Runtime loaded it; reload before writing"
+                )
+
         snapshots = {
             process_path: process_path.read_bytes() if process_path.exists() else None,
             context_path: context_path.read_bytes() if context_path.exists() else None,
