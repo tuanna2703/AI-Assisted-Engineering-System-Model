@@ -34,6 +34,7 @@ def lifecycle_determination(runtime: Runtime, transition: str, *, basis: str = "
         "semantic_basis": basis,
         "authority_context": "authorized-controller",
         "actor": "test-controller",
+        "resumption_determination": {"status": "PERMITTED", "basis": basis} if transition == "SUSPENDED -> ACTIVE" else None,
         "evidence": evidence or [],
         "occurred_at": "2026-09-09T00:00:00+00:00",
     }
