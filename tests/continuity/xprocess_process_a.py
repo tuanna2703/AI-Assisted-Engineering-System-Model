@@ -149,7 +149,7 @@ def main() -> dict:
     evidence["persisted_files"] = persisted_files
 
     # ── Capture history ──────────────────────────────────────────────────
-    history = store.history(process_instance_id)
+    history = rt.store.history(process_instance_id)
     evidence["history_entry_count"] = len(history)
     evidence["history_event_types"] = [e["type"] for e in history]
     evidence["history"] = history
