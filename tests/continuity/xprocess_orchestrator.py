@@ -20,18 +20,9 @@ import time
 import tempfile
 from datetime import datetime, timezone
 
-PERSISTENCE_STORE = "/tmp/aesm_xprocess_experiment"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROCESS_A_SCRIPT = os.path.join(SCRIPT_DIR, "xprocess_process_a.py")
 PROCESS_B_SCRIPT = os.path.join(SCRIPT_DIR, "xprocess_process_b.py")
-
-
-def clean_store():
-    """Remove any previous experiment state."""
-    if os.path.exists(PERSISTENCE_STORE):
-        shutil.rmtree(PERSISTENCE_STORE)
-        return True
-    return False
 
 
 def run_subprocess(script: str, env_extra: dict | None = None) -> dict:
@@ -91,7 +82,6 @@ def main():
     }
 
     # ── Step 1: Clean persistence store ──────────────────────────────────
-    store_existed = clean_store()
     report["store_cleaned"] = {
         "previous_store_existed": store_existed,
         "store_path": PERSISTENCE_STORE,
