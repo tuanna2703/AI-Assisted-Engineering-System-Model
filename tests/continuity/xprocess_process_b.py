@@ -115,7 +115,7 @@ def main() -> dict:
     evidence["persistence_store"] = PERSISTENCE_STORE
     evidence["objective_marker"] = OBJECTIVE_MARKER
 
-    # ── Phase 1: Discovery ───────────────────────────────────────────────
+    # ── Discovery ────────────────────────────────────────────────────────
     discovery = discover_instance_by_marker(PERSISTENCE_STORE, OBJECTIVE_MARKER)
     evidence["discovery"] = discovery
 
@@ -128,7 +128,7 @@ def main() -> dict:
 
     evidence["discovered_process_instance_id"] = matched_id
 
-    # ── Phase 2: Reconstruction ──────────────────────────────────────────
+    # ── Reconstruction ──────────────────────────────────────────────────
     reconstruction: dict = {"process_instance": {}, "execution_context": {}}
 
     try:
@@ -143,7 +143,7 @@ def main() -> dict:
         evidence["exit_code"] = 0
         return evidence
 
-    # ── Phase 3: Record recovered state ──────────────────────────────────
+    # ── Recovered State ──────────────────────────────────────────────────
     pi = rt.process_instance
     ctx = rt.context
 
@@ -180,7 +180,7 @@ def main() -> dict:
 
     evidence["reconstruction"] = reconstruction
 
-    # ── Phase 4: History recovery ────────────────────────────────────────
+    # ── History Recovery ────────────────────────────────────────────────
     history = rt.store.history(matched_id)
     evidence["recovered_history_entry_count"] = len(history)
     evidence["recovered_history_event_types"] = [e["type"] for e in history]
@@ -193,7 +193,7 @@ def main() -> dict:
     evidence["history_contains_process_a_runtime"] = len(process_a_runtime_entries) > 0
     evidence["process_a_runtime_history_count"] = len(process_a_runtime_entries)
 
-    # ── Phase 5: Continuity checks ───────────────────────────────────────
+    # ── Continuity Checks ───────────────────────────────────────────────
     continuity: dict = {}
 
     # Identity
@@ -224,7 +224,7 @@ def main() -> dict:
 
     evidence["continuity"] = continuity
 
-    # ── Phase 6: Continuation attempt ────────────────────────────────────
+    # ── Continuation Attempt ────────────────────────────────────────────
     continuation: dict = {}
 
     # Determine next legitimate action
@@ -288,8 +288,8 @@ def main() -> dict:
 
     evidence["continuation"] = continuation
 
-    # ── Phase 7: Post-continuation history ───────────────────────────────
-    post_history = store.history(matched_id)
+    # ── Post-Continuation History ───────────────────────────────────────
+    post_history = rt.store.history(matched_id)
     evidence["post_continuation_history_count"] = len(post_history)
     evidence["post_continuation_history_types"] = [e["type"] for e in post_history]
 
