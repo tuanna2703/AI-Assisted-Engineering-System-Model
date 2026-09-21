@@ -21,12 +21,15 @@ import sys
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from runtime.core import ProcessStore, Runtime
+from pathlib import Path
+
+from runtime.core import ActiveRepositoryContext, Runtime
 from runtime.core.models import ExecutionContext, ProcessInstance
 from runtime.persistence.json_store import JsonStore
 
 # ─── Pre-agreed experimental constants ───────────────────────────────────────
-PERSISTENCE_STORE = "/tmp/aesm_xprocess_experiment"
+PERSISTENCE_ROOT = os.environ.get("XPROCESS_REPOSITORY_ROOT", "/tmp/aesm_xprocess_experiment")
+PERSISTENCE_STORE = os.path.join(PERSISTENCE_ROOT, ".aesm")
 OBJECTIVE_MARKER = "AESM_CROSS_PROCESS_CONTINUITY_EXPERIMENT_20260907_xproc7b3e"
 
 PROCESS_A_PID: int | None = None  # Provided via env var for evidence comparison only
@@ -39,7 +42,7 @@ def discover_instance_by_marker(store_root: str, marker: str) -> dict:
 
     Returns a discovery report dict.
     """
-    pi_root = os.path.join(store_root, "process-instance")
+    pi_root = store_root
     discovery = {
         "store_root": store_root,
         "marker": marker,
@@ -103,9 +106,10 @@ def main() -> dict:
     evidence["process_b_pid"] = os.getpid()
 
     # Create store and runtime
-    store = ProcessStore(PERSISTENCE_STORE)
+    repository_root = Path(PERSISTENCE_ROOT).resolve()
+    repository_context = ActiveRepositoryContext(repository_root)
+    rt = Runtime(repository_context, "xprocess-runtime-B")
     runtime_id = "xprocess-runtime-B"
-    rt = Runtime(store, runtime_id)
 
     evidence["runtime_id"] = runtime_id
     evidence["persistence_store"] = PERSISTENCE_STORE
@@ -177,7 +181,7 @@ def main() -> dict:
     evidence["reconstruction"] = reconstruction
 
     # ── Phase 4: History recovery ────────────────────────────────────────
-    history = store.history(matched_id)
+    history = rt.store.history(matched_id)
     evidence["recovered_history_entry_count"] = len(history)
     evidence["recovered_history_event_types"] = [e["type"] for e in history]
     evidence["recovered_history"] = history
