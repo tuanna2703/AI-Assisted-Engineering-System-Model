@@ -131,7 +131,7 @@ Continue or complete the engineering process
 - [x] Completion/termination handling required by the prototype.
 - [x] Preserve Runtime authority over lifecycle and completion semantics.
 
-Evidence: [`execution/COMPLETION-TERMINATION-VALIDATION.md`](execution/COMPLETION-TERMINATION-VALIDATION.md).
+Evidence: [`tests/lifecycle/test_completion_termination.py`](tests/lifecycle/test_completion_termination.py).
 
 ### Recording Behavioral Validation
 
@@ -149,7 +149,7 @@ No further recording or persistence-semantic change is authorized by this eviden
 
 **Status: Complete. Semantic contract closed.**
 
-Evidence: [`execution/AGENT-GUIDANCE-INTERFACE.md`](execution/AGENT-GUIDANCE-INTERFACE.md).
+Evidence: [`docs/Agent-Execution-Integration.md`](docs/Agent-Execution-Integration.md).
 
 The guidance analysis established:
 
@@ -168,7 +168,7 @@ The Agent Guidance Interface is not an open work unit. Subsequent work must use 
 
 The investigation established the responsibility boundary between Agent, Runtime, and Execution Environment and justified a thin Agent–Runtime bridge rather than Runtime redesign or a normative transport.
 
-Evidence: [`execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md`](execution/AGENT-RUNTIME-EXECUTION-BRIDGE-INSPECTION.md).
+Evidence: [`docs/Agent-Execution-Integration.md`](docs/Agent-Execution-Integration.md).
 
 ### Runtime API Inspection
 
@@ -183,7 +183,7 @@ The concrete adapter surface was determined as:
 
 Objective-to-Process-Instance discovery remains a separate design concern and is not silently generalized into the bridge.
 
-Evidence: [`execution/RUNTIME-API-INSPECTION.md`](execution/RUNTIME-API-INSPECTION.md).
+Evidence: [`docs/Agent-Execution-Integration.md`](docs/Agent-Execution-Integration.md).
 
 ### Minimal Agent–Runtime Bridge
 
@@ -191,7 +191,7 @@ Evidence: [`execution/RUNTIME-API-INSPECTION.md`](execution/RUNTIME-API-INSPECTI
 
 The bounded bridge was implemented outside `runtime/` and delegates authority to the existing Runtime. It provides Process Instance access, authoritative Context access, Runtime dispatch, and authoritative result/state return.
 
-Evidence: [`execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md`](execution/AGENT-RUNTIME-BRIDGE-IMPLEMENTATION.md).
+Evidence: [`docs/Agent-Execution-Integration.md`](docs/Agent-Execution-Integration.md).
 
 The bridge is not a new persistence layer, orchestration engine, lifecycle model, or transport requirement.
 
@@ -221,7 +221,7 @@ The prior Environment Mechanism Mapping findings are now superseded only where t
 
 **Status: Complete — gate passed.**
 
-Evidence: [`execution/MECHANISM-VALIDATION.md`](execution/MECHANISM-VALIDATION.md).
+Evidence: [`implementation/MECHANISM-VALIDATION.md`](implementation/MECHANISM-VALIDATION.md).
 
 The validation combined two Agent sessions and established the complete operational chain:
 
@@ -267,8 +267,8 @@ The controlled Directories Builder Pro experiment was executed against:
 
 - Controlled repository: `tuanna2703/directories-builder-pro`
 - Controlled request: **Requirements: Hierarchical Categories Filter — REQ-01 through REQ-26**
-- Controlled boundary: `execution/DBP-EMPIRICAL-EXECUTION-BOUNDARY.md`
-- Observer protocol: `execution/DBP-EMPIRICAL-EXECUTION-OBSERVER-PROTOCOL.md`
+- Controlled boundary: `implementation/DBP-EMPIRICAL-EXECUTION-REPORT.md`
+- Observer protocol: `implementation/DBP-EMPIRICAL-EXECUTION-REPORT.md`
 
 The empirical result established a necessary distinction:
 
@@ -288,7 +288,7 @@ The Agent's claimed completion and the independently observed AESM non-participa
 
 Evidence record:
 
-[`execution/DBP-EMPIRICAL-EXECUTION-REPORT.md`](execution/DBP-EMPIRICAL-EXECUTION-REPORT.md)
+[`implementation/DBP-EMPIRICAL-EXECUTION-REPORT.md`](implementation/DBP-EMPIRICAL-EXECUTION-REPORT.md)
 
 The original Agent completion report, where preserved outside this repository, remains source evidence and must not be rewritten as an AESM result.
 
@@ -461,10 +461,10 @@ The authorized sequence is now:
 - [x] **Project / Scope Resolution Design** — deterministic scope resolution, ambiguity handling, Process Instance selection/creation, and authority boundaries established. Gate complete.
 - [x] **Process Binding Design** — normative scope-to-Process-Instance relationship and discovery model established. Gate complete.
 - [x] **Persistence Scope Design** — authoritative scope/process persistence requirements established. Gate complete.
-- [x] **Agent / Environment Mechanism Design** — scope evidence, Agent/Runtime authority boundaries, and minimum mechanism combination established. Gate complete. Evidence: `execution/AGENT-ENVIRONMENT-MECHANISM-DESIGN.md`.
-- [x] **Normative Documentation Reconciliation** — canonical Process Instance, Agent, operational, and Agent-integration documentation reconciled with the completed scope/binding/persistence/mechanism decisions. Evidence: `execution/NORMATIVE-DOCUMENTATION-RECONCILIATION.md`. No implementation mechanism or new authority layer introduced.
-- [x] **Project Identity and Process Binding Implementation** — implemented the smallest vertical slice for authoritative Engineering Scope Identity, explicit resolution outcomes, Process Instance binding, persistence, recovery, and Agent–Runtime delegation. Evidence: `execution/PROJECT-IDENTITY-AND-PROCESS-BINDING-IMPLEMENTATION.md`. Implementation-validation gate remains open because the targeted tests were added but not executed in the available environment.
-- [x] **Multi-Project Empirical Validation** — executed the defined multi-project isolation/recovery scenarios against the existing Runtime, ProcessStore, and Agent–Runtime Bridge. 9/9 scenarios demonstrated. Gate: **Conformant — Demonstrated**. Evidence: `execution/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`. Revision: `ed7e8980522c336862bb5c732a1134a2df9a6af5`.
+- [x] **Agent / Environment Mechanism Design** — scope evidence, Agent/Runtime authority boundaries, and minimum mechanism combination established. Gate complete. Evidence: `implementation/MECHANISM-VALIDATION.md`.
+- [x] **Normative Documentation Reconciliation** — canonical Process Instance, Agent, operational, and Agent-integration documentation reconciled with the completed scope/binding/persistence/mechanism decisions. Evidence: `implementation/NORMATIVE-DOCUMENTATION-RECONCILIATION.md`. No implementation mechanism or new authority layer introduced.
+- [x] **Project Identity and Process Binding Implementation** — implemented the smallest vertical slice for authoritative Engineering Scope Identity, explicit resolution outcomes, Process Instance binding, persistence, recovery, and Agent–Runtime delegation. Evidence: `implementation/PROJECT-IDENTITY-AND-PROCESS-BINDING-VALIDATION.md`. Implementation-validation gate remains open because the targeted tests were added but not executed in the available environment.
+- [x] **Multi-Project Empirical Validation** — executed the defined multi-project isolation/recovery scenarios against the existing Runtime, ProcessStore, and Agent–Runtime Bridge. 9/9 scenarios demonstrated. Gate: **Conformant — Demonstrated**. Evidence: `implementation/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`. Revision: `ed7e8980522c336862bb5c732a1134a2df9a6af5`.
 - [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process after project binding is available.
 - [ ] **Feedback and Reconsideration Validation** — validate controlled iteration where justified.
 - [ ] **Environment Independence Validation** — test portability beyond the first Agent environment.
@@ -482,9 +482,9 @@ Implemented evidence:
 - `runtime/core/store.py` — authoritative Process Instance binding persistence and recovery validation.
 - `bridge/agent_runtime_bridge.py` — delegated Agent-facing scope-resolution operation.
 - `tests/project_identity/test_scope_binding.py` — targeted behavioral coverage.
-- `execution/PROJECT-IDENTITY-AND-PROCESS-BINDING-IMPLEMENTATION.md` — implementation record and validation boundary.
+- `implementation/PROJECT-IDENTITY-AND-PROCESS-BINDING-VALIDATION.md` — implementation record and validation boundary.
 
-The multi-project targeted tests were executed on `ed7e8980522c336862bb5c732a1134a2df9a6af5` (branch `main`). All 9 scenarios passed. All 41 regression tests (project_identity + lifecycle + continuity + multi_project) passed. Full evidence: `execution/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`.
+The multi-project targeted tests were executed on `ed7e8980522c336862bb5c732a1134a2df9a6af5` (branch `main`). All 9 scenarios passed. All 41 regression tests (project_identity + lifecycle + continuity + multi_project) passed. Full evidence: `implementation/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`.
 
 ### Current Progress Position
 
@@ -496,7 +496,7 @@ The repository has completed the foundational Runtime, persistence, Context, rec
 
 **Runtime change policy:** Do not modify Runtime, ProcessStore, bridge semantics, or persistence boundaries during this validation unless a separately approved evidence-driven change is required after reconciliation.
 
-**Execution plan:** `execution/REPOSITORY-PORTABLE-CONTINUATION-EXECUTION-PLAN.md`.
+**Execution plan:** `implementation/REPOSITORY-PORTABLE-CONTINUATION-PLAN.md`.
 
 The validation is intended to establish the stronger empirical property:
 

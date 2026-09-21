@@ -53,3 +53,17 @@ The minimum useful evidence for an empirical AESM execution includes an Agent-me
 This guidance is intentionally limited to Agent behavior. It does not grant the Agent authority to redefine AESM semantics or mutate Runtime-owned authoritative state outside supported Runtime operations.
 
 For semantic questions, consult the canonical `docs/` material rather than extending this file with new AESM rules.
+
+
+## Repository Work Records
+
+- `docs/` is the canonical AESM knowledge surface. It defines what AESM means and must not be replaced by implementation records.
+- `runtime/`, `bridge/`, and other executable directories contain implementation, not engineering records.
+- `tests/` contains executable verification. Test results are evidence; do not duplicate test logic in Markdown records.
+- `.aesm/` is repository-local authoritative Process Instance / Execution Context state where present. Do not treat Markdown records as execution state.
+- `IMPLEMENTATION_PLAN.md` contains current authorized work and progress.
+- `IMPLEMENTATION_BASELINE.md` records the current implementation baseline.
+- `implementation/` contains only selected, concise, non-canonical engineering records that preserve important implementation findings, empirical validation, reconciliation, or other durable evidence not already represented adequately by docs, source, tests, or `.aesm/`.
+- Do not create a separate top-level `execution/` directory. Execution is an activity/state governed by Runtime and persisted under `.aesm/`; Markdown descriptions of that activity belong in `implementation/` only when they have durable value.
+- Do not use `implementation/` as a session transcript, task scratchpad, duplicate plan, duplicate specification, or archive of every intermediate step.
+- When a record is fully superseded by canonical documentation, executable tests, current implementation, or a later durable validation record, remove it rather than creating another historical copy.
