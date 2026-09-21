@@ -1,0 +1,19 @@
+{
+  "created_at": "2026-09-21T07:30:46.751992+00:00",
+  "engineering_objective": "AESM Fresh-Agent Continuity Validation — establish a recoverable Process Instance baseline under the repository-local .aesm/ persistence boundary for cross-session recovery by Session B.",
+  "engineering_scope_evidence": [
+    {
+      "finding": "Repository root confirmed at /AI-Assisted-Engineering-System-Model; .aesm/ persistence boundary created by Runtime on PI creation; ProcessStore uses repository_context.aesm_root().",
+      "type": "repository_inspection"
+    }
+  ],
+  "engineering_scope_identity": "AESM-Repository-Portability-and-Cross-Session-Continuity-Validation",
+  "engineering_scope_resolution": "RESOLVED",
+  "epm": {},
+  "execution_context_ref": "process-instance/f713278b-cb74-4a49-a6a1-b6713f058b56/context.json",
+  "lifecycle": "active",
+  "pem": {},
+  "process_instance_id": "f713278b-cb74-4a49-a6a1-b6713f058b56",
+  "schema_version": 1,
+  "updated_at": "2026-09-21T07:30:46.756445+00:00"
+}

@@ -1,0 +1,37 @@
+{
+  "artifacts": [],
+  "assumptions": [],
+  "candidate_solutions": [],
+  "constraints": [],
+  "decision_gates": [],
+  "engineering_completion": false,
+  "engineering_decisions": [],
+  "engineering_objective": "AESM Fresh-Agent Continuity Validation — establish a recoverable Process Instance baseline under the repository-local .aesm/ persistence boundary for cross-session recovery by Session B.",
+  "evidence": [
+    {
+      "finding": "The AESM repository-local persistence root (.aesm/) is created by the Runtime/ProcessStore on first PI creation, not pre-existing. The ProcessStore._dir() layout is <repo-root>/.aesm/<pi-id>/. ProcessStore.create() writes process.json, context.json, and the initial history.jsonl entry atomically. No workspace-level .aesm-process-store/ path is involved in repository-local persistence.",
+      "relevance": "This observation establishes the actual persistence mechanics that Session B must rely upon to recover this Process Instance.",
+      "source": "direct filesystem and source-code inspection of runtime/core/store.py",
+      "type": "repository_structure_observation"
+    },
+    {
+      "finding": "Session B independently discovered PI f713278b-cb74-4a49-a6a1-b6713f058b56 from repository-local .aesm/ persistence boundary without any Session A context. Attachment via AgentRuntimeBridge.attach() with Session B Runtime ID 'session-b-bridge' succeeded. Runtime-reported state is consistent with persisted process.json and context.json. This observation constitutes the Session B continuation proof-of-continuity: the same PI is recovered and advanced by a genuinely separate agent session.",
+      "relevance": "Demonstrates that AESM Process Instance continuity across independent agent sessions is functional: discovery from .aesm/, recovery via Runtime attach(), and state advancement through a supported bridge operation all succeed.",
+      "source": "Session B fresh-agent filesystem inspection and Runtime recovery",
+      "type": "session_b_continuity_observation"
+    }
+  ],
+  "execution_determination": null,
+  "execution_mode": "active",
+  "failure_uncertainty": [],
+  "pending_execution": [],
+  "process_instance_id": "f713278b-cb74-4a49-a6a1-b6713f058b56",
+  "process_state": "investigation",
+  "requirements": [],
+  "risks": [],
+  "schema_version": 1,
+  "unresolved_matters": [],
+  "updated_at": "2026-09-21T07:39:38.831552+00:00",
+  "verification": {},
+  "version": 3
+}
