@@ -176,7 +176,11 @@ class Runtime:
         }
 
         try:
-            self.store.save_process_instance(self.process_instance, event)
+            self.store.save_process_instance(
+                self.process_instance,
+                event,
+                expected_updated_at=prior_updated_at,
+            )
         except Exception:
             self.process_instance.engineering_scope_resolution = prior_status
             self.process_instance.engineering_scope_identity = prior_identity
@@ -246,16 +250,26 @@ class Runtime:
         self._require_state(self.INVESTIGATION)
         if not self.context.engineering_decisions:
             raise RuntimeError("implementation requires a recognized engineering decision")
+        prior_context = self.context.to_dict()
         self.context.pending_execution = []
-        self._set_state(self.IMPLEMENTATION, "implementation_started")
+        try:
+            self._set_state(self.IMPLEMENTATION, "implementation_started")
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def set_pending_execution(self, work: dict[str, Any]) -> None:
         """Record continuation work without changing Process State implicitly."""
         self._require_attached()
         self._require_active_lifecycle()
         self._require_state(self.IMPLEMENTATION)
+        prior_context = self.context.to_dict()
         self.context.pending_execution.append(work)
-        self.store.save_context(self.context, {"type": "pending_execution_recorded", "work": work, "runtime_id": self.runtime_id})
+        try:
+            self.store.save_context(self.context, {"type": "pending_execution_recorded", "work": work, "runtime_id": self.runtime_id})
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def record_artifact(self, artifact: dict[str, Any]) -> None:
         self._require_attached()
@@ -281,8 +295,13 @@ class Runtime:
             raise RuntimeError("verification requires at least one recorded implementation artifact")
         if self.context.pending_execution:
             raise RuntimeError("verification requires no pending execution work")
+        prior_context = self.context.to_dict()
         self.context.verification = {}
-        self._set_state(self.VERIFICATION, "verification_started")
+        try:
+            self._set_state(self.VERIFICATION, "verification_started")
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def record_verification(self, result: dict[str, Any]) -> None:
         """Record verification; the legacy path remains usable for continuity experiments."""
@@ -314,9 +333,14 @@ class Runtime:
             raise RuntimeError("successful verification does not require reconsideration")
         if not isinstance(reason, dict) or not reason.get("description"):
             raise ValueError("reconsideration requires a descriptive reason")
+        prior_context = self.context.to_dict()
         self.context.failure_uncertainty.append(reason)
         self.context.unresolved_matters.append(reason["description"])
-        self._set_state(self.INVESTIGATION, "reconsideration_requested", {"reason": reason})
+        try:
+            self._set_state(self.INVESTIGATION, "reconsideration_requested", {"reason": reason})
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def recognize_engineering_completion(self, completion: dict[str, Any]) -> None:
         self._require_attached()
@@ -326,8 +350,13 @@ class Runtime:
             raise RuntimeError("engineering completion requires the verification state")
         if self.context.verification.get("passed") is not True:
             raise RuntimeError("engineering completion requires successful verification")
+        prior_context = self.context.to_dict()
         self.context.engineering_completion = True
-        self._set_state(self.ENGINEERING_COMPLETE, "engineering_completion_recognized", {"completion": completion})
+        try:
+            self._set_state(self.ENGINEERING_COMPLETE, "engineering_completion_recognized", {"completion": completion})
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     # --- Lifecycle control boundary ---
 
@@ -391,9 +420,8 @@ class Runtime:
                     "transition rejected"
                 )
 
-        basis_lower = str(semantic_basis).lower()
         if source_canonical == "suspended" and target_canonical == "active":
-            self._validate_resumption(basis_lower, evidence)
+            self._validate_resumption(determination.get("resumption_determination"))
 
         prior_lifecycle = self.process_instance.lifecycle
         prior_context = self.context.to_dict()
@@ -437,11 +465,17 @@ class Runtime:
         self.context = None
 
     def _set_state(self, state: str, event_type: str, extra: dict[str, Any] | None = None) -> None:
+        """Persist a process-state transition atomically from the Runtime view."""
+        prior_context = self.context.to_dict()
         self.context.process_state = state
         event = {"type": event_type, "runtime_id": self.runtime_id}
         if extra:
             event.update(extra)
-        self.store.save_context(self.context, event)
+        try:
+            self.store.save_context(self.context, event)
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def _require_state(self, expected: str) -> None:
         if self.context.process_state != expected:
@@ -480,32 +514,31 @@ class Runtime:
         return parts[0], parts[1]
 
     @staticmethod
-    def _validate_resumption(basis_lower: str, evidence: list[dict[str, Any]]) -> None:
-        """Validate that a resumption determination establishes permissibility."""
-        if "remains applicable" in basis_lower:
+    def _validate_resumption(determination: Any) -> None:
+        """Validate the structured authority for resuming a suspended instance."""
+        if not isinstance(determination, dict):
             raise RuntimeError(
-                "resumption rejected: suspension condition remains applicable"
+                "resumption rejected: structured resumption determination is required"
             )
 
-        resumption_established = False
-        if "ceased" in basis_lower or "permissible" in basis_lower:
-            resumption_established = True
-
-        if not resumption_established:
-            for entry in evidence:
-                if isinstance(entry, dict):
-                    entry_str = str(entry).lower()
-                    if "ceased" in entry_str or "permissible" in entry_str:
-                        resumption_established = True
-                        break
-                    if "stale_work" in entry:
-                        resumption_established = True
-                        break
-
-        if not resumption_established:
+        status = determination.get("status")
+        basis = determination.get("basis")
+        if status not in {"PERMITTED", "REJECTED"}:
             raise RuntimeError(
-                "resumption rejected: determination does not establish that "
-                "suspension condition has ceased or continuation is permissible"
+                "resumption rejected: structured determination status must be "
+                "'PERMITTED' or 'REJECTED'"
+            )
+        if not isinstance(basis, str) or not basis.strip():
+            raise RuntimeError(
+                "resumption rejected: structured determination requires a basis"
+            )
+        if determination.get("conflict") is True:
+            raise RuntimeError(
+                "resumption rejected: structured determination contains an unresolved conflict"
+            )
+        if status != "PERMITTED":
+            raise RuntimeError(
+                "resumption rejected: governing structured determination does not permit continuation"
             )
 
     def _apply_stale_work_invalidation(self, evidence: list[dict[str, Any]]) -> bool:

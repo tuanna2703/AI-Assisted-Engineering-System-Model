@@ -28,7 +28,6 @@ from pathlib import Path
 
 from bridge.agent_runtime_bridge import AgentRuntimeBridge
 from runtime.core import ActiveRepositoryContext
-from runtime.core.store import ProcessStore
 
 
 # ---------------------------------------------------------------------------
@@ -36,15 +35,15 @@ from runtime.core.store import ProcessStore
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
-def store(tmp_path: Path) -> ActiveRepositoryContext:
+def repo_ctx(tmp_path: Path) -> ActiveRepositoryContext:
     """Provide an ActiveRepositoryContext rooted in a temp directory."""
     return ActiveRepositoryContext(tmp_path)
 
 
 @pytest.fixture
-def bridge(store: ActiveRepositoryContext) -> AgentRuntimeBridge:
+def bridge(repo_ctx: ActiveRepositoryContext) -> AgentRuntimeBridge:
     """Provide a fresh bridge with a fresh repository context."""
-    return AgentRuntimeBridge(store, runtime_id="test-bridge")
+    return AgentRuntimeBridge(repo_ctx, runtime_id="test-bridge")
 
 
 @pytest.fixture
@@ -167,22 +166,22 @@ class TestContextRetrieval:
 # ---------------------------------------------------------------------------
 
 class TestKnownIdAttachment:
-    def test_attach_returns_success(self, store: ProcessStore) -> None:
+    def test_attach_returns_success(self, repo_ctx: ProcessStore) -> None:
         # Create via one bridge, attach via another.
-        bridge_a = AgentRuntimeBridge(store, runtime_id="bridge-a")
+        bridge_a = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-a")
         create_result = bridge_a.create_process("Attach test")
         pid = create_result["process_instance_id"]
 
-        bridge_b = AgentRuntimeBridge(store, runtime_id="bridge-b")
+        bridge_b = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-b")
         attach_result = bridge_b.attach(pid)
         assert attach_result["success"] is True
 
-    def test_attach_returns_correct_identity(self, store: ProcessStore) -> None:
-        bridge_a = AgentRuntimeBridge(store, runtime_id="bridge-a")
+    def test_attach_returns_correct_identity(self, repo_ctx: ProcessStore) -> None:
+        bridge_a = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-a")
         create_result = bridge_a.create_process("Attach test")
         pid = create_result["process_instance_id"]
 
-        bridge_b = AgentRuntimeBridge(store, runtime_id="bridge-b")
+        bridge_b = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-b")
         attach_result = bridge_b.attach(pid)
         assert attach_result["process_instance_id"] == pid
 
@@ -197,20 +196,20 @@ class TestKnownIdAttachment:
 # ---------------------------------------------------------------------------
 
 class TestContextRecovery:
-    def test_recovered_context_matches_original(self, store: ProcessStore) -> None:
-        bridge_a = AgentRuntimeBridge(store, runtime_id="bridge-a")
+    def test_recovered_context_matches_original(self, repo_ctx: ProcessStore) -> None:
+        bridge_a = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-a")
         create_result = bridge_a.create_process("Recovery test objective")
         pid = create_result["process_instance_id"]
         original_objective = create_result["context"]["engineering_objective"]
 
-        bridge_b = AgentRuntimeBridge(store, runtime_id="bridge-b")
+        bridge_b = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-b")
         attach_result = bridge_b.attach(pid)
         assert attach_result["context"]["engineering_objective"] == original_objective
         assert attach_result["context"]["process_instance_id"] == pid
 
-    def test_recovered_context_reflects_mutations(self, store: ProcessStore) -> None:
+    def test_recovered_context_reflects_mutations(self, repo_ctx: ProcessStore) -> None:
         """Mutations made via bridge A must be visible after bridge B attaches."""
-        bridge_a = AgentRuntimeBridge(store, runtime_id="bridge-a")
+        bridge_a = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-a")
         create_result = bridge_a.create_process("Mutation recovery test")
         pid = create_result["process_instance_id"]
 
@@ -219,7 +218,7 @@ class TestContextRecovery:
         bridge_a.dispatch("observe", {"observation": OBSERVATION})
 
         # Attach via a fresh bridge B.
-        bridge_b = AgentRuntimeBridge(store, runtime_id="bridge-b")
+        bridge_b = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-b")
         attach_result = bridge_b.attach(pid)
         assert attach_result["context"]["process_state"] == "investigation"
         assert len(attach_result["context"]["evidence"]) == 1
@@ -423,7 +422,7 @@ class TestPersistenceFailure:
             from runtime.persistence.json_store import PersistenceError
             raise PersistenceError("simulated persistence failure")
 
-        monkeypatch.setattr(bridge._runtime.store, "save_context", failing_save)
+        monkeypatch.setattr(bridge._runtime.repo_ctx, "save_context", failing_save)
 
         result = bridge.dispatch("observe", {"observation": OBSERVATION})
         assert result["success"] is False
@@ -448,11 +447,11 @@ class TestUnsupportedDiscovery:
 # ---------------------------------------------------------------------------
 
 class TestBridgeContinuation:
-    def test_continuation_across_bridge_instances(self, store: ProcessStore) -> None:
+    def test_continuation_across_bridge_instances(self, repo_ctx: ProcessStore) -> None:
         """Demonstrate that Process Instance continuity belongs to Runtime
         persistence, not bridge memory."""
         # Bridge A creates and mutates.
-        bridge_a = AgentRuntimeBridge(store, runtime_id="bridge-a")
+        bridge_a = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-a")
         create_result = bridge_a.create_process("Continuation test")
         pid = create_result["process_instance_id"]
         bridge_a.dispatch("start_investigation")
@@ -462,7 +461,7 @@ class TestBridgeContinuation:
         del bridge_a
 
         # Bridge B attaches and continues.
-        bridge_b = AgentRuntimeBridge(store, runtime_id="bridge-b")
+        bridge_b = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-b")
         attach_result = bridge_b.attach(pid)
         assert attach_result["success"] is True
         assert attach_result["context"]["process_state"] == "investigation"
@@ -495,29 +494,29 @@ class TestNoBridgePersistence:
         )
 
     def test_bridge_state_does_not_survive_recreation(
-        self, store: ProcessStore
+        self, repo_ctx: ProcessStore
     ) -> None:
         """Creating a new bridge must not carry forward state from a previous
         bridge instance."""
-        bridge_a = AgentRuntimeBridge(store, runtime_id="bridge-a")
+        bridge_a = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-a")
         bridge_a.create_process("Ephemeral bridge test")
 
-        bridge_b = AgentRuntimeBridge(store, runtime_id="bridge-b")
+        bridge_b = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-b")
         # Bridge B must not be attached to anything.
         result = bridge_b.get_context()
         assert result["success"] is False
 
     def test_destroying_bridge_does_not_destroy_process_instance(
-        self, store: ProcessStore
+        self, repo_ctx: ProcessStore
     ) -> None:
         """Destroying a bridge must not destroy the persisted Process Instance."""
-        bridge_a = AgentRuntimeBridge(store, runtime_id="bridge-a")
+        bridge_a = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-a")
         create_result = bridge_a.create_process("Persistence test")
         pid = create_result["process_instance_id"]
         del bridge_a
 
         # The Process Instance must still be loadable.
-        bridge_b = AgentRuntimeBridge(store, runtime_id="bridge-b")
+        bridge_b = AgentRuntimeBridge(repo_ctx, runtime_id="bridge-b")
         attach_result = bridge_b.attach(pid)
         assert attach_result["success"] is True
         assert attach_result["process_instance_id"] == pid

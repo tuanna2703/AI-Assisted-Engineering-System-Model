@@ -20,6 +20,7 @@ from typing import Any
 from runtime.core.models import (
     ExecutionContext,
     ProcessInstance,
+    CURRENT_PERSISTED_SCHEMA_VERSION,
     VALID_LIFECYCLE_VALUES,
     VALID_SCOPE_RESOLUTION_STATUSES,
     now,
@@ -91,6 +92,12 @@ class ProcessStore:
         process_path = self._dir(process_instance_id) / "process.json"
         _check_conflict(process_path)
         data = JsonStore(process_path).load()
+        schema_version = data.get("schema_version", 1)
+        if schema_version != CURRENT_PERSISTED_SCHEMA_VERSION:
+            raise PersistenceError(
+                f"unsupported Process Instance schema version: {schema_version!r}; "
+                f"supported version is {CURRENT_PERSISTED_SCHEMA_VERSION}"
+            )
         try:
             instance = ProcessInstance(**data)
         except (TypeError, ValueError) as exc:
@@ -132,6 +139,8 @@ class ProcessStore:
         self,
         instance: ProcessInstance,
         event: dict[str, Any],
+        *,
+        expected_updated_at: str | None = None,
     ) -> None:
         """Persist authoritative Process Instance identity/binding and history."""
         directory = self._dir(instance.process_instance_id)
@@ -158,6 +167,23 @@ class ProcessStore:
 
         process_path = directory / "process.json"
         history_path = directory / "history.jsonl"
+
+        # Optimistic stale-write guard for Process Instance state.  The Runtime
+        # instance carries the timestamp it loaded; another writer changing the
+        # persisted Process Instance must therefore be detected before overwrite.
+        if process_path.exists():
+            try:
+                persisted_data = json.loads(process_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise PersistenceError("cannot validate Process Instance concurrency state") from exc
+            persisted_updated_at = persisted_data.get("updated_at")
+            expected = instance.updated_at if expected_updated_at is None else expected_updated_at
+            if persisted_updated_at != expected:
+                raise PersistenceError(
+                    "stale Process Instance write rejected: persisted Process Instance "
+                    "has changed since this Runtime loaded it; reload before writing"
+                )
+
         snapshots = {
             process_path: process_path.read_bytes() if process_path.exists() else None,
             history_path: history_path.read_bytes() if history_path.exists() else None,
@@ -167,7 +193,13 @@ class ProcessStore:
         try:
             instance.updated_at = now()
             JsonStore(process_path).save(instance.to_dict())
-            JsonlStore(history_path).append({**event, "at": now()})
+            JsonlStore(history_path).append(
+                {
+                    **event,
+                    "at": now(),
+                    "process_instance_updated_at": instance.updated_at,
+                }
+            )
         except Exception:
             instance.updated_at = prior_updated_at
             self._restore_file(process_path, snapshots[process_path])
@@ -237,6 +269,18 @@ class ProcessStore:
         process_path = directory / "process.json"
         context_path = directory / "context.json"
         history_path = directory / "history.jsonl"
+
+        if process_path.exists():
+            try:
+                persisted_data = json.loads(process_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise PersistenceError("cannot validate Process Instance concurrency state") from exc
+            if persisted_data.get("updated_at") != instance.updated_at:
+                raise PersistenceError(
+                    "stale Process Instance lifecycle write rejected: persisted Process Instance "
+                    "has changed since this Runtime loaded it; reload before writing"
+                )
+
         snapshots = {
             process_path: process_path.read_bytes() if process_path.exists() else None,
             context_path: context_path.read_bytes() if context_path.exists() else None,
@@ -253,7 +297,14 @@ class ProcessStore:
                 context.version += 1
                 context.updated_at = now()
                 JsonStore(context_path).save(context.to_dict())
-            JsonlStore(history_path).append({**event, "at": now()})
+            JsonlStore(history_path).append(
+                {
+                    **event,
+                    "at": now(),
+                    "process_instance_updated_at": instance.updated_at,
+                    "context_version": context.version,
+                }
+            )
         except Exception:
             instance.updated_at = prior_instance_updated_at
             context.version = prior_context_version

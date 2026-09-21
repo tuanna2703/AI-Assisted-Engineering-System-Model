@@ -9,7 +9,7 @@ It intentionally validates only observable repository/runtime capabilities:
 - Process Instance creation and known-ID recovery through fresh bridge objects;
 - authoritative Execution Context access.
 
-The probe uses a temporary ProcessStore so it cannot mutate the repository's
+The probe uses a temporary repository context so it cannot mutate the repository's
 normal persisted process state.
 """
 from __future__ import annotations
@@ -18,6 +18,8 @@ import importlib
 import json
 import tempfile
 from pathlib import Path
+
+from runtime.core import ActiveRepositoryContext
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
@@ -53,9 +55,7 @@ def main() -> int:
     print("tool_mcp_surfaces:", _surface_status(tool_candidates) or "none")
 
     bridge_module = importlib.import_module("bridge.agent_runtime_bridge")
-    runtime_module = importlib.import_module("runtime.core.store")
     bridge_class = getattr(bridge_module, "AgentRuntimeBridge")
-    store_class = getattr(runtime_module, "ProcessStore")
 
     required_bridge = ("create_process", "attach", "get_context", "dispatch")
     missing = [name for name in required_bridge if not hasattr(bridge_class, name)]
@@ -64,8 +64,8 @@ def main() -> int:
     print("bridge_surface: PASS", list(required_bridge))
 
     with tempfile.TemporaryDirectory(prefix="aesm-mechanism-probe-") as temp_dir:
-        store = store_class(temp_dir)
-        first = bridge_class(store, runtime_id="mechanism-probe-A")
+        repository_context = ActiveRepositoryContext(Path(temp_dir))
+        first = bridge_class(repository_context, runtime_id="mechanism-probe-A")
         created = first.create_process("Environment mechanism readiness probe")
         assert created["success"] is True, json.dumps(created, indent=2)
         process_id = created["process_instance_id"]
@@ -73,7 +73,7 @@ def main() -> int:
         assert created["context"]["process_instance_id"] == process_id
         print("process_creation: PASS", process_id)
 
-        second = bridge_class(store, runtime_id="mechanism-probe-B")
+        second = bridge_class(repository_context, runtime_id="mechanism-probe-B")
         recovered = second.attach(process_id)
         assert recovered["success"] is True, json.dumps(recovered, indent=2)
         assert recovered["process_instance_id"] == process_id

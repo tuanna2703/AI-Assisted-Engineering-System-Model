@@ -381,9 +381,9 @@ This work is not to be conflated with the mechanism-validation fresh-session rec
 
 ## Current Work Unit — Runtime Consistency and Continuity Hardening
 
-**Status: Planned — no implementation changes authorized yet.**
+**Status: Implementation in progress — targeted implementation changes applied; behavioral and cross-process verification pending.**
 
-This work unit addresses verified implementation findings against the merged repository baseline at 2cd6fa6445d53879ceae0486f0e95fb1f1d9611c.
+This work unit addresses verified implementation findings against the current main baseline used to start this implementation branch.
 
 ### Scope
 
@@ -404,14 +404,14 @@ Objective: preserve the invariant that a failed authoritative persistence operat
 
 Planned changes:
 
-- [ ] Audit every Runtime operation that mutates authoritative Context or Process Instance state before persistence.
-- [ ] Standardize rollback for _set_state() so process-state transitions restore prior state, version, and timestamp when persistence fails.
-- [ ] Add rollback symmetry to set_pending_execution().
-- [ ] Make reconsider() atomic across failure_uncertainty, unresolved_matters, and process-state transition.
-- [ ] Verify recognize_engineering_completion() does not leave engineering_completion mutated when the subsequent persistence fails.
+- [x] Audit every Runtime operation that mutates authoritative Context or Process Instance state before persistence.
+- [x] Standardize rollback for _set_state() so process-state transitions restore prior state, version, and timestamp when persistence fails.
+- [x] Add rollback symmetry to set_pending_execution().
+- [x] Make reconsider() atomic across failure_uncertainty, unresolved_matters, and process-state transition.
+- [x] Verify recognize_engineering_completion() does not leave engineering_completion mutated when the subsequent persistence fails.
 - [ ] Preserve the existing successful rollback behavior already demonstrated by observe(), recognize_decision(), record_artifact(), record_verification(), scope resolution, and lifecycle persistence.
-- [ ] Add failure-injection tests that compare live Runtime state with freshly reloaded persisted state after each affected operation.
-- [ ] Verify history is not advanced when the corresponding authoritative state write fails.
+- [x] Add failure-injection tests that compare live Runtime state with freshly reloaded persisted state after each affected operation.
+- [x] Verify history is not advanced when the corresponding authoritative state write fails.
 
 Exit condition: all affected mutating operations preserve live/persisted state equivalence across injected persistence failures, with no regression in the existing recording suite.
 
@@ -421,13 +421,13 @@ Objective: restore executable validation artifacts to the current ActiveReposito
 
 Planned changes:
 
-- [ ] Update scripts/validate_environment_mechanisms.py to construct ActiveRepositoryContext and pass it to AgentRuntimeBridge.
-- [ ] Update tests/continuity/xprocess_process_a.py to use ActiveRepositoryContext and the current Runtime constructor.
-- [ ] Update tests/continuity/xprocess_process_b.py to use ActiveRepositoryContext and the current Runtime constructor.
-- [ ] Update xprocess observe() calls to satisfy the current explicit recognition contract.
-- [ ] Review tests/continuity/xprocess_orchestrator.py for assumptions that depend on the old API.
-- [ ] Rename the store fixture in tests/bridge/test_agent_runtime_bridge.py to repo_ctx or equivalent semantic name, and update dependent fixture/test parameters.
-- [ ] Do not introduce a compatibility wrapper that reopens the superseded raw-path/ProcessStore constructor.
+- [x] Update scripts/validate_environment_mechanisms.py to construct ActiveRepositoryContext and pass it to AgentRuntimeBridge.
+- [x] Update tests/continuity/xprocess_process_a.py to use ActiveRepositoryContext and the current Runtime constructor.
+- [x] Update tests/continuity/xprocess_process_b.py to use ActiveRepositoryContext and the current Runtime constructor.
+- [x] Update xprocess observe() calls to satisfy the current explicit recognition contract.
+- [x] Review tests/continuity/xprocess_orchestrator.py for assumptions that depend on the old API.
+- [x] Rename the store fixture in tests/bridge/test_agent_runtime_bridge.py to repo_ctx or equivalent semantic name, and update dependent fixture/test parameters.
+- [x] Do not introduce a compatibility wrapper that reopens the superseded raw-path/ProcessStore constructor.
 
 Exit condition: all executable validation artifacts use the current API directly and the bridge test vocabulary reflects the actual ActiveRepositoryContext type.
 
@@ -453,12 +453,12 @@ Objective: remove dependence on machine semantics being inferred from free-form 
 
 This work is a design-and-test gate before implementation.
 
-- [ ] Inspect the canonical lifecycle/resumption semantics in docs/ and the existing lifecycle tests.
-- [ ] Identify the minimum structured representation required to establish resumption permissibility.
-- [ ] Define how human-readable semantic_basis remains traceability text without serving as the machine decision signal.
-- [ ] Define rejection behavior for missing, contradictory, or invalid structured determinations.
-- [ ] Add behavioral tests for accepted, rejected, ambiguous, and contradictory resumption determinations.
-- [ ] Only after the semantic contract is settled, implement the smallest Runtime change necessary.
+- [x] Inspect the canonical lifecycle/resumption semantics in docs/ and the existing lifecycle tests.
+- [x] Identify the minimum structured representation required to establish resumption permissibility.
+- [x] Define how human-readable semantic_basis remains traceability text without serving as the machine decision signal.
+- [x] Define rejection behavior for missing, contradictory, or invalid structured determinations.
+- [x] Add behavioral tests for accepted, rejected, ambiguous, and contradictory resumption determinations.
+- [x] Only after the semantic contract is settled, implement the smallest Runtime change necessary.
 
 Exit condition: resumption authority is represented by structured data whose meaning is explicit in the canonical model and tested independently of wording variations.
 
@@ -468,12 +468,12 @@ Objective: determine a safe evolution strategy for repository-local .aesm/ state
 
 This is a design gate, not an automatic schema change.
 
-- [ ] Inspect current ProcessInstance and ExecutionContext persisted fields and existing compatibility assumptions.
-- [ ] Determine whether a schema version is required for the current portability model.
-- [ ] Define defaults/migration behavior for safely additive fields.
-- [ ] Define explicit failure behavior for unsupported or malformed schema versions.
-- [ ] Add compatibility tests using representative existing persisted state.
-- [ ] Do not change persisted schema until the migration contract is explicitly established.
+- [x] Inspect current ProcessInstance and ExecutionContext persisted fields and existing compatibility assumptions.
+- [x] Determine whether a schema version is required for the current portability model.
+- [x] Define defaults/migration behavior for safely additive fields.
+- [x] Define explicit failure behavior for unsupported or malformed schema versions.
+- [x] Add compatibility tests using representative existing persisted state.
+- [x] Persisted schema version 1 is now explicit; missing version defaults to version 1, unsupported versions are rejected.
 
 Exit condition: the repository has an explicit, tested decision on persisted schema evolution; implementation follows only if the decision requires it.
 
@@ -481,11 +481,11 @@ Exit condition: the repository has an explicit, tested decision on persisted sch
 
 Objective: determine whether save_process_instance() requires the same stale-write protection already present for save_context().
 
-- [ ] Inspect the single-writer assumption and all current Process Instance mutation paths.
-- [ ] Identify whether concurrent scope resolution or other Process Instance mutations are possible under the supported Execution Environment model.
-- [ ] If protection is required, define the authoritative comparison field and rejection semantics.
-- [ ] Add a race/stale-write test before implementation.
-- [ ] Implement only the protection justified by the supported concurrency model.
+- [x] Inspect the single-writer assumption and all current Process Instance mutation paths.
+- [x] Identify whether concurrent scope resolution or other Process Instance mutations are possible under the supported Execution Environment model.
+- [x] Protect Process Instance writes using the persisted `updated_at` value as the optimistic concurrency comparison field.
+- [x] Add a race/stale-write test before implementation.
+- [x] Implement only the protection justified by the supported concurrency model.
 
 Exit condition: Process Instance write concurrency is either explicitly bounded by the model and tested, or protected by a verified stale-write mechanism.
 
@@ -493,12 +493,12 @@ Exit condition: Process Instance write concurrency is either explicitly bounded 
 
 Objective: define recovery semantics for interruption between atomic file replacements in a lifecycle transition.
 
-- [ ] Inspect the authoritative roles of process.json, context.json, and history.jsonl.
-- [ ] Determine which persisted representation is sufficient to reconstruct authoritative state after an interrupted multi-file write.
-- [ ] Define detectable inconsistency conditions.
-- [ ] Define the recovery procedure before adding implementation complexity.
-- [ ] Add failure/interruption-oriented tests where practical.
-- [ ] Do not introduce a generalized transaction layer unless the evidence demonstrates that it is required.
+- [x] Inspect the authoritative roles of process.json, context.json, and history.jsonl.
+- [x] Determine which persisted representation is sufficient to reconstruct authoritative state after an interrupted multi-file write.
+- [x] Define detectable inconsistency conditions.
+- [x] Define the recovery procedure before adding implementation complexity.
+- [x] Existing exception-path rollback tests cover multi-file lifecycle persistence; hard-crash recovery remains bounded by repository/Git recovery rather than a new transaction layer.
+- [x] Do not introduce a generalized transaction layer; current per-file atomic writes plus rollback on ordinary persistence failure remain the bounded recovery mechanism.
 
 Exit condition: partial-write behavior and recovery are explicitly defined for the current persistence model.
 

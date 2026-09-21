@@ -38,7 +38,7 @@ def lifecycle_determination(
     actor: str = "validation-agent",
     evidence: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    return {
+    result = {
         "target_process_instance_id": runtime.process_instance.process_instance_id,
         "requested_transition": transition,
         "semantic_basis": condition,
@@ -47,6 +47,12 @@ def lifecycle_determination(
         "evidence": evidence or [{"condition": condition}],
         "occurred_at": "2026-09-09T00:00:00+00:00",
     }
+    if (transition == "SUSPENDED -> ACTIVE"):
+        result["resumption_determination"] = {
+            "status": "REJECTED" if "remains applicable" in condition else "PERMITTED",
+            "basis": "structured lifecycle reevaluation",
+        }
+    return result
 
 
 def apply_lifecycle_determination(
@@ -312,7 +318,53 @@ def test_lc15_runtime_interruption_does_not_change_lifecycle(tmp_path: Path):
     assert recovered.process_instance.lifecycle == "active"
 
 
-def test_lc16_conflicting_conditions_do_not_silently_choose_invalid_transition(tmp_path: Path):
+def test_lc17_missing_structured_resumption_determination_is_rejected(tmp_path: Path):
+    runtime = build_runtime(tmp_path)
+    apply_lifecycle_determination(runtime, lifecycle_determination(runtime, "ACTIVE -> SUSPENDED"))
+    determination = lifecycle_determination(runtime, "SUSPENDED -> ACTIVE")
+    determination.pop("resumption_determination")
+    with pytest.raises((PermissionError, RuntimeError, ValueError)):
+        apply_lifecycle_determination(runtime, determination)
+    assert runtime.process_instance.lifecycle == "suspended"
+
+
+def test_lc18_ambiguous_structured_resumption_determination_is_rejected(tmp_path: Path):
+    runtime = build_runtime(tmp_path)
+    apply_lifecycle_determination(runtime, lifecycle_determination(runtime, "ACTIVE -> SUSPENDED"))
+    determination = lifecycle_determination(runtime, "SUSPENDED -> ACTIVE")
+    determination["resumption_determination"]["status"] = "AMBIGUOUS"
+    with pytest.raises((PermissionError, RuntimeError, ValueError)):
+        apply_lifecycle_determination(runtime, determination)
+    assert runtime.process_instance.lifecycle == "suspended"
+
+
+def test_lc19_conflicting_structured_resumption_determination_is_rejected(tmp_path: Path):
+    runtime = build_runtime(tmp_path)
+    apply_lifecycle_determination(runtime, lifecycle_determination(runtime, "ACTIVE -> SUSPENDED"))
+    determination = lifecycle_determination(runtime, "SUSPENDED -> ACTIVE")
+    determination["resumption_determination"]["conflict"] = True
+    with pytest.raises((PermissionError, RuntimeError, ValueError)):
+        apply_lifecycle_determination(runtime, determination)
+    assert runtime.process_instance.lifecycle == "suspended"
+
+
+def test_lc20_structured_resumption_basis_is_not_the_decision_signal(tmp_path: Path):
+    runtime = build_runtime(tmp_path)
+    apply_lifecycle_determination(runtime, lifecycle_determination(runtime, "ACTIVE -> SUSPENDED"))
+    determination = lifecycle_determination(
+        runtime,
+        "SUSPENDED -> ACTIVE",
+        condition="free-form text does not use legacy trigger words",
+    )
+    determination["resumption_determination"] = {
+        "status": "PERMITTED",
+        "basis": "controller verified suspension condition ceased",
+    }
+    apply_lifecycle_determination(runtime, determination)
+    assert runtime.process_instance.lifecycle == "active"
+
+
+def test_lc21_conflicting_conditions_do_not_silently_choose_invalid_transition(tmp_path: Path):
     runtime = build_runtime(tmp_path)
     determination = lifecycle_determination(
         runtime,

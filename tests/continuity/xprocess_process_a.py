@@ -18,10 +18,13 @@ import sys
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from runtime.core import ProcessStore, Runtime
+from pathlib import Path
+
+from runtime.core import ActiveRepositoryContext, Runtime
 
 # ─── Pre-agreed experimental constants ───────────────────────────────────────
-PERSISTENCE_STORE = "/tmp/aesm_xprocess_experiment"
+PERSISTENCE_ROOT = os.environ.get("XPROCESS_REPOSITORY_ROOT", "/tmp/aesm_xprocess_experiment")
+PERSISTENCE_STORE = os.path.join(PERSISTENCE_ROOT, ".aesm")
 OBJECTIVE_MARKER = "AESM_CROSS_PROCESS_CONTINUITY_EXPERIMENT_20260907_xproc7b3e"
 
 ENGINEERING_OBJECTIVE = (
@@ -46,9 +49,10 @@ def main() -> dict:
     evidence["project_root"] = PROJECT_ROOT
 
     # Create store and runtime
-    store = ProcessStore(PERSISTENCE_STORE)
+    repository_root = Path(PERSISTENCE_ROOT).resolve()
+    repository_context = ActiveRepositoryContext(repository_root)
     runtime_id = "xprocess-runtime-A"
-    rt = Runtime(store, runtime_id)
+    rt = Runtime(repository_context, runtime_id)
 
     evidence["runtime_id"] = runtime_id
     evidence["persistence_store"] = PERSISTENCE_STORE
@@ -72,11 +76,13 @@ def main() -> dict:
         "source": "experimental_probe",
         "fact": "cross-process persistence boundary is testable",
         "detail": "JSON persistence store supports independent process access",
+        "recognition": DECISION_RECOGNITION,
     }
     observation_2 = {
         "source": "experimental_probe",
         "fact": "process instance discovery is possible via objective marker",
         "detail": "persisted process.json contains engineering_objective field",
+        "recognition": DECISION_RECOGNITION,
     }
     rt.observe(observation_1)
     rt.observe(observation_2)
@@ -131,7 +137,7 @@ def main() -> dict:
 
     # ── Capture persisted files ──────────────────────────────────────────
     instance_dir = os.path.join(
-        PERSISTENCE_STORE, "process-instance", process_instance_id
+        PERSISTENCE_STORE, process_instance_id
     )
     persisted_files = []
     if os.path.isdir(instance_dir):
@@ -143,7 +149,7 @@ def main() -> dict:
     evidence["persisted_files"] = persisted_files
 
     # ── Capture history ──────────────────────────────────────────────────
-    history = store.history(process_instance_id)
+    history = rt.store.history(process_instance_id)
     evidence["history_entry_count"] = len(history)
     evidence["history_event_types"] = [e["type"] for e in history]
     evidence["history"] = history

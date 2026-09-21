@@ -20,6 +20,8 @@ VALID_SCOPE_RESOLUTION_STATUSES = {
     "INVALID",
 }
 
+CURRENT_PERSISTED_SCHEMA_VERSION = 1
+
 
 @dataclass
 class ProcessInstance:
@@ -34,6 +36,7 @@ class ProcessInstance:
     engineering_scope_evidence: list[dict[str, Any]] = field(default_factory=list)
     created_at: str = field(default_factory=now)
     updated_at: str = field(default_factory=now)
+    schema_version: int = CURRENT_PERSISTED_SCHEMA_VERSION
 
     @classmethod
     def create(
@@ -82,6 +85,7 @@ class ExecutionContext:
     engineering_completion: bool = False
     version: int = 0
     updated_at: str = field(default_factory=now)
+    schema_version: int = CURRENT_PERSISTED_SCHEMA_VERSION
 
     @classmethod
     def create(cls, instance: ProcessInstance) -> "ExecutionContext":
@@ -96,4 +100,13 @@ class ExecutionContext:
         missing = required - data.keys()
         if missing:
             raise ValueError(f"context missing required fields: {sorted(missing)}")
+
+        data = dict(data)
+        schema_version = data.get("schema_version", 1)
+        if schema_version != CURRENT_PERSISTED_SCHEMA_VERSION:
+            raise ValueError(
+                f"unsupported context schema version: {schema_version!r}; "
+                f"supported version is {CURRENT_PERSISTED_SCHEMA_VERSION}"
+            )
+        data["schema_version"] = schema_version
         return cls(**data)
