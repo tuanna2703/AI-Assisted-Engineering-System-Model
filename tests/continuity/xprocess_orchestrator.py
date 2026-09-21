@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import time
+import tempfile
 from datetime import datetime, timezone
 
 PERSISTENCE_STORE = "/tmp/aesm_xprocess_experiment"
@@ -77,13 +78,16 @@ def run_subprocess(script: str, env_extra: dict | None = None) -> dict:
 def main():
     experiment_time = datetime.now(timezone.utc).isoformat()
 
+    experiment_root = tempfile.mkdtemp(prefix="aesm-xprocess-repo-")
+
     report: dict = {
         "experiment": "AESM Cross-Process Continuity Validation",
         "timestamp": experiment_time,
         "orchestrator_pid": os.getpid(),
         "python_executable": sys.executable,
         "python_version": sys.version,
-        "persistence_store": PERSISTENCE_STORE,
+        "persistence_repository_root": experiment_root,
+        "persistence_store": os.path.join(experiment_root, ".aesm"),
     }
 
     # ── Step 1: Clean persistence store ──────────────────────────────────
@@ -94,11 +98,11 @@ def main():
         "cleaned_before_experiment": True,
     }
 
-    # ── Step 2: Run Process A ────────────────────────────────────────────
+    # ── Run Process A ────────────────────────────────────────────
     print("=" * 70)
-    print("PHASE 1: Running Process A...")
+    print("Running Process A...")
     print("=" * 70)
-    process_a_report = run_subprocess(PROCESS_A_SCRIPT)
+    process_a_report = run_subprocess(PROCESS_A_SCRIPT, env_extra={"XPROCESS_REPOSITORY_ROOT": experiment_root})
     report["process_a"] = process_a_report
 
     if process_a_report["returncode"] != 0:
@@ -135,7 +139,7 @@ def main():
     }
 
     # Verify persisted state exists before starting Process B
-    pi_dir = os.path.join(PERSISTENCE_STORE, "process-instance")
+    pi_dir = os.path.join(experiment_root, ".aesm")
     if os.path.isdir(pi_dir):
         persisted_instances = os.listdir(pi_dir)
         report["process_boundary"]["persisted_instances_after_a"] = len(persisted_instances)
@@ -146,10 +150,10 @@ def main():
         print(json.dumps(report, indent=2))
         return 1
 
-    # ── Step 4: Run Process B ────────────────────────────────────────────
+    # ── Run Process B ────────────────────────────────────────────
     print()
     print("=" * 70)
-    print("PHASE 2: Running Process B (independent process)...")
+    print("Running Process B (independent process)...")
     print("=" * 70)
 
     # Pass Process A's PID via env var for evidence comparison ONLY
@@ -157,6 +161,7 @@ def main():
     if process_a_pid:
         env_extra["XPROCESS_PROCESS_A_PID"] = str(process_a_pid)
 
+    env_extra["XPROCESS_REPOSITORY_ROOT"] = experiment_root
     process_b_report = run_subprocess(PROCESS_B_SCRIPT, env_extra=env_extra)
     report["process_b"] = process_b_report
 
