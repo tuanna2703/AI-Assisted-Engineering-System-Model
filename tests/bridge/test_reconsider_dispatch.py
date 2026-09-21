@@ -29,13 +29,18 @@ RECONSIDERATION_REASON = {
 
 
 @pytest.fixture
-def store(tmp_path: Path) -> ActiveRepositoryContext:
+def ctx(tmp_path: Path) -> ActiveRepositoryContext:
     return ActiveRepositoryContext(tmp_path)
 
 
 @pytest.fixture
-def verification_ready_bridge(store: ActiveRepositoryContext) -> AgentRuntimeBridge:
-    bridge = AgentRuntimeBridge(store, runtime_id="reconsider-test")
+def store(ctx: ActiveRepositoryContext) -> ProcessStore:
+    return ProcessStore(ctx)
+
+
+@pytest.fixture
+def verification_ready_bridge(ctx: ActiveRepositoryContext) -> AgentRuntimeBridge:
+    bridge = AgentRuntimeBridge(ctx, runtime_id="reconsider-test")
     assert bridge.create_process("Test reconsider bridge dispatch")["success"] is True
     assert bridge.dispatch("start_investigation")["success"] is True
     assert bridge.dispatch(
@@ -76,9 +81,9 @@ def test_reconsider_argument_is_propagated_to_runtime(
 
 
 def test_successful_verification_rejection_is_propagated(
-    store: ProcessStore,
+    ctx: ActiveRepositoryContext,
 ) -> None:
-    bridge = AgentRuntimeBridge(store, runtime_id="reconsider-rejection-test")
+    bridge = AgentRuntimeBridge(ctx, runtime_id="reconsider-rejection-test")
     assert bridge.create_process("Test successful verification rejection")["success"] is True
     assert bridge.dispatch("start_investigation")["success"] is True
     assert bridge.dispatch(

@@ -39,7 +39,12 @@ COMPLETION_RECOGNITION = {
 
 
 def build_runtime(tmp_path: Path, runtime_id: str = "recording-test") -> Runtime:
-    """Create a new Runtime with a fresh Process Instance."""
+    """Create a new Runtime with a fresh Process Instance.
+
+    Ensures ``tmp_path`` exists, so callers may pass subdirectories that
+    have not been created yet (e.g. ``tmp_path / "structured"``).
+    """
+    tmp_path.mkdir(parents=True, exist_ok=True)
     runtime = Runtime(ActiveRepositoryContext(tmp_path), runtime_id)
     runtime.create_process("Recording behavioral validation")
     return runtime

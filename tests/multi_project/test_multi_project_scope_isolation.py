@@ -217,6 +217,7 @@ def test_bridge_preserves_independent_authority_for_two_projects(tmp_path: Path)
     assert result_a["process_instance"]["engineering_scope_identity"] == PROJECT_A
     assert result_b["process_instance"]["engineering_scope_identity"] == PROJECT_B
 
+    store = ProcessStore(ctx)
     assert store.load_instance(process_a).engineering_scope_identity == PROJECT_A
     assert store.load_instance(process_b).engineering_scope_identity == PROJECT_B
 
