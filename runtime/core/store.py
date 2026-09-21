@@ -88,6 +88,26 @@ class ProcessStore:
             }
         )
 
+    def list_instances(self) -> list[ProcessInstance]:
+        """Enumerate valid Process Instances in this repository's .aesm boundary.
+
+        Enumeration is strictly repository-local. Filesystem ordering is not
+        used as a selection rule; callers must apply explicit deterministic
+        resolution semantics.
+        """
+        if not self.root.exists():
+            return []
+
+        instances: list[ProcessInstance] = []
+        for directory in sorted(self.root.iterdir(), key=lambda path: path.name):
+            if not directory.is_dir():
+                continue
+            process_path = directory / "process.json"
+            if not process_path.exists():
+                continue
+            instances.append(self.load_instance(directory.name))
+        return instances
+
     def load_instance(self, process_instance_id: str) -> ProcessInstance:
         process_path = self._dir(process_instance_id) / "process.json"
         _check_conflict(process_path)
