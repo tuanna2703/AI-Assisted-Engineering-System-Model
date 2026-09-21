@@ -366,6 +366,46 @@ The DBP repository may provide evidence for scope resolution but is not itself t
 **Next authorized work:** **Project / Scope Resolution Design.**
 
 Implementation remains blocked until deterministic resolution, ambiguity handling, Process Instance selection/creation, persistence, and Agent/Environment evidence flow are designed and approved.
+## Current Work Unit — Project / Scope Resolution
+
+**Status: Design gate closed — minimum deterministic resolution mechanism implemented; behavioral verification pending.**
+
+Design record: [implementation/PROJECT-SCOPE-RESOLUTION-DESIGN.md](implementation/PROJECT-SCOPE-RESOLUTION-DESIGN.md)
+
+### Plan
+
+- [x] Inspect the merged repository-portable continuation baseline.
+- [x] Reconcile existing Engineering Scope Identity semantics and current scope-binding implementation.
+- [x] Define the distinction between repository identity, repository root, Engineering Scope Identity, Engineering Objective, Process Instance Identity, and Execution Context.
+- [x] Define the Execution Environment → Active Repository Context → Scope Resolution → Process Instance Resolution authority flow.
+- [x] Define explicit outcomes for unresolved, ambiguous, conflicting, invalid, and resolved scope.
+- [x] Define deterministic Process Instance candidate selection without objective/path/filesystem heuristics.
+- [x] Define explicit Process Instance creation as separate from discovery.
+- [x] Define repository isolation and active-context change behavior.
+- [x] Define Agent/Execution Environment evidence as non-authoritative input.
+- [x] Close the Project / Scope Resolution design gate.
+- [x] Add stable repository identity to ActiveRepositoryContext without making it a scope identity.
+- [x] Add repository-local Process Instance enumeration to ProcessStore.
+- [x] Add Runtime-owned deterministic Process Instance resolution.
+- [x] Add Runtime resolution-and-attach behavior.
+- [x] Expose resolution through the existing Agent–Runtime Bridge without adding Bridge-owned state.
+- [x] Add targeted tests for unique resolution, no candidate, ambiguity, explicit PI selection, cross-scope rejection, repository isolation, repository identity/path distinction, and Bridge delegation.
+- [ ] Run the targeted scope-resolution test suite.
+- [ ] Run the full regression suite.
+- [ ] Validate two independent repository roots in one workspace and active-context change behavior with executable evidence.
+- [ ] Reconcile Runtime, persisted, Agent/Bridge, and verification evidence.
+- [ ] Close the implementation work unit only from executable evidence.
+
+### Authorization boundary
+
+No generalized Project entity, workspace-wide Process Instance index, second persistence store, or Agent-owned discovery mechanism is authorized by this work unit.
+
+Creation remains an explicit Runtime operation. Resolution may identify that creation is required, but it does not silently create a Process Instance.
+
+### Exit condition
+
+The work unit closes only when the deterministic resolution tests and regression suite pass and the multi-repository isolation/context-change scenarios are explicitly verified.
+
 ## Repository-Portable Continuation Validation
 
 **Status: Complete — validation PASS.**
