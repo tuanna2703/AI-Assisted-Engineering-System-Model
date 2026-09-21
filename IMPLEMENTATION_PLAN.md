@@ -368,7 +368,7 @@ The DBP repository may provide evidence for scope resolution but is not itself t
 Implementation remains blocked until deterministic resolution, ambiguity handling, Process Instance selection/creation, persistence, and Agent/Environment evidence flow are designed and approved.
 ## Current Work Unit — Project / Scope Resolution
 
-**Status: Design gate closed — minimum deterministic resolution mechanism implemented; behavioral verification pending.**
+**Status: Verification gate CLOSED — all executable evidence obtained; work unit complete.**
 
 Design record: [implementation/PROJECT-SCOPE-RESOLUTION-DESIGN.md](implementation/PROJECT-SCOPE-RESOLUTION-DESIGN.md)
 
@@ -390,11 +390,11 @@ Design record: [implementation/PROJECT-SCOPE-RESOLUTION-DESIGN.md](implementatio
 - [x] Add Runtime resolution-and-attach behavior.
 - [x] Expose resolution through the existing Agent–Runtime Bridge without adding Bridge-owned state.
 - [x] Add targeted tests for unique resolution, no candidate, ambiguity, explicit PI selection, cross-scope rejection, repository isolation, repository identity/path distinction, and Bridge delegation.
-- [ ] Run the targeted scope-resolution test suite.
-- [ ] Run the full regression suite.
-- [ ] Validate two independent repository roots in one workspace and active-context change behavior with executable evidence.
-- [ ] Reconcile Runtime, persisted, Agent/Bridge, and verification evidence.
-- [ ] Close the implementation work unit only from executable evidence.
+- [x] Run the targeted scope-resolution test suite.
+- [x] Run the full regression suite.
+- [x] Validate two independent repository roots in one workspace and active-context change behavior with executable evidence.
+- [x] Reconcile Runtime, persisted, Agent/Bridge, and verification evidence.
+- [x] Close the implementation work unit only from executable evidence.
 
 ### Authorization boundary
 
@@ -402,15 +402,33 @@ No generalized Project entity, workspace-wide Process Instance index, second per
 
 Creation remains an explicit Runtime operation. Resolution may identify that creation is required, but it does not silently create a Process Instance.
 
-### Verification status — executable verification in progress
+### Verification status — CLOSED
 
 - [x] Add the initial deterministic resolution tests.
 - [x] Expand tests for relocated repository paths, immutable active-repository context, cross-repository explicit PI rejection, and terminated PI exclusion.
-- [ ] Run the targeted scope-resolution, scope-binding, multi-project, repository-isolation, and affected Runtime/Bridge suites from an executable checkout.
-- [ ] Run the full regression suite from the merged main revision.
-- [ ] Validate the multi-repository and active-context scenarios with executable evidence.
-- [ ] Reconcile Runtime, persisted, Agent/Bridge, and verification evidence.
-- [ ] Close the implementation work unit only from executable evidence.
+- [x] Run the targeted scope-resolution, scope-binding, multi-project, repository-isolation, and affected Runtime/Bridge suites from an executable checkout.
+- [x] Run the full regression suite from the merged main revision.
+- [x] Validate the multi-repository and active-context scenarios with executable evidence.
+- [x] Reconcile Runtime, persisted, Agent/Bridge, and verification evidence.
+- [x] Close the implementation work unit only from executable evidence.
+
+### Executable verification record — 2026-09-21
+
+**Branch:** `verify/executable-project-scope-resolution`
+**HEAD SHA:** `67f68ccceba20e7833338ef673ba0aa37a5010ae`
+**Python:** 3.13.5 | **pytest:** 9.1.1
+
+**Defect corrected:** `test_runtime_context_is_immutable_and_does_not_retarget_store` referenced non-existent `ProcessStore.context` attribute. Corrected to use `store.root` (public). No production code changed.
+
+**Isolation strengthened:** `test_resolution_is_repository_local` and `test_cross_repo_isolation` both strengthened from single-direction / empty-B to bidirectional / populated-B with auditability comments.
+
+| Suite | Command | Result |
+|---|---|---|
+| Scope resolution + binding | `pytest tests/project_identity/` | **25/25 PASS** |
+| Multi-project + repository isolation | `pytest tests/multi_project/ tests/repository_isolation/` | **24/24 PASS** |
+| Full regression | `pytest tests/` | **204/204 PASS** |
+
+Evidence artifact: [implementation/EXECUTABLE-PROJECT-SCOPE-RESOLUTION-VERIFICATION.md](implementation/EXECUTABLE-PROJECT-SCOPE-RESOLUTION-VERIFICATION.md)
 
 ### Exit condition
 
