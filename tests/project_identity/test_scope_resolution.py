@@ -27,6 +27,12 @@ def test_one_applicable_process_instance_resolves_deterministically(tmp_path: Pa
     assert result.status == "RESOLVED"
     assert result.process_instance_id == pid
 
+    runtime.stop()
+    attached = runtime.resolve_and_attach_process_instance("scope:one")
+    assert attached.status == "RESOLVED"
+    assert runtime.attached is True
+    assert runtime.process_instance.process_instance_id == pid
+
 
 def test_no_applicable_process_instance_requires_explicit_creation(tmp_path: Path):
     runtime = Runtime(ActiveRepositoryContext(tmp_path), "runtime-a")
@@ -145,4 +151,6 @@ def test_bridge_exposes_resolution_without_owning_binding(tmp_path: Path):
 
     assert result["success"] is True
     assert result["process_instance_id"] == pid
+    assert result["resolution"]["status"] == "RESOLVED"
+    assert result["resolution"]["process_instance_id"] == pid
     assert not hasattr(bridge, "store")
