@@ -383,7 +383,7 @@ This work is not to be conflated with the mechanism-validation fresh-session rec
 
 **Status: Implementation in progress — targeted implementation changes applied; behavioral and cross-process verification pending.**
 
-This work unit addresses verified implementation findings against the merged repository baseline at 2cd6fa6445d53879ceae0486f0e95fb1f1d9611c.
+This work unit addresses verified implementation findings against the current main baseline used to start this implementation branch.
 
 ### Scope
 
@@ -437,7 +437,7 @@ Objective: establish current-architecture evidence for independent OS-process re
 
 Planned procedure:
 
-- [~] Run the repaired xprocess orchestrator from the repository root.
+- [ ] Run the repaired xprocess orchestrator from the repository root.
 - [ ] Verify Process A and Process B use distinct OS process identities and Runtime identities.
 - [ ] Verify Process B reconstructs the same persisted Process Instance and authoritative Context.
 - [ ] Verify persisted history contains evidence from both Runtime identities.
