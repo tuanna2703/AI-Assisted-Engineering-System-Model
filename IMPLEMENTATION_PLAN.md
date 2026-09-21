@@ -402,9 +402,19 @@ No generalized Project entity, workspace-wide Process Instance index, second per
 
 Creation remains an explicit Runtime operation. Resolution may identify that creation is required, but it does not silently create a Process Instance.
 
+### Verification status — executable verification in progress
+
+- [x] Add the initial deterministic resolution tests.
+- [x] Expand tests for relocated repository paths, immutable active-repository context, cross-repository explicit PI rejection, and terminated PI exclusion.
+- [ ] Run the targeted scope-resolution, scope-binding, multi-project, repository-isolation, and affected Runtime/Bridge suites from an executable checkout.
+- [ ] Run the full regression suite from the merged main revision.
+- [ ] Validate the multi-repository and active-context scenarios with executable evidence.
+- [ ] Reconcile Runtime, persisted, Agent/Bridge, and verification evidence.
+- [ ] Close the implementation work unit only from executable evidence.
+
 ### Exit condition
 
-The work unit closes only when the deterministic resolution tests and regression suite pass and the multi-repository isolation/context-change scenarios are explicitly verified.
+The work unit closes only when the deterministic resolution tests and regression suite pass and the multi-repository isolation/context-change scenarios are explicitly verified. Source inspection or a committed test expansion does not satisfy this gate.
 
 ## Repository-Portable Continuation Validation
 
