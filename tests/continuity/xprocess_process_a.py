@@ -137,7 +137,7 @@ def main() -> dict:
 
     # ── Capture persisted files ──────────────────────────────────────────
     instance_dir = os.path.join(
-        PERSISTENCE_STORE, "process-instance", process_instance_id
+        PERSISTENCE_STORE, process_instance_id
     )
     persisted_files = []
     if os.path.isdir(instance_dir):
