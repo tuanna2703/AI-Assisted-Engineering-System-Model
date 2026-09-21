@@ -488,10 +488,19 @@ The multi-project targeted tests were executed on `ed7e8980522c336862bb5c732a113
 
 ### Current Progress Position
 
-The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, Agent-boundary mechanism validation, DBP empirical investigation, project/scope semantics, scope resolution design, process binding design, persistence scope design, agent/environment mechanism design, normative documentation reconciliation, project identity and process binding implementation, and multi-project behavioral validation.
+The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, Agent-boundary mechanism validation, DBP empirical investigation, project/scope semantics, scope resolution design, process binding design, persistence scope design, agent/environment mechanism design, normative documentation reconciliation, project identity and process binding implementation, multi-project behavioral validation, and repository-local persistence migration.
 
-**Closed gate:** Multi-Project Behavioral Validation — **Conformant — Demonstrated**.
+**Closed gate:** Repository-Local Persistence Migration — implementation complete; empirical portability validation pending.
 
-**Current gate:** Fresh-Agent DBP Continuation.
+**Current validation gate:** Git Round-Trip → Fresh-Agent Repository-Scoped Continuation → Evidence Reconciliation.
 
-**Next action:** Validate continuation of a real DBP process in a fresh Agent session after project binding is available.
+**Runtime change policy:** Do not modify Runtime, ProcessStore, bridge semantics, or persistence boundaries during this validation unless a separately approved evidence-driven change is required after reconciliation.
+
+**Execution plan:** `execution/REPOSITORY-PORTABLE-CONTINUATION-EXECUTION-PLAN.md`.
+
+The validation is intended to establish the stronger empirical property:
+
+> AESM engineering state is repository-portable and can support fresh-Agent continuation across execution environments.
+
+The claim must remain bounded by the recorded evidence. A successful Git round trip alone proves persistence portability; it does not prove fresh-Agent continuation. A fresh-Agent continuation without an independent Git round trip does not prove repository portability.
+
