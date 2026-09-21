@@ -80,3 +80,263 @@ An abrupt hard process crash between successful file replacements is not claimed
 Implementation changes are complete for the targeted hardening work.
 
 Behavioral regression and the repaired cross-process experiment still require execution in an environment with the repository checkout and test dependencies available. The implementation record does not claim those runs passed until their evidence is available.
+
+---
+
+## Verification Record
+
+**Authorized by:** `IMPLEMENTATION_PLAN.md` — Runtime Consistency and Continuity Hardening, Final Reconciliation.
+Verification executed by Agent on behalf of the authorized work unit. No production code was modified during verification.
+
+---
+
+### Work Unit: Merged-State Verification
+
+**Work unit:** Merged-State Verification
+**Repository commit SHA:** `46c5399fbd254a93073ebb27c3d180d7483a34cd`
+**Branch:** `main` (up to date with `origin/main`)
+**Commands executed:**
+```
+git status
+git log --oneline -5
+git rev-parse HEAD
+git branch --show-current
+```
+**Observed result:**
+- Working tree clean; nothing to commit.
+- HEAD is the merge commit for PR #12 (`implement/runtime-consistency-and-continuity-hardening` → `main`).
+- `AGENTS.md`, `IMPLEMENTATION_BASELINE.md`, `IMPLEMENTATION_PLAN.md`, and `implementation/RUNTIME-CONSISTENCY-AND-CONTINUITY-HARDENING.md` are all present and accessible.
+- `tests/runtime/test_persistence_hardening.py` (6 tests) and `tests/runtime/test_persistence_schema_and_concurrency.py` (4 tests) are present.
+- `tests/continuity/xprocess_process_a.py`, `xprocess_process_b.py`, `xprocess_orchestrator.py` are present and use current `ActiveRepositoryContext` API.
+- `IMPLEMENTATION_PLAN.md` explicitly authorizes Final Reconciliation at lines 505–514, including running the complete regression suite and reconciling evidence.
+
+**Evidence location:** This record; `git log` output captured above.
+**Result classification:** PASS
+**Remaining work:** Regression verification, hardening behavior verification, cross-process continuity verification, repository-portable continuation verification, evidence reconciliation.
+
+---
+
+### Work Unit: Regression Verification
+
+**Work unit:** Regression Verification
+**Repository commit SHA:** `46c5399fbd254a93073ebb27c3d180d7483a34cd`
+**Commands executed:**
+```
+source .venv/bin/activate && pytest -q
+```
+**Execution environment:** macOS, Python 3.13.5, pytest 9.1.1
+**Observed result:** `3 failed, 189 passed in 2.33s`
+
+**Failures observed:**
+
+**Failure 1 — `tests/bridge/test_agent_runtime_bridge.py::TestPersistenceFailure::test_persistence_failure_returns_error`**
+
+```
+AttributeError: 'Runtime' object has no attribute 'repo_ctx'
+  at: monkeypatch.setattr(bridge._runtime.repo_ctx, "save_context", failing_save)
+```
+
+- **Affected boundary:** Test code ↔ Runtime attribute surface.
+- **Expected behavior:** Test monkeypatches `save_context` on the Runtime's store or context object to inject a persistence failure.
+- **Actual behavior:** Test references `bridge._runtime.repo_ctx`, but the attribute exposed by `Runtime` is `repository_context` (a property). The attribute `repo_ctx` does not exist.
+- **Classification:** test/API mismatch — the test uses a stale attribute name that was not updated to match the current `runtime.repository_context` property name. The production Runtime behavior is not defective; the monkeypatch target is wrong.
+- **Impact:** One bridge persistence-failure test is not executed. The underlying Runtime rollback behavior is covered separately by `tests/runtime/test_persistence_hardening.py` (all 6 PASS).
+- **Required decision:** CONTROLLER must decide whether to repair the test attribute reference. No production code change is required.
+
+**Failure 2 — `tests/lifecycle/test_runtime_lifecycle.py::test_lifecycle_persistence_failure_restores_files_and_authoritative_in_memory_state`**
+
+```
+AssertionError: Regex pattern did not match.
+  Expected regex: 'injected lifecycle history failure'
+  Actual message: 'resumption rejected: structured resumption determination is required'
+```
+
+- **Affected boundary:** Lifecycle test setup → structured resumption enforcement.
+- **Expected behavior:** The test invokes `apply_lifecycle_determination` for `SUSPENDED → ACTIVE`, expects the injected history-append failure to propagate.
+- **Actual behavior:** The `SUSPENDED → ACTIVE` determination in `lifecycle_determination()` (test helper, line 30–39 of `test_runtime_lifecycle.py`) does not include a `resumption_determination` field. The hardening implementation now requires a structured `resumption_determination` before the history-append path is reached; the new guard fires first and raises with the structured-resumption rejection message, not the injected failure.
+- **Classification:** test/API mismatch — the test helper was not updated to supply the `resumption_determination` structure introduced by the hardening implementation. The production structured-resumption guard is functioning correctly (confirmed by lc17–lc20 tests). The persistence-failure-rollback behavior for lifecycle transitions is partially not exercised by this test as written.
+- **Impact:** The lifecycle persistence-failure rollback test path for `SUSPENDED → ACTIVE` is not successfully executed. The rollback behavior for other transitions and the structured-resumption enforcement are separately verified.
+- **Required decision:** CONTROLLER must decide whether to repair the test helper to include `resumption_determination` so the injection path can be reached. No production code change is required.
+
+**Failure 3 — `tests/runtime/test_persistence_schema_and_concurrency.py::test_unsupported_context_schema_is_rejected`**
+
+```
+AssertionError: Regex pattern did not match.
+  Expected regex: 'unsupported context schema version'
+  Actual message: 'authoritative context is invalid: <pid>'
+```
+
+- **Affected boundary:** `ProcessStore.load_context()` error propagation → test assertion.
+- **Expected behavior:** Test expects `PersistenceError` with message matching `"unsupported context schema version"`.
+- **Actual behavior:** `store.load_context()` catches `ValueError` raised by `ExecutionContext.from_dict()` (which does produce `"unsupported context schema version: ..."`) and wraps it with the generic `PersistenceError("authoritative context is invalid: <pid>")`, discarding the specific message.
+- **Classification:** test/API mismatch — the underlying schema rejection logic in `ExecutionContext.from_dict()` is correct; the store's `load_context()` method suppresses the schema-specific message behind a generic wrapper. The schema version is rejected as required; the test's `match=` pattern cannot reach the specific message through the wrapper.
+- **Impact:** The specific error-message assertion for unsupported schema version cannot pass. The rejection behavior itself is present (PersistenceError is raised). Schema load, missing-version default, and stale-write tests all PASS.
+- **Required decision:** CONTROLLER must decide whether to repair `store.load_context()` to preserve or re-raise the schema-specific message, or update the test to match the actual wrapper message. Both approaches modify existing code; neither change is authorized by verification alone.
+
+**Evidence location:** `pytest -q` output captured above; this record.
+**Result classification:** FAIL — 3 failures, all classified as test/API mismatch. No implementation defect requiring production code change has been established. CONTROLLER decision required before any repair.
+
+---
+
+### Work Unit: Hardening Behavior Verification
+
+**Work unit:** Hardening Behavior Verification
+**Repository commit SHA:** `46c5399fbd254a93073ebb27c3d180d7483a34cd`
+
+#### Persistence Rollback
+
+**Commands executed:**
+```
+pytest -v tests/runtime/test_persistence_hardening.py
+```
+**Observed result:** 6/6 PASSED
+
+| Test | Result |
+|---|---|
+| `test_state_transition_rolls_back_on_persistence_failure` | PASS |
+| `test_pending_execution_rolls_back_on_persistence_failure` | PASS |
+| `test_reconsider_rolls_back_all_context_mutations_on_persistence_failure` | PASS |
+| `test_engineering_completion_rolls_back_on_persistence_failure` | PASS |
+| `test_begin_implementation_rolls_back_pending_execution_when_state_persistence_fails` | PASS |
+| `test_begin_verification_rolls_back_verification_reset_when_state_persistence_fails` | PASS |
+
+The essential invariant — if persistence fails, live Runtime state must not remain mutated while persisted state is unchanged — is verified for all six covered operation paths. Each test compares live Runtime state, history count, and freshly reloaded persisted state after injected failure.
+
+**Result:** PASS
+
+#### Persisted Schema
+
+**Commands executed:**
+```
+pytest -v tests/runtime/test_persistence_schema_and_concurrency.py
+```
+**Observed result:** 3/4 PASSED, 1 FAILED
+
+| Test | Result |
+|---|---|
+| `test_new_persistence_records_include_schema_version` | PASS |
+| `test_legacy_missing_schema_version_defaults_to_supported_version` | PASS |
+| `test_unsupported_context_schema_is_rejected` | FAIL — message wrapper mismatch (test/API mismatch, see Regression section) |
+| `test_stale_process_instance_write_is_rejected` | PASS |
+
+Schema version 1 is written to new persistence records. Missing schema version defaults to version 1. Unsupported version is rejected with `PersistenceError` (confirmed — type is correct; specific message is wrapped). Stale-write rejection functions correctly.
+
+**Result:** EVIDENCE INCOMPLETE — schema rejection behavior (raise type) verified; specific error-message assertion unresolvable through current wrapper without CONTROLLER-authorized repair.
+
+#### Process Instance Concurrency
+
+**Commands executed:** Same `pytest -v tests/runtime/test_persistence_schema_and_concurrency.py` run above.
+
+`test_stale_process_instance_write_is_rejected` PASSED. Two distinct Runtime instances load the same Process Instance; Runtime A mutates it; Runtime B's stale write is rejected with `PersistenceError("stale Process Instance write")`. Context stale-write guard (`test_stale_write_rejected` in `test_repository_local_persistence.py`) also PASSED in the repository-isolation suite.
+
+**Result:** PASS
+
+#### Structured Resumption
+
+**Commands executed:**
+```
+pytest -v tests/lifecycle/test_process_instance_lifecycle_control.py::test_lc17_missing_structured_resumption_determination_is_rejected
+       tests/lifecycle/test_process_instance_lifecycle_control.py::test_lc18_ambiguous_structured_resumption_determination_is_rejected
+       tests/lifecycle/test_process_instance_lifecycle_control.py::test_lc19_conflicting_structured_resumption_determination_is_rejected
+       tests/lifecycle/test_process_instance_lifecycle_control.py::test_lc20_structured_resumption_basis_is_not_the_decision_signal
+       tests/lifecycle/test_process_instance_lifecycle_control.py::test_lc06_resume_requires_valid_reevaluation
+```
+**Observed result:** 5/5 PASSED
+
+| Test | Result |
+|---|---|
+| `test_lc17_missing_structured_resumption_determination_is_rejected` | PASS |
+| `test_lc18_ambiguous_structured_resumption_determination_is_rejected` | PASS |
+| `test_lc19_conflicting_structured_resumption_determination_is_rejected` | PASS |
+| `test_lc20_structured_resumption_basis_is_not_the_decision_signal` | PASS |
+| `test_lc06_resume_requires_valid_reevaluation` (permitted determination accepted) | PASS |
+
+Missing determination is rejected. Ambiguous status is rejected. Explicit `conflict: true` flag causes rejection. Free-form prose in `semantic_basis` / `basis` does not serve as the decision signal. `PERMITTED` determination is accepted. Lifecycle remains `suspended` after rejected resumption attempts; transitions to `active` after accepted determination.
+
+**Result:** PASS
+
+---
+
+### Work Unit: Cross-Process Continuity Verification
+
+**Work unit:** Cross-Process Continuity Verification
+**Repository commit SHA:** `46c5399fbd254a93073ebb27c3d180d7483a34cd`
+**Commands executed:**
+```
+source .venv/bin/activate && XPROCESS_REPOSITORY_ROOT=/tmp/aesm_xprocess_verification python tests/continuity/xprocess_orchestrator.py
+```
+
+**Process A result:** Exit code 0. Created Process Instance `cceaa602-cc00-47c9-8147-e7d13591edb5` using `xprocess-runtime-A`. Advanced through `investigation_started → evidence_recorded (×2) → engineering_decision_recognized → implementation_started → artifact_recorded → pending_execution_recorded`. Final version: 7. Persisted files: `process.json`, `context.json`, `history.jsonl` present in `/tmp/aesm_xprocess_verification/.aesm/<pid>/`. Runtime called `rt.stop()` before exit.
+
+**Process boundary:** Process A terminated (OS subprocess returned) before Process B launched. Orchestrator uses `subprocess.run()` with hard process boundary between A and B.
+
+**Process B result:** Exit code 0. Attached to same Process Instance ID `cceaa602-cc00-47c9-8147-e7d13591edb5` using `xprocess-runtime-B`. Recovered 8 history entries matching Process A's 8 events. `continuity.identity_match: true`. `continuity.runtime_ids_distinct: true`. Recovered `process_state: implementation`, `lifecycle: active`. Pending execution (XPROC-W1) present. Process B added a `evidence_recorded` event via `observe()`, advancing version to 8. History post-continuation contains 9 entries; `xprocess-runtime-B` is present in history.
+
+**Comparison — Process A persisted state ↔ Process B recovered state:**
+- Process Instance ID: identical
+- Engineering objective marker: verified (`objective_contains_marker: true`)
+- Process state: `implementation` (both)
+- Lifecycle: `active` (both)
+- History entry count on recovery: 8 (matches A's 8 persisted events)
+- Runtime IDs: distinct (`xprocess-runtime-A` / `xprocess-runtime-B`)
+- Pending execution: recovered and accessible to B
+
+**Continuation was not blocked by Process A memory, conversation history, or Agent memory.** Process B used only `ActiveRepositoryContext(repository_root)` and `rt.attach(pid)` operating from the filesystem persistence boundary.
+
+**Discovery limitation:** Process B used a pre-agreed `process_instance_id` passed via environment from the orchestrator. Independent objective-marker-based discovery (scanning `.aesm/` for the marker) is the intended longer-term mechanism; the current experiment relies on explicit ID handoff. This is a pre-existing limitation of the experiment design, not a regression introduced by the hardening.
+
+**Evidence location:** orchestrator JSON output captured from stdout; this record.
+**Result classification:** PASS for OS-process-boundary recovery and state continuity. Pre-existing discovery limitation noted and classified as expected behavior within the experiment design.
+
+---
+
+### Work Unit: Repository-Portable Verification
+
+**Work unit:** Repository-Portable Verification
+**Repository commit SHA:** `46c5399fbd254a93073ebb27c3d180d7483a34cd`
+**Commands executed:**
+```
+cat .gitignore
+git check-ignore -v .aesm
+git ls-files --others --exclude-standard .aesm/
+git status --short .aesm/
+pytest -v tests/repository_isolation/
+```
+
+**Observed result:**
+- `.aesm/` is **not** listed in `.gitignore`; `git check-ignore -v .aesm` produced no output (not ignored).
+- Repository isolation suite: **15/15 PASSED**, including `test_pi_stored_in_repo_aesm_not_old_layout`, `test_pi_recovery_in_same_repo`, `test_cross_repo_isolation`, `test_same_pi_id_in_two_repos_resolved_independently`, `test_stale_write_rejected`, `test_git_conflict_blocks_load_instance`, `test_git_conflict_blocks_load_context`.
+- Repository identity is correctly bound through `ActiveRepositoryContext`; cross-repository isolation is verified by test execution.
+
+**Full remote Git round trip:** Not performed. This execution environment does not include a separate remote checkout step for the verification run. A full remote push → independent checkout → recovery sequence was not executed.
+
+**Bounded local verification:** `.aesm/` trackability confirmed (not ignored). Repository isolation tests confirm identity binding and cross-repository isolation. Git conflict detection on `.aesm/` files is verified.
+
+**Result classification:** PASS for bounded local verification. ENVIRONMENT BLOCKED for full remote Git round trip (remote transport not exercised in this environment). No claim of remote round-trip completion is made.
+
+---
+
+### Evidence Reconciliation Summary
+
+**Exact verified commit:** `46c5399fbd254a93073ebb27c3d180d7483a34cd` (branch `main`, merged from `implement/runtime-consistency-and-continuity-hardening`)
+
+**Tests/scripts actually executed:**
+- `pytest -q` (full suite, 192 tests)
+- `pytest -v tests/runtime/test_persistence_hardening.py` (6 tests)
+- `pytest -v tests/runtime/test_persistence_schema_and_concurrency.py` (4 tests)
+- `pytest -v tests/lifecycle/test_process_instance_lifecycle_control.py` (lc06, lc17–lc20, 5 tests)
+- `pytest -v tests/repository_isolation/` (15 tests)
+- `python tests/continuity/xprocess_orchestrator.py` (cross-process experiment)
+
+**`.aesm/` state:** Not used as AESM Process Instance evidence for this verification work unit. The `.aesm/` produced by the cross-process experiment (`/tmp/aesm_xprocess_verification/.aesm/`) was used only as the persistence target for the cross-process experiment itself.
+
+**Durable implementation record updated:** This file (`implementation/RUNTIME-CONSISTENCY-AND-CONTINUITY-HARDENING.md`).
+
+**Unresolved evidence gaps:**
+1. `test_persistence_failure_returns_error` (bridge): `bridge._runtime.repo_ctx` attribute does not exist; test/API mismatch; CONTROLLER decision required.
+2. `test_lifecycle_persistence_failure_restores_files_and_authoritative_in_memory_state`: test helper omits `resumption_determination` required by hardening; test/API mismatch; CONTROLLER decision required.
+3. `test_unsupported_context_schema_is_rejected`: `load_context()` wraps the schema-specific message; test/API mismatch; CONTROLLER decision required.
+4. Full remote Git round trip: not executed in this environment.
+
+**Implementation defects:** None identified. All three failures are test/API mismatches, not defects in production Runtime behavior.
+
