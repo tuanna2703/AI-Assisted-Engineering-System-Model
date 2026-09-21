@@ -340,3 +340,31 @@ pytest -v tests/repository_isolation/
 
 **Implementation defects:** None identified. All three failures are test/API mismatches, not defects in production Runtime behavior.
 
+
+
+
+
+## Verification Gap Resolution — 2026-09-21
+
+A bounded Verification Gap Resolution work unit was opened from the merged baseline `46c5399fbd254a93073ebb27c3d180d7483a34cd`.
+
+### Controller decisions
+
+- **Bridge stale attribute:** test-only repair authorized. The test now targets the Runtime-owned `ProcessStore.save_context` boundary. No Runtime compatibility alias is introduced.
+- **Lifecycle helper:** test fixture repair authorized. The SUSPENDED → ACTIVE determination now supplies the required structured `resumption_determination` with status `PERMITTED`, allowing the injected history failure to reach the intended persistence path.
+- **Schema error:** existing `ProcessStore.load_context()` wrapper is retained as the public contract. Inspection confirmed that `ExecutionContext.from_dict()` performs the specific unsupported-schema rejection, while `load_context()` intentionally converts malformed/invalid context input to the stable generic authoritative-context error. The test is aligned to that wrapper; no production change is made.
+- **Remote Git round trip:** not required for closure of this bounded work unit. Existing local repository-portability evidence remains the declared scope. No remote round-trip PASS is claimed.
+
+### Authorized changes
+
+Only three test changes were made on branch `verification/resolve-continuity-gaps`:
+
+1. `tests/bridge/test_agent_runtime_bridge.py` — stale `repo_ctx` persistence target corrected to `runtime.store`.
+2. `tests/lifecycle/test_runtime_lifecycle.py` — structured resumption determination added to the SUSPENDED → ACTIVE fixture.
+3. `tests/runtime/test_persistence_schema_and_concurrency.py` — schema rejection assertion aligned with the established `load_context()` wrapper contract.
+
+**Production code changed:** none.
+
+### Verification state
+
+The targeted repairs are committed to the verification branch, but execution evidence for the repaired state is not yet available through the current GitHub repository tooling. Therefore this record does **not** claim the regression suite or targeted verification has passed, and the work unit remains open pending executable test evidence.
