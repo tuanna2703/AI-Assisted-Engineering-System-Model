@@ -315,8 +315,8 @@ The unresolved project/process binding is now treated as a distinct architectura
 
 **Status: Semantic clarification complete — Engineering Scope Identity defined; Project / Scope Resolution Design authorized.**
 
-Evidence record: [execution/PROJECT-SCOPE-SEMANTICS-INVESTIGATION.md](execution/PROJECT-SCOPE-SEMANTICS-INVESTIGATION.md)
-Semantic decision record: [execution/ENGINEERING-SCOPE-IDENTITY-SEMANTICS.md](execution/ENGINEERING-SCOPE-IDENTITY-SEMANTICS.md)
+Evidence record: [implementation/PROJECT-SCOPE-SEMANTICS-INVESTIGATION.md](implementation/PROJECT-SCOPE-SEMANTICS-INVESTIGATION.md)
+Semantic decision record: [implementation/ENGINEERING-SCOPE-IDENTITY-SEMANTICS.md](implementation/ENGINEERING-SCOPE-IDENTITY-SEMANTICS.md)
 
 ### Gate Result
 
@@ -379,128 +379,146 @@ This work is not to be conflated with the mechanism-validation fresh-session rec
 - [ ] Complete or otherwise resolve the DBP process as appropriate.
 - [ ] Verify continuity from persisted evidence rather than Agent narrative alone.
 
-**Exit condition:** A real DBP process remains operationally continuous across Agent/session loss.
+## Current Work Unit — Runtime Consistency and Continuity Hardening
 
-## Feedback and Reconsideration Validation
+**Status: Planned — no implementation changes authorized yet.**
 
-**Status: Pending.**
+This work unit addresses verified implementation findings against the merged repository baseline at 2cd6fa6445d53879ceae0486f0e95fb1f1d9611c.
 
-- [ ] Introduce a realistic verification failure or human feedback event.
-- [ ] Persist the event as appropriate.
-- [ ] Reconsider the affected decision or implementation.
-- [ ] Re-implement where necessary.
-- [ ] Re-verify.
-- [ ] Confirm that prior process knowledge remains traceable.
+### Scope
 
-**Exit condition:** The prototype demonstrates controlled iterative engineering rather than only a linear happy path.
+The work is limited to implementation correctness, behavioral regression coverage, and validation of continuity under the current repository-local persistence architecture.
 
-## Runtime Control Experiment
+It does not reopen:
 
-**Status: Pending.**
+- AESM semantic definitions already established in docs/;
+- Agent Guidance Interface semantics;
+- repository-local .aesm/ persistence boundary;
+- the removal of the permanent execution/ directory;
+- the Agent–Runtime authority boundary;
+- the existing bridge contract, unless a verified compatibility defect requires a targeted correction.
 
-- [ ] Identify one rule initially expressible as Agent guidance.
-- [ ] Test guidance reliability.
-- [ ] Identify one condition that may require Runtime control.
-- [ ] Validate the smallest Runtime control justified by evidence.
-- [ ] Preserve the distinction between guidance and authoritative Runtime enforcement.
+### Persistence State Consistency
 
-**Exit condition:** Evidence identifies which responsibilities can remain guidance and which require executable Runtime control.
+Objective: preserve the invariant that a failed authoritative persistence operation cannot leave Runtime in-memory state ahead of persisted state.
 
-## Environment Independence Validation
+Planned changes:
 
-**Status: Pending.**
+- [ ] Audit every Runtime operation that mutates authoritative Context or Process Instance state before persistence.
+- [ ] Standardize rollback for _set_state() so process-state transitions restore prior state, version, and timestamp when persistence fails.
+- [ ] Add rollback symmetry to set_pending_execution().
+- [ ] Make reconsider() atomic across failure_uncertainty, unresolved_matters, and process-state transition.
+- [ ] Verify recognize_engineering_completion() does not leave engineering_completion mutated when the subsequent persistence fails.
+- [ ] Preserve the existing successful rollback behavior already demonstrated by observe(), recognize_decision(), record_artifact(), record_verification(), scope resolution, and lifecycle persistence.
+- [ ] Add failure-injection tests that compare live Runtime state with freshly reloaded persisted state after each affected operation.
+- [ ] Verify history is not advanced when the corresponding authoritative state write fails.
 
-- [ ] Exercise a second usable Execution Environment or execution mechanism.
-- [ ] Verify persisted Process Instance and Execution Context remain meaningful outside the first environment.
-- [ ] Confirm environment-specific mechanisms remain adapters/capabilities rather than AESM semantic definitions.
-- [ ] Record genuine portability limitations.
+Exit condition: all affected mutating operations preserve live/persisted state equivalence across injected persistence failures, with no regression in the existing recording suite.
 
-**Exit condition:** AESM remains conceptually and operationally independent of a particular Agent host or IDE.
+### Current-API Compatibility Repair
 
-## Prototype Evaluation and Controlled Refinement
+Objective: restore executable validation artifacts to the current ActiveRepositoryContext-based Runtime API.
 
-**Status: Pending.**
+Planned changes:
 
-- [ ] Review implementation failures and unexpected behavior.
-- [ ] Classify each finding as implementation defect, environment limitation, documentation ambiguity, or genuine AESM semantic deficiency.
-- [ ] Correct implementation defects without changing AESM semantics.
-- [ ] Resolve environment limitations through justified mechanisms.
-- [ ] Clarify documentation only where implementation exposes genuine ambiguity.
-- [ ] Propose semantic changes only for demonstrated deficiencies.
-- [ ] Record any approved semantic change as a separate decision before applying it.
+- [ ] Update scripts/validate_environment_mechanisms.py to construct ActiveRepositoryContext and pass it to AgentRuntimeBridge.
+- [ ] Update tests/continuity/xprocess_process_a.py to use ActiveRepositoryContext and the current Runtime constructor.
+- [ ] Update tests/continuity/xprocess_process_b.py to use ActiveRepositoryContext and the current Runtime constructor.
+- [ ] Update xprocess observe() calls to satisfy the current explicit recognition contract.
+- [ ] Review tests/continuity/xprocess_orchestrator.py for assumptions that depend on the old API.
+- [ ] Rename the store fixture in tests/bridge/test_agent_runtime_bridge.py to repo_ctx or equivalent semantic name, and update dependent fixture/test parameters.
+- [ ] Do not introduce a compatibility wrapper that reopens the superseded raw-path/ProcessStore constructor.
 
-**Exit condition:** The prototype provides an evidence-based assessment of whether the current AESM model is implementable as intended.
+Exit condition: all executable validation artifacts use the current API directly and the bridge test vocabulary reflects the actual ActiveRepositoryContext type.
 
-## Completion Criteria for the Initial Prototype
+### Cross-Process Continuity Validation
 
-The initial prototype is complete only when the following are demonstrated by recorded evidence:
+Objective: establish current-architecture evidence for independent OS-process recovery and continuation.
 
-- A real engineering request is represented as a persistent Process Instance.
-- Authoritative Execution Context survives Agent/session loss.
-- The Agent receives sufficient AESM guidance to participate.
-- The Agent performs real engineering work using an existing Execution Environment.
-- Runtime-controlled state and constraints remain authoritative where required.
-- Evidence, decisions, artifacts, and verification are persisted.
-- Feedback/reconsideration can be handled without losing process knowledge.
-- The process can continue after the original Agent/session ends.
-- Engineering completion is distinguishable from Runtime/session termination.
-- The implementation remains independent of a specific IDE or transport.
+Planned procedure:
 
-The prototype is judged by demonstrated behavior and recorded evidence, not by the number of Runtime APIs or documentation pages created.
+- [ ] Run the repaired xprocess orchestrator from the repository root.
+- [ ] Verify Process A and Process B use distinct OS process identities and Runtime identities.
+- [ ] Verify Process B reconstructs the same persisted Process Instance and authoritative Context.
+- [ ] Verify persisted history contains evidence from both Runtime identities.
+- [ ] Verify Process B performs a valid Runtime-mediated continuation.
+- [ ] Record any discovery limitation separately from persistence/recovery capability.
+- [ ] Reconcile the result against the existing continuity evidence before making any broader continuity claim.
 
-## Controlled Forward Work Sequence
+Exit condition: the repository has current, reproducible evidence establishing exactly what cross-process continuity is demonstrated and what remains unproven.
 
-The authorized sequence is now:
+### Structured Resumption Determination Review
 
-- [x] **Plan Reconciliation and Mechanism Gate Closure** — reconcile this plan with the completed Agent-boundary mechanism validation and establish the DBP gate.
-- [x] **DBP Experiment Boundary Definition** — establish the controlled DBP request, evidence contract, authority model, and experiment constraints.
-- [x] **DBP Empirical Execution** — execute the controlled DBP request and record the observed engineering and AESM participation results.
-- [x] **DBP Evidence Reconciliation** — independently reconcile DBP implementation evidence, AESM participation evidence, and project/process binding findings.
-- [x] **Project/Scope Semantics Investigation** — inspect the existing AESM model and determine whether the current semantic concepts are sufficient to identify engineering scope.
-- [x] **Project/Scope Semantic Clarification** — define Engineering Scope Identity; establish scope invariants; determine that a first-class Project entity is not yet semantically required.
-- [x] **Project / Scope Resolution Design** — deterministic scope resolution, ambiguity handling, Process Instance selection/creation, and authority boundaries established. Gate complete.
-- [x] **Process Binding Design** — normative scope-to-Process-Instance relationship and discovery model established. Gate complete.
-- [x] **Persistence Scope Design** — authoritative scope/process persistence requirements established. Gate complete.
-- [x] **Agent / Environment Mechanism Design** — scope evidence, Agent/Runtime authority boundaries, and minimum mechanism combination established. Gate complete. Evidence: `implementation/MECHANISM-VALIDATION.md`.
-- [x] **Normative Documentation Reconciliation** — canonical Process Instance, Agent, operational, and Agent-integration documentation reconciled with the completed scope/binding/persistence/mechanism decisions. Evidence: `implementation/NORMATIVE-DOCUMENTATION-RECONCILIATION.md`. No implementation mechanism or new authority layer introduced.
-- [x] **Project Identity and Process Binding Implementation** — implemented the smallest vertical slice for authoritative Engineering Scope Identity, explicit resolution outcomes, Process Instance binding, persistence, recovery, and Agent–Runtime delegation. Evidence: `implementation/PROJECT-IDENTITY-AND-PROCESS-BINDING-VALIDATION.md`. Implementation-validation gate remains open because the targeted tests were added but not executed in the available environment.
-- [x] **Multi-Project Empirical Validation** — executed the defined multi-project isolation/recovery scenarios against the existing Runtime, ProcessStore, and Agent–Runtime Bridge. 9/9 scenarios demonstrated. Gate: **Conformant — Demonstrated**. Evidence: `implementation/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`. Revision: `ed7e8980522c336862bb5c732a1134a2df9a6af5`.
-- [ ] **Fresh-Agent DBP Continuation** — validate continuation of a real DBP process after project binding is available.
-- [ ] **Feedback and Reconsideration Validation** — validate controlled iteration where justified.
-- [ ] **Environment Independence Validation** — test portability beyond the first Agent environment.
-- [ ] **Prototype Evaluation and Controlled Refinement** — reconcile findings and authorize only evidence-based changes.
+Objective: remove dependence on machine semantics being inferred from free-form prose.
 
-### Project Identity and Process Binding Implementation
+This work is a design-and-test gate before implementation.
 
-**Status: Implementation complete — multi-project behavioral validation executed and gate closed.**
+- [ ] Inspect the canonical lifecycle/resumption semantics in docs/ and the existing lifecycle tests.
+- [ ] Identify the minimum structured representation required to establish resumption permissibility.
+- [ ] Define how human-readable semantic_basis remains traceability text without serving as the machine decision signal.
+- [ ] Define rejection behavior for missing, contradictory, or invalid structured determinations.
+- [ ] Add behavioral tests for accepted, rejected, ambiguous, and contradictory resumption determinations.
+- [ ] Only after the semantic contract is settled, implement the smallest Runtime change necessary.
 
-The Runtime and existing ProcessStore operationalize the Engineering Scope Identity binding boundary without introducing a second authority layer.
+Exit condition: resumption authority is represented by structured data whose meaning is explicit in the canonical model and tested independently of wording variations.
 
-Implemented evidence:
-- `runtime/core/models.py` — authoritative scope identity, resolution status, and evidence fields.
-- `runtime/core/runtime.py` — Runtime-mediated scope resolution and binding.
-- `runtime/core/store.py` — authoritative Process Instance binding persistence and recovery validation.
-- `bridge/agent_runtime_bridge.py` — delegated Agent-facing scope-resolution operation.
-- `tests/project_identity/test_scope_binding.py` — targeted behavioral coverage.
-- `implementation/PROJECT-IDENTITY-AND-PROCESS-BINDING-VALIDATION.md` — implementation record and validation boundary.
+### Persisted Schema Evolution Review
 
-The multi-project targeted tests were executed on `ed7e8980522c336862bb5c732a1134a2df9a6af5` (branch `main`). All 9 scenarios passed. All 41 regression tests (project_identity + lifecycle + continuity + multi_project) passed. Full evidence: `implementation/MULTI-PROJECT-EMPIRICAL-VALIDATION.md`.
+Objective: determine a safe evolution strategy for repository-local .aesm/ state before long-lived cross-environment use expands.
 
-### Current Progress Position
+This is a design gate, not an automatic schema change.
 
-The repository has completed the foundational Runtime, persistence, Context, recording, lifecycle, Agent guidance, Agent–Runtime bridge, environment mechanism mapping, Agent-boundary mechanism validation, DBP empirical investigation, project/scope semantics, scope resolution design, process binding design, persistence scope design, agent/environment mechanism design, normative documentation reconciliation, project identity and process binding implementation, multi-project behavioral validation, and repository-local persistence migration.
+- [ ] Inspect current ProcessInstance and ExecutionContext persisted fields and existing compatibility assumptions.
+- [ ] Determine whether a schema version is required for the current portability model.
+- [ ] Define defaults/migration behavior for safely additive fields.
+- [ ] Define explicit failure behavior for unsupported or malformed schema versions.
+- [ ] Add compatibility tests using representative existing persisted state.
+- [ ] Do not change persisted schema until the migration contract is explicitly established.
 
-**Closed gate:** Repository-Local Persistence Migration — implementation complete; empirical portability validation pending.
+Exit condition: the repository has an explicit, tested decision on persisted schema evolution; implementation follows only if the decision requires it.
 
-**Current validation gate:** Git Round-Trip → Fresh-Agent Repository-Scoped Continuation → Evidence Reconciliation.
+### Process-Instance Write Concurrency Review
 
-**Runtime change policy:** Do not modify Runtime, ProcessStore, bridge semantics, or persistence boundaries during this validation unless a separately approved evidence-driven change is required after reconciliation.
+Objective: determine whether save_process_instance() requires the same stale-write protection already present for save_context().
 
-**Execution plan:** `implementation/REPOSITORY-PORTABLE-CONTINUATION-PLAN.md`.
+- [ ] Inspect the single-writer assumption and all current Process Instance mutation paths.
+- [ ] Identify whether concurrent scope resolution or other Process Instance mutations are possible under the supported Execution Environment model.
+- [ ] If protection is required, define the authoritative comparison field and rejection semantics.
+- [ ] Add a race/stale-write test before implementation.
+- [ ] Implement only the protection justified by the supported concurrency model.
 
-The validation is intended to establish the stronger empirical property:
+Exit condition: Process Instance write concurrency is either explicitly bounded by the model and tested, or protected by a verified stale-write mechanism.
 
-> AESM engineering state is repository-portable and can support fresh-Agent continuation across execution environments.
+### Multi-File Persistence Recovery Review
 
-The claim must remain bounded by the recorded evidence. A successful Git round trip alone proves persistence portability; it does not prove fresh-Agent continuation. A fresh-Agent continuation without an independent Git round trip does not prove repository portability.
+Objective: define recovery semantics for interruption between atomic file replacements in a lifecycle transition.
 
+- [ ] Inspect the authoritative roles of process.json, context.json, and history.jsonl.
+- [ ] Determine which persisted representation is sufficient to reconstruct authoritative state after an interrupted multi-file write.
+- [ ] Define detectable inconsistency conditions.
+- [ ] Define the recovery procedure before adding implementation complexity.
+- [ ] Add failure/interruption-oriented tests where practical.
+- [ ] Do not introduce a generalized transaction layer unless the evidence demonstrates that it is required.
+
+Exit condition: partial-write behavior and recovery are explicitly defined for the current persistence model.
+
+### Final Reconciliation
+
+After the implementation and validation work above:
+
+- [ ] Run the complete regression suite.
+- [ ] Run the repaired cross-process experiment.
+- [ ] Reconcile Runtime, persisted, test, and validation evidence.
+- [ ] Update the durable engineering record only with findings that remain useful after implementation.
+- [ ] Update this plan so completed work is marked from evidence, not from Agent narrative.
+- [ ] Preserve the repository boundary established by the merged repository-work-record-structure change; do not recreate execution/.
+
+### Authorization Boundary
+
+No production-code change is authorized merely because a finding appears in the review.
+
+The required sequence is:
+
+inspect → plan → implement targeted change → behavioral verification → continuity validation → evidence reconciliation
+
+Schema, lifecycle semantics, and persistence-recovery changes additionally require their respective design gate to close before implementation.
