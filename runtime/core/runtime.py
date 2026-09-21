@@ -86,6 +86,20 @@ class Runtime:
             process_instance_id=process_instance_id,
         )
 
+    def resolve_and_attach_process_instance(
+        self,
+        engineering_scope_identity: str,
+        process_instance_id: str | None = None,
+    ) -> ProcessResolution:
+        """Resolve a repository-local PI and attach only on a unique result."""
+        resolution = self.resolve_process_instance(
+            engineering_scope_identity,
+            process_instance_id=process_instance_id,
+        )
+        if resolution.status == "RESOLVED" and resolution.process_instance_id is not None:
+            self.attach(resolution.process_instance_id)
+        return resolution
+
     def create_process(
         self,
         objective: str,
