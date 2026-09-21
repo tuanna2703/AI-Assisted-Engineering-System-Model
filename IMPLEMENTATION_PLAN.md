@@ -544,9 +544,65 @@ Schema, lifecycle semantics, and persistence-recovery changes additionally requi
 
 ### Verification gate
 
-- [ ] Run the full regression suite and targeted suites from the repository checkout.
-- [ ] Confirm the repaired tests execute the intended failure paths rather than merely changing assertions around skipped behavior.
-- [ ] Reconcile the final results into the durable implementation record.
-- [ ] Close the work unit only if all agreed verification obligations pass.
+- [x] Run the full regression suite and targeted suites from the repository checkout.
+- [x] Confirm the repaired tests execute the intended failure paths rather than merely changing assertions around skipped behavior.
+- [x] Reconcile the final results into the durable implementation record.
+- [x] Close the work unit only if all agreed verification obligations pass.
 
 The remote Git push → independent checkout → recovery sequence remains explicitly unclaimed and outside this work unit's closure evidence.
+
+---
+
+## Final Verification Record — 2026-09-21
+
+> **Evidence type: current executable verification (2026-09-21).**
+> The following reflects commands actually executed against the merged `main` branch.
+> Historical records above — original failures, Controller decisions, authorized test corrections, branch merge — are preserved.
+
+**Repository:** `tuanna2703/AI-Assisted-Engineering-System-Model`
+**Branch:** `main`
+**HEAD SHA:** `a9d3fc808fc565af0e772811777e1967d7beb3cf`
+**Working tree:** Clean
+**Python:** 3.13.5 | **pytest:** 9.1.1
+**Dependencies:** OK
+
+### Repaired test results
+
+| Test | Runtime result | Path/contract evidence | Classification |
+|---|---|---|---|
+| `TestPersistenceFailure::test_persistence_failure_returns_error` | `1 passed in 0.24s` | Patch targets `bridge._runtime.store.save_context` (Runtime-owned boundary); `observe()` call chain verified to reach `store.save_context()`; stale `repo_ctx` surface absent from production code | PASS |
+| `test_lifecycle_persistence_failure_restores_files_and_authoritative_in_memory_state` | `1 passed in 0.09s` | `resumption_determination: {status: PERMITTED}` confirmed in fixture; `pytest.raises(match="injected lifecycle history failure")` requires the injected `RuntimeError` to propagate — impossible without reaching `JsonlStore.append`; rollback assertions also pass | PASS |
+| `test_unsupported_context_schema_is_rejected` | `1 passed in 0.07s` | Test asserts `PersistenceError(match="authoritative context is invalid:")` — confirmed as the public `ProcessStore.load_context()` wrapper at `runtime/core/store.py:133`; lower-level schema error wrapped per established contract | PASS |
+
+### Bounded regression
+
+| Suite | Result |
+|---|---|
+| `tests/runtime/test_persistence_hardening.py` | 6/6 PASS |
+| `tests/runtime/test_persistence_schema_and_concurrency.py` | 4/4 PASS |
+| `tests/lifecycle/test_process_instance_lifecycle_control.py` | 20/20 PASS |
+| `tests/bridge/` | 43/43 PASS |
+| `tests/repository_isolation/` | 15/15 PASS |
+
+### Cross-process continuity
+
+Exit code 0. `"result": "EVIDENCE_COLLECTED"`. Both process boundary and state continuity demonstrated. Prior documented `observe()`/`recognition` incompatibility was already resolved; no failure observed.
+
+### Full regression
+
+```
+.venv/bin/pytest -q
+192 passed in 1.84s
+```
+
+Exit code 0. 192/192 passed. No failures.
+
+### Remaining gaps
+
+None.
+
+### Work unit closure
+
+**VERIFICATION COMPLETE — WORK UNIT CLOSED**
+
+All closure criteria satisfied by current executable evidence. Production code was not modified during this verification.

@@ -365,6 +365,212 @@ Only three test changes were made on branch `verification/resolve-continuity-gap
 
 **Production code changed:** none.
 
-### Verification state
+### Verification state (historical — prior to final execution)
 
 The targeted repairs are committed to the verification branch, but execution evidence for the repaired state is not yet available through the current GitHub repository tooling. Therefore this record does **not** claim the regression suite or targeted verification has passed, and the work unit remains open pending executable test evidence.
+
+---
+
+### Final Verification Execution — 2026-09-21
+
+> **Evidence type: current executable verification.**
+> All results below are from commands actually executed during this session.
+> Historical evidence above is preserved as the prior record and must not be confused with the evidence in this section.
+
+---
+
+#### Execution Identity
+
+| Field | Value |
+|---|---|
+| Repository remote | `https://github.com/tuanna2703/AI-Assisted-Engineering-System-Model` |
+| Repository identity confirmed | `tuanna2703/AI-Assisted-Engineering-System-Model` |
+| Branch | `main` |
+| HEAD SHA | `a9d3fc808fc565af0e772811777e1967d7beb3cf` |
+| Working tree state | Clean (no uncommitted changes — `git status --short` produced no output) |
+| Python | 3.13.5 (`.venv/bin/python`) |
+| pytest | 9.1.1 (`.venv/bin/pytest`) |
+| Module import status | `import runtime` — OK |
+| Dependency status | All imports required by the test suite loaded successfully |
+
+**Commands used to establish baseline:**
+```
+git remote get-url origin
+git branch --show-current
+git rev-parse HEAD
+git status --short
+.venv/bin/python --version
+.venv/bin/pytest --version
+.venv/bin/python -c "import runtime; print('runtime OK')"
+```
+
+---
+
+#### Repaired Test 1 — Bridge Persistence Failure
+
+**Test:** `tests/bridge/test_agent_runtime_bridge.py::TestPersistenceFailure::test_persistence_failure_returns_error`
+
+**Command executed:**
+```
+.venv/bin/pytest -v tests/bridge/test_agent_runtime_bridge.py::TestPersistenceFailure::test_persistence_failure_returns_error
+```
+
+**Runtime evidence:** `1 passed in 0.24s`. Exit code 0.
+
+**Path evidence (from source inspection, separate from runtime evidence):**
+
+- `bridge._runtime` is a `Runtime` instance (confirmed at `bridge/agent_runtime_bridge.py` line 116).
+- `Runtime.__init__` assigns `self.store = ProcessStore(repository_context)` (confirmed at `runtime/core/runtime.py` line 56).
+- `Runtime.observe()` calls `self.store.save_context(...)` (confirmed at `runtime/core/runtime.py` line 214).
+- The test patches `bridge._runtime.store.save_context` directly, which is the Runtime-owned persistence boundary reachable from `observe()`.
+- The stale attribute `bridge._runtime.repo_ctx` is not referenced anywhere in the bridge or runtime source. The stale surface is not relied upon.
+- The injected `PersistenceError("simulated persistence failure")` is raised by `failing_save`, which replaces `store.save_context`. The dispatched `observe` call proceeds through `bridge → runtime.observe() → store.save_context()`, encountering the injection point.
+- The test asserts `result["success"] is False`, `result["error"]["type"] == "persistence_error"`, and `"simulated" in result["error"]["message"]` — each assertion requires the injection point to have been reached and propagated through the bridge error handler.
+
+**Classification: PASS**
+
+---
+
+#### Repaired Test 2 — Lifecycle Persistence Failure
+
+**Test:** `tests/lifecycle/test_runtime_lifecycle.py::test_lifecycle_persistence_failure_restores_files_and_authoritative_in_memory_state`
+
+**Command executed:**
+```
+.venv/bin/pytest -v tests/lifecycle/test_runtime_lifecycle.py::test_lifecycle_persistence_failure_restores_files_and_authoritative_in_memory_state
+```
+
+**Runtime evidence:** `1 passed in 0.09s`. Exit code 0.
+
+**Path evidence (from source inspection, separate from runtime evidence):**
+
+- The `lifecycle_determination()` test helper (line 37) now supplies:
+  ```python
+  "resumption_determination": {"status": "PERMITTED", "basis": basis}
+  ```
+  when `transition == "SUSPENDED -> ACTIVE"`. This satisfies the structured-resumption guard introduced by the hardening implementation, allowing execution to proceed to the history-append path.
+- The `failing_append` function (lines 159–162) injects `RuntimeError("injected lifecycle history failure")` specifically when `self.path == history_path and event.get("type") == "lifecycle_transition"`.
+- The test uses `pytest.raises(RuntimeError, match="injected lifecycle history failure")` (line 166), which requires the exact exception message from the injected failure to be raised. A different exception — e.g., the structured-resumption rejection — would not satisfy this match and the test would fail.
+- The test PASSED, confirming that:
+  1. The structured-resumption determination was accepted (guard not triggered).
+  2. Execution reached the `JsonlStore.append()` call with a `lifecycle_transition` event.
+  3. The injected failure was raised.
+  4. The post-failure assertions on `runtime.process_instance.lifecycle`, `runtime.context.to_dict()`, file contents, and reloaded persisted state all passed, demonstrating rollback.
+
+**Classification: PASS**
+
+---
+
+#### Repaired Test 3 — Unsupported Context Schema Rejection
+
+**Test:** `tests/runtime/test_persistence_schema_and_concurrency.py::test_unsupported_context_schema_is_rejected`
+
+**Command executed:**
+```
+.venv/bin/pytest -v tests/runtime/test_persistence_schema_and_concurrency.py::test_unsupported_context_schema_is_rejected
+```
+
+**Runtime evidence:** `1 passed in 0.07s`. Exit code 0.
+
+**Contract evidence (from source inspection, separate from runtime evidence):**
+
+- The test (line 55) asserts:
+  ```python
+  pytest.raises(PersistenceError, match="authoritative context is invalid:")
+  ```
+- This matches the public `ProcessStore.load_context()` contract. Confirmed at `runtime/core/store.py` line 133:
+  ```python
+  raise PersistenceError(f"authoritative context is invalid: {process_instance_id}") from exc
+  ```
+- The lower-level `ExecutionContext.from_dict()` raises `ValueError("unsupported context schema version: ...")`. `load_context()` intentionally wraps this at the public persistence boundary as the stable authoritative-context error. The test validates the established public contract, not the lower-level implementation detail.
+- The call under test (`Runtime(...).attach(pid)`, line 56) invokes `store.load_context()` at the public boundary.
+
+**Classification: PASS**
+
+---
+
+#### Bounded Regression Results
+
+**Commands executed:**
+```
+.venv/bin/pytest -q tests/runtime/test_persistence_hardening.py
+.venv/bin/pytest -q tests/runtime/test_persistence_schema_and_concurrency.py
+.venv/bin/pytest -q tests/lifecycle/test_process_instance_lifecycle_control.py
+.venv/bin/pytest -q tests/bridge/
+.venv/bin/pytest -q tests/repository_isolation/
+```
+
+| Suite | Result | Count | Classification |
+|---|---|---|---|
+| `tests/runtime/test_persistence_hardening.py` | `6 passed` | 6/6 | PASS |
+| `tests/runtime/test_persistence_schema_and_concurrency.py` | `4 passed` | 4/4 | PASS |
+| `tests/lifecycle/test_process_instance_lifecycle_control.py` | `20 passed` | 20/20 | PASS |
+| `tests/bridge/` | `43 passed` | 43/43 | PASS |
+| `tests/repository_isolation/` | `15 passed` | 15/15 | PASS |
+
+All bounded regression suites: **PASS**. No failures observed.
+
+---
+
+#### Cross-Process Continuity Verification
+
+**Command executed:**
+```
+.venv/bin/python tests/continuity/xprocess_orchestrator.py
+```
+
+**Exit code:** 0
+
+**Observed result:** `"result": "EVIDENCE_COLLECTED"`. The orchestrator completed successfully. Process A created a Process Instance and advanced through `investigation_started → evidence_recorded (×2) → engineering_decision_recognized → implementation_started → artifact_recorded → pending_execution_recorded` (version 7). Process B attached to the same Process Instance ID using a distinct runtime ID, recovered 8 history entries, verified `continuity.identity_match: true`, `continuity.runtime_ids_distinct: true`, `recovered_process_state: implementation`, `lifecycle: active`, and contributed an additional `observe()` event advancing to version 8. Post-continuation history contained 9 entries.
+
+**Matches documented known condition:** The historically documented incompatibility involving the `observe()` call and the required `recognition` field was resolved before this execution. No failure occurred. The orchestrator exited with code 0 and `"result": "EVIDENCE_COLLECTED"`.
+
+| Field | Value |
+|---|---|
+| Exit code | 0 |
+| Observed result | `"result": "EVIDENCE_COLLECTED"` — successful completion |
+| Matches documented condition | N/A — no failure observed; prior incompatibility was already resolved |
+| Classification | PASS |
+
+---
+
+#### Full Regression Verification
+
+**Command executed:**
+```
+.venv/bin/pytest -q
+```
+
+**Observed result:** `192 passed in 1.84s`
+
+```
+........................................................................[ 37%]
+........................................................................[ 75%]
+................................................                         [100%]
+192 passed in 1.84s
+```
+
+Exit code: 0. No failures. No errors. No skips.
+
+**Classification: PASS**
+
+---
+
+#### Remaining Gaps
+
+None. All three previously unresolved test/API mismatches are now resolved and verified by execution. The full regression suite passes at 192/192.
+
+---
+
+#### Closure Decision
+
+All required closure criteria are satisfied by current executable evidence:
+
+1. ✅ Repository and execution environment validated — remote confirmed as `tuanna2703/AI-Assisted-Engineering-System-Model`, branch `main`, HEAD `a9d3fc808fc565af0e772811777e1967d7beb3cf`, working tree clean.
+2. ✅ All three repaired verification paths execute and pass — with path/contract evidence established separately from runtime evidence.
+3. ✅ All bounded regression suites pass — 88/88 tests across 5 suites.
+4. ✅ Full `pytest -q` regression passes — 192/192.
+5. ✅ No unresolved production defect — no implementation defect was demonstrated.
+6. ✅ Durable records updated — this section added; historical record preserved.
+
+**VERIFICATION COMPLETE — WORK UNIT CLOSED**
