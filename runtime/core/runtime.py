@@ -416,9 +416,8 @@ class Runtime:
                     "transition rejected"
                 )
 
-        basis_lower = str(semantic_basis).lower()
         if source_canonical == "suspended" and target_canonical == "active":
-            self._validate_resumption(basis_lower, evidence)
+            self._validate_resumption(determination.get("resumption_determination"))
 
         prior_lifecycle = self.process_instance.lifecycle
         prior_context = self.context.to_dict()
@@ -511,32 +510,31 @@ class Runtime:
         return parts[0], parts[1]
 
     @staticmethod
-    def _validate_resumption(basis_lower: str, evidence: list[dict[str, Any]]) -> None:
-        """Validate that a resumption determination establishes permissibility."""
-        if "remains applicable" in basis_lower:
+    def _validate_resumption(determination: Any) -> None:
+        """Validate the structured authority for resuming a suspended instance."""
+        if not isinstance(determination, dict):
             raise RuntimeError(
-                "resumption rejected: suspension condition remains applicable"
+                "resumption rejected: structured resumption determination is required"
             )
 
-        resumption_established = False
-        if "ceased" in basis_lower or "permissible" in basis_lower:
-            resumption_established = True
-
-        if not resumption_established:
-            for entry in evidence:
-                if isinstance(entry, dict):
-                    entry_str = str(entry).lower()
-                    if "ceased" in entry_str or "permissible" in entry_str:
-                        resumption_established = True
-                        break
-                    if "stale_work" in entry:
-                        resumption_established = True
-                        break
-
-        if not resumption_established:
+        status = determination.get("status")
+        basis = determination.get("basis")
+        if status not in {"PERMITTED", "REJECTED"}:
             raise RuntimeError(
-                "resumption rejected: determination does not establish that "
-                "suspension condition has ceased or continuation is permissible"
+                "resumption rejected: structured determination status must be "
+                "'PERMITTED' or 'REJECTED'"
+            )
+        if not isinstance(basis, str) or not basis.strip():
+            raise RuntimeError(
+                "resumption rejected: structured determination requires a basis"
+            )
+        if determination.get("conflict") is True:
+            raise RuntimeError(
+                "resumption rejected: structured determination contains an unresolved conflict"
+            )
+        if status != "PERMITTED":
+            raise RuntimeError(
+                "resumption rejected: governing structured determination does not permit continuation"
             )
 
     def _apply_stale_work_invalidation(self, evidence: list[dict[str, Any]]) -> bool:
