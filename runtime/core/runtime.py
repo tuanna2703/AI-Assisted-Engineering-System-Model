@@ -246,16 +246,26 @@ class Runtime:
         self._require_state(self.INVESTIGATION)
         if not self.context.engineering_decisions:
             raise RuntimeError("implementation requires a recognized engineering decision")
+        prior_context = self.context.to_dict()
         self.context.pending_execution = []
-        self._set_state(self.IMPLEMENTATION, "implementation_started")
+        try:
+            self._set_state(self.IMPLEMENTATION, "implementation_started")
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def set_pending_execution(self, work: dict[str, Any]) -> None:
         """Record continuation work without changing Process State implicitly."""
         self._require_attached()
         self._require_active_lifecycle()
         self._require_state(self.IMPLEMENTATION)
+        prior_context = self.context.to_dict()
         self.context.pending_execution.append(work)
-        self.store.save_context(self.context, {"type": "pending_execution_recorded", "work": work, "runtime_id": self.runtime_id})
+        try:
+            self.store.save_context(self.context, {"type": "pending_execution_recorded", "work": work, "runtime_id": self.runtime_id})
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def record_artifact(self, artifact: dict[str, Any]) -> None:
         self._require_attached()
@@ -281,8 +291,13 @@ class Runtime:
             raise RuntimeError("verification requires at least one recorded implementation artifact")
         if self.context.pending_execution:
             raise RuntimeError("verification requires no pending execution work")
+        prior_context = self.context.to_dict()
         self.context.verification = {}
-        self._set_state(self.VERIFICATION, "verification_started")
+        try:
+            self._set_state(self.VERIFICATION, "verification_started")
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def record_verification(self, result: dict[str, Any]) -> None:
         """Record verification; the legacy path remains usable for continuity experiments."""
@@ -314,9 +329,14 @@ class Runtime:
             raise RuntimeError("successful verification does not require reconsideration")
         if not isinstance(reason, dict) or not reason.get("description"):
             raise ValueError("reconsideration requires a descriptive reason")
+        prior_context = self.context.to_dict()
         self.context.failure_uncertainty.append(reason)
         self.context.unresolved_matters.append(reason["description"])
-        self._set_state(self.INVESTIGATION, "reconsideration_requested", {"reason": reason})
+        try:
+            self._set_state(self.INVESTIGATION, "reconsideration_requested", {"reason": reason})
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def recognize_engineering_completion(self, completion: dict[str, Any]) -> None:
         self._require_attached()
@@ -326,8 +346,13 @@ class Runtime:
             raise RuntimeError("engineering completion requires the verification state")
         if self.context.verification.get("passed") is not True:
             raise RuntimeError("engineering completion requires successful verification")
+        prior_context = self.context.to_dict()
         self.context.engineering_completion = True
-        self._set_state(self.ENGINEERING_COMPLETE, "engineering_completion_recognized", {"completion": completion})
+        try:
+            self._set_state(self.ENGINEERING_COMPLETE, "engineering_completion_recognized", {"completion": completion})
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     # --- Lifecycle control boundary ---
 
@@ -437,11 +462,17 @@ class Runtime:
         self.context = None
 
     def _set_state(self, state: str, event_type: str, extra: dict[str, Any] | None = None) -> None:
+        """Persist a process-state transition atomically from the Runtime view."""
+        prior_context = self.context.to_dict()
         self.context.process_state = state
         event = {"type": event_type, "runtime_id": self.runtime_id}
         if extra:
             event.update(extra)
-        self.store.save_context(self.context, event)
+        try:
+            self.store.save_context(self.context, event)
+        except Exception:
+            self.context = ExecutionContext.from_dict(prior_context)
+            raise
 
     def _require_state(self, expected: str) -> None:
         if self.context.process_state != expected:
