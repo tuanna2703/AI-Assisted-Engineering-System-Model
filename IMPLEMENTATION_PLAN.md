@@ -366,18 +366,49 @@ The DBP repository may provide evidence for scope resolution but is not itself t
 **Next authorized work:** **Project / Scope Resolution Design.**
 
 Implementation remains blocked until deterministic resolution, ambiguity handling, Process Instance selection/creation, persistence, and Agent/Environment evidence flow are designed and approved.
-## Fresh-Agent Continuity Validation
+## Repository-Portable Continuation Validation
 
-**Status: Pending.**
+**Status: Complete — validation PASS.**
 
-This work is not to be conflated with the mechanism-validation fresh-session recovery that already passed. The later continuity work must determine whether a fresh Agent can continue a real DBP engineering process after meaningful work has already been persisted.
+Evidence record: [implementation/REPOSITORY-PORTABLE-CONTINUATION-VALIDATION.md](implementation/REPOSITORY-PORTABLE-CONTINUATION-VALIDATION.md)
 
-- [ ] Stop the original DBP Agent session after meaningful process state exists.
-- [ ] Start a genuinely fresh Agent session.
-- [ ] Recover the existing Process Instance and authoritative Context.
-- [ ] Determine whether the fresh Agent can continue without relying on the old conversation.
-- [ ] Complete or otherwise resolve the DBP process as appropriate.
-- [ ] Verify continuity from persisted evidence rather than Agent narrative alone.
+The validation demonstrated repository-local Process Instance portability through a Git round trip followed by continuation from an independent checkout by a genuinely fresh Agent session.
+
+### Git Round-Trip Integrity
+
+- [x] Freeze and record the source PI baseline.
+- [x] Verify `.aesm/` is Git-visible and contains the authoritative PI files.
+- [x] Record SHA-256 hashes for `process.json`, `context.json`, and `history.jsonl`.
+- [x] Create an independent checkout from the remote repository revision without manually copying `.aesm/`.
+- [x] Verify byte-level identity and authoritative PI metadata after checkout.
+- [x] Verify no source-workspace or alternate persistence-store dependency remains.
+- [x] Classify Git Round-Trip Integrity as **PASS**.
+- [x] Classify Environment Independence as **PASS**.
+
+### Fresh-Agent Repository-Scoped Continuation
+
+- [x] End the source validation session before the continuation session.
+- [x] Start a separate Agent session in the independent checkout.
+- [x] Provide only repository/revision/checkout bootstrap information.
+- [x] Require independent discovery of the applicable PI under repository-local `.aesm/`.
+- [x] Recover the existing PI through Runtime `attach()`.
+- [x] Obtain authoritative Execution Context from Runtime.
+- [x] Perform exactly one bounded Runtime-mediated `observe()`.
+- [x] Verify the same PI persisted after continuation.
+- [x] Verify Context advanced from version 3 to version 4.
+- [x] Verify history advanced from 5 to 6 with fresh-session attribution.
+- [x] Verify no replacement PI or alternate persistence store was used.
+- [x] Classify Fresh-Agent Repository-Scoped Continuation as **PASS**.
+
+### Evidence Reconciliation
+
+- [x] Reconcile CONTROLLER, AGENT, RUNTIME, PERSISTED, and VERIFICATION evidence.
+- [x] Keep Git portability evidence separate from Agent continuity evidence.
+- [x] Preserve the surrounding-conversation-summary limitation explicitly.
+- [x] Confirm that no Runtime implementation change was introduced.
+- [x] Record the final overall classification as **Repository-Portable Continuation Validation — PASS**.
+
+**Closure:** The repository-local `.aesm/` boundary is empirically demonstrated as portable through Git and recoverable by a fresh Agent in an independent repository workspace. This result does not imply automatic resolution of arbitrary multi-repository engineering scopes.
 
 ## Current Work Unit — Runtime Consistency and Continuity Hardening
 
