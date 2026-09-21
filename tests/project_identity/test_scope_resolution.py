@@ -94,6 +94,11 @@ def test_explicit_process_instance_from_other_scope_is_rejected(tmp_path: Path):
 
 
 def test_resolution_is_repository_local(tmp_path: Path):
+    # Isolation auditability: this test uses two repositories, each with a
+    # distinct, named Process Instance bound to a distinct scope identity.
+    # If both runtimes resolved against the same .aesm/ root, runtime_b would
+    # find PI-A under scope:a and runtime_a would find PI-B under scope:b —
+    # both assertions below would then fail, proving the isolation is real.
     repo_a = tmp_path / "repo-a"
     repo_b = tmp_path / "repo-b"
     repo_a.mkdir()
@@ -104,11 +109,20 @@ def test_resolution_is_repository_local(tmp_path: Path):
     resolved_scope(runtime_a, "scope:a")
 
     runtime_b = Runtime(ActiveRepositoryContext(repo_b, "repo:b"), "runtime-b")
-    result = runtime_b.resolve_process_instance("scope:a")
+    pid_b = runtime_b.create_process("Work B")
+    resolved_scope(runtime_b, "scope:b")
 
-    assert result.status == "NO_APPLICABLE_PROCESS_INSTANCE"
-    assert result.process_instance_id is None
-    assert runtime_b.resolve_process_instance("scope:a").candidate_process_instance_ids == ()
+    # repo_b cannot observe PI-A (which belongs to repo_a)
+    result_b_sees_a = runtime_b.resolve_process_instance("scope:a")
+    assert result_b_sees_a.status == "NO_APPLICABLE_PROCESS_INSTANCE"
+    assert result_b_sees_a.process_instance_id is None
+    assert result_b_sees_a.candidate_process_instance_ids == ()
+
+    # repo_a cannot observe PI-B (which belongs to repo_b)
+    result_a_sees_b = runtime_a.resolve_process_instance("scope:b")
+    assert result_a_sees_b.status == "NO_APPLICABLE_PROCESS_INSTANCE"
+    assert result_a_sees_b.process_instance_id is None
+    assert result_a_sees_b.candidate_process_instance_ids == ()
 
 
 def test_repository_identity_is_distinct_from_repository_root(tmp_path: Path):
@@ -187,6 +201,10 @@ def test_same_repository_identity_recovers_from_new_repository_path(tmp_path: Pa
 
 
 def test_runtime_context_is_immutable_and_does_not_retarget_store(tmp_path: Path):
+    # ProcessStore exposes its persistence root as `store.root` (repo/.aesm/).
+    # The private `_repository_context` is the immutable context object.
+    # This test verifies that an attempted mutation of ActiveRepositoryContext
+    # is rejected and that both the runtime and the store still point to repo_a.
     repo_a = tmp_path / "repo-a"
     repo_b = tmp_path / "repo-b"
     repo_a.mkdir()
@@ -199,7 +217,8 @@ def test_runtime_context_is_immutable_and_does_not_retarget_store(tmp_path: Path
 
     assert runtime.repository_context.repository_root == repo_a
     assert runtime.repository_context.identity() == "repo:a"
-    assert runtime.store.context.repository_root == repo_a
+    # store.root is the .aesm path derived from the context at construction time.
+    assert runtime.store.root == repo_a / ".aesm"
 
     try:
         context.repository_root = repo_b
@@ -207,8 +226,9 @@ def test_runtime_context_is_immutable_and_does_not_retarget_store(tmp_path: Path
     except (AttributeError, TypeError):
         pass
 
+    # After the failed mutation attempt, Runtime context and store root are unchanged.
     assert runtime.repository_context.repository_root == repo_a
-    assert runtime.store.context.repository_root == repo_a
+    assert runtime.store.root == repo_a / ".aesm"
     assert runtime.resolve_process_instance("scope:a").process_instance_id == pid
     assert runtime.resolve_process_instance("scope:b").status == "NO_APPLICABLE_PROCESS_INSTANCE"
 

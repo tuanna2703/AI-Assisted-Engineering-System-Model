@@ -125,7 +125,15 @@ def test_pi_recovery_in_same_repo(tmp_path: Path):
 
 
 def test_cross_repo_isolation(tmp_path: Path):
-    """PI in repo-A cannot be recovered from repo-B context."""
+    """PI in repo-A cannot be recovered from repo-B context, and PI in repo-B
+    cannot be recovered from repo-A context.
+
+    Auditability: this test creates a named PI in each repository and attempts
+    cross-repository attachment in both directions. If both runtimes shared the
+    same .aesm/ root, runtime_b.attach(pid_a) would succeed and
+    runtime_a.attach(pid_b) would succeed — both pytest.raises blocks would
+    fail to raise, exposing the shared-root defect.
+    """
     repo_a = tmp_path / "repo-a"
     repo_b = tmp_path / "repo-b"
     repo_a.mkdir()
@@ -133,15 +141,23 @@ def test_cross_repo_isolation(tmp_path: Path):
 
     ctx_a = ActiveRepositoryContext(repo_a)
     runtime_a = Runtime(ctx_a, "writer-a")
-    pid = runtime_a.create_process("Repo A work")
+    pid_a = runtime_a.create_process("Repo A work")
     runtime_a.stop()
 
-    # PI is in repo_a/.aesm/<pid>/ — repo_b knows nothing of it.
     ctx_b = ActiveRepositoryContext(repo_b)
-    runtime_b = Runtime(ctx_b, "reader-b")
+    runtime_b = Runtime(ctx_b, "writer-b")
+    pid_b = runtime_b.create_process("Repo B work")
+    runtime_b.stop()
 
+    # repo_b cannot load PI-A — PI-A lives in repo_a/.aesm/, not repo_b/.aesm/
+    reader_b = Runtime(ctx_b, "reader-b")
     with pytest.raises(PersistenceError):
-        runtime_b.attach(pid)
+        reader_b.attach(pid_a)
+
+    # repo_a cannot load PI-B — PI-B lives in repo_b/.aesm/, not repo_a/.aesm/
+    reader_a = Runtime(ctx_a, "reader-a")
+    with pytest.raises(PersistenceError):
+        reader_a.attach(pid_b)
 
 
 def test_same_pi_id_in_two_repos_resolved_independently(tmp_path: Path):
