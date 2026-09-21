@@ -422,7 +422,7 @@ class TestPersistenceFailure:
             from runtime.persistence.json_store import PersistenceError
             raise PersistenceError("simulated persistence failure")
 
-        monkeypatch.setattr(bridge._runtime.repo_ctx, "save_context", failing_save)
+        monkeypatch.setattr(bridge._runtime.store, "save_context", failing_save)
 
         result = bridge.dispatch("observe", {"observation": OBSERVATION})
         assert result["success"] is False

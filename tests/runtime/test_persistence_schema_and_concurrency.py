@@ -52,7 +52,7 @@ def test_unsupported_context_schema_is_rejected(tmp_path: Path):
     data["schema_version"] = CURRENT_PERSISTED_SCHEMA_VERSION + 1
     path.write_text(json.dumps(data))
 
-    with pytest.raises(PersistenceError, match="unsupported context schema version"):
+    with pytest.raises(PersistenceError, match="authoritative context is invalid:"):
         Runtime(ActiveRepositoryContext(tmp_path), "schema-reject-reader").attach(pid)
 
 

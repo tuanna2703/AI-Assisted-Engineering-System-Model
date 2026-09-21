@@ -522,3 +522,31 @@ The required sequence is:
 inspect → plan → implement targeted change → behavioral verification → continuity validation → evidence reconciliation
 
 Schema, lifecycle semantics, and persistence-recovery changes additionally require their respective design gate to close before implementation.
+
+
+## Verification Gap Resolution
+
+**Status: Targeted repairs applied; bounded verification pending.**
+
+### Controller decisions recorded
+
+- Bridge stale attribute: **test-only correction authorized**. The test must inject persistence failure through the Runtime's authoritative `store.save_context` boundary; no compatibility alias is added to Runtime.
+- Lifecycle helper: **test fixture correction authorized**. The SUSPENDED → ACTIVE test determination must include structured `resumption_determination: {status: PERMITTED, basis: ...}` so the intended persistence-failure injection path is reached.
+- Schema error: **preserve the existing `load_context()` wrapper contract**. Inspection established that `ExecutionContext.from_dict()` correctly rejects unsupported schema versions, while `ProcessStore.load_context()` intentionally exposes the stable generic `PersistenceError("authoritative context is invalid: <pid>")` boundary. The verification test is therefore corrected to assert the existing public wrapper contract; production code remains unchanged.
+- Remote Git round trip: **not authorized as a required closure criterion for this bounded work unit** unless separately requested. Existing local repository-portability evidence remains the agreed evidence scope; no remote round-trip PASS may be claimed.
+
+### Targeted repairs
+
+- [x] Correct bridge persistence-failure test to patch the Runtime-owned ProcessStore boundary.
+- [x] Add structured resumption determination to the lifecycle persistence-failure fixture.
+- [x] Align the unsupported-schema test with the established `load_context()` wrapper contract.
+- [x] Make no production-code changes for these three gaps.
+
+### Verification gate
+
+- [ ] Run the full regression suite and targeted suites from the repository checkout.
+- [ ] Confirm the repaired tests execute the intended failure paths rather than merely changing assertions around skipped behavior.
+- [ ] Reconcile the final results into the durable implementation record.
+- [ ] Close the work unit only if all agreed verification obligations pass.
+
+The remote Git push → independent checkout → recovery sequence remains explicitly unclaimed and outside this work unit's closure evidence.
