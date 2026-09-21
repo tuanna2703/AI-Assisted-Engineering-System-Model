@@ -18,10 +18,13 @@ import sys
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from runtime.core import ProcessStore, Runtime
+from pathlib import Path
+
+from runtime.core import ActiveRepositoryContext, Runtime
 
 # ─── Pre-agreed experimental constants ───────────────────────────────────────
-PERSISTENCE_STORE = "/tmp/aesm_xprocess_experiment"
+PERSISTENCE_ROOT = os.environ.get("XPROCESS_REPOSITORY_ROOT", "/tmp/aesm_xprocess_experiment")
+PERSISTENCE_STORE = os.path.join(PERSISTENCE_ROOT, ".aesm")
 OBJECTIVE_MARKER = "AESM_CROSS_PROCESS_CONTINUITY_EXPERIMENT_20260907_xproc7b3e"
 
 ENGINEERING_OBJECTIVE = (
@@ -46,9 +49,10 @@ def main() -> dict:
     evidence["project_root"] = PROJECT_ROOT
 
     # Create store and runtime
-    store = ProcessStore(PERSISTENCE_STORE)
+    repository_root = Path(PERSISTENCE_ROOT).resolve()
+    repository_context = ActiveRepositoryContext(repository_root)
     runtime_id = "xprocess-runtime-A"
-    rt = Runtime(store, runtime_id)
+    rt = Runtime(repository_context, runtime_id)
 
     evidence["runtime_id"] = runtime_id
     evidence["persistence_store"] = PERSISTENCE_STORE
