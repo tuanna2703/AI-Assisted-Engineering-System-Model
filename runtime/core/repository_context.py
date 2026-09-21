@@ -47,6 +47,7 @@ class ActiveRepositoryContext:
     """
 
     repository_root: Path
+    repository_identity: str | None = None
 
     def __post_init__(self) -> None:
         # Allow str input for ergonomics; coerce to Path internally.
@@ -55,6 +56,9 @@ class ActiveRepositoryContext:
             object.__setattr__(self, "repository_root", Path(self.repository_root))
 
         root = self.repository_root
+
+        if self.repository_identity is not None and not str(self.repository_identity).strip():
+            raise ValueError("repository_identity must be non-empty when provided")
 
         if not root:
             raise ValueError("repository_root must be a non-empty path")
@@ -68,6 +72,10 @@ class ActiveRepositoryContext:
             raise ValueError(
                 f"repository_root is not a directory: {root}"
             )
+
+    def identity(self) -> str | None:
+        """Return the stable Execution Environment-supplied repository identity."""
+        return self.repository_identity
 
     def aesm_root(self) -> Path:
         """Return the authoritative AESM persistence root for this repository.

@@ -6,6 +6,7 @@ from typing import Any
 from runtime.core.models import ExecutionContext, ProcessInstance, VALID_LIFECYCLE_VALUES, now
 from runtime.core.repository_context import ActiveRepositoryContext
 from runtime.core.store import ProcessStore
+from runtime.core.scope_resolution import ProcessResolution, resolve_process_instance
 
 
 # --- Lifecycle transition graph ---
@@ -63,6 +64,41 @@ class Runtime:
     def repository_context(self) -> ActiveRepositoryContext:
         """Return the active repository context for this Runtime session (read-only)."""
         return self._repository_context
+
+    def resolve_process_instance(
+        self,
+        engineering_scope_identity: str,
+        process_instance_id: str | None = None,
+    ) -> ProcessResolution:
+        """Resolve an applicable persisted Process Instance in this repository.
+
+        Resolution is repository-local and deterministic. It never searches
+        another persistence boundary and never uses objective similarity or
+        filesystem ordering as an implicit identity rule.
+        """
+        if not isinstance(engineering_scope_identity, str) or not engineering_scope_identity.strip():
+            return ProcessResolution("INVALID")
+
+        instances = self.store.list_instances()
+        return resolve_process_instance(
+            instances,
+            engineering_scope_identity=engineering_scope_identity,
+            process_instance_id=process_instance_id,
+        )
+
+    def resolve_and_attach_process_instance(
+        self,
+        engineering_scope_identity: str,
+        process_instance_id: str | None = None,
+    ) -> ProcessResolution:
+        """Resolve a repository-local PI and attach only on a unique result."""
+        resolution = self.resolve_process_instance(
+            engineering_scope_identity,
+            process_instance_id=process_instance_id,
+        )
+        if resolution.status == "RESOLVED" and resolution.process_instance_id is not None:
+            self.attach(resolution.process_instance_id)
+        return resolution
 
     def create_process(
         self,

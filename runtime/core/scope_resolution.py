@@ -1,7 +1,7 @@
 """Deterministic Engineering Scope and Process Instance resolution.
 
-This module contains selection semantics only. It does not persist state and
-does not create Process Instances. Runtime remains the authority boundary.
+Selection semantics are pure and do not persist or create state. Runtime remains
+the authority boundary.
 """
 from __future__ import annotations
 
@@ -31,19 +31,15 @@ def resolve_process_instance(
     engineering_scope_identity: str,
     process_instance_id: str | None = None,
 ) -> ProcessResolution:
-    """Resolve one applicable PI without implicit objective/path heuristics.
-
-    An explicit PI ID is accepted only when it belongs to the active repository
-    candidate set and has the requested resolved scope identity. Otherwise the
-    result is INVALID rather than a silent fallback.
-    """
+    """Resolve one applicable PI without implicit objective/path heuristics."""
     if not isinstance(engineering_scope_identity, str) or not engineering_scope_identity.strip():
         return ProcessResolution("INVALID")
 
     candidates = [
         instance
         for instance in instances
-        if instance.engineering_scope_resolution == "RESOLVED"
+        if instance.lifecycle != "terminated"
+        and instance.engineering_scope_resolution == "RESOLVED"
         and instance.engineering_scope_identity == engineering_scope_identity
     ]
     candidates.sort(key=lambda instance: instance.process_instance_id)

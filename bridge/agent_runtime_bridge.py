@@ -34,6 +34,8 @@ from runtime.persistence.json_store import PersistenceError
 # execution-state operation outside the Agent–Runtime Bridge boundary.
 
 _DISPATCH_TABLE: dict[str, tuple[str, tuple[str, ...]]] = {
+    "resolve_process_instance": ("resolve_process_instance", ("engineering_scope_identity",)),
+    "resolve_and_attach_process_instance": ("resolve_and_attach_process_instance", ("engineering_scope_identity",)),
     "apply_scope_resolution": ("apply_scope_resolution", ("resolution",)),
     "start_investigation": ("start_investigation", ()),
     "observe": ("observe", ("observation",)),
@@ -222,15 +224,23 @@ class AgentRuntimeBridge:
         # Build the positional arguments for the Runtime method.
         method = getattr(self._runtime, method_name)
         call_args = [params[k] for k in param_keys]
+        if operation in {"resolve_process_instance", "resolve_and_attach_process_instance"} and "process_instance_id" in params:
+            call_args.append(params["process_instance_id"])
 
         try:
-            method(*call_args)
+            operation_result = method(*call_args)
         except PersistenceError as exc:
             return _error_response("persistence_error", str(exc), runtime=self._runtime)
         except (RuntimeError, PermissionError) as exc:
             return _error_response("runtime_error", str(exc), runtime=self._runtime)
         except (TypeError, ValueError) as exc:
             return _error_response("runtime_error", str(exc), runtime=self._runtime)
+
+        if operation in {"resolve_process_instance", "resolve_and_attach_process_instance"}:
+            return _success_response(
+                self._runtime,
+                extra={"resolution": operation_result.__dict__},
+            )
 
         return _success_response(self._runtime)
 
