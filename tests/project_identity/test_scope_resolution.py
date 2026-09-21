@@ -154,3 +154,102 @@ def test_bridge_exposes_resolution_without_owning_binding(tmp_path: Path):
     assert result["resolution"]["status"] == "RESOLVED"
     assert result["resolution"]["process_instance_id"] == pid
     assert not hasattr(bridge, "store")
+
+
+
+def test_same_repository_identity_recovers_from_new_repository_path(tmp_path: Path):
+    original_root = tmp_path / "original"
+    relocated_root = tmp_path / "relocated"
+    original_root.mkdir()
+    relocated_root.mkdir()
+
+    first_runtime = Runtime(
+        ActiveRepositoryContext(original_root, "github:example/project"),
+        "runtime-a",
+    )
+    pid = first_runtime.create_process("Portable work")
+    resolved_scope(first_runtime, "scope:portable")
+    first_runtime.stop()
+
+    # Model a relocated checkout carrying the same repository-local .aesm state.
+    import shutil
+    shutil.copytree(original_root / ".aesm", relocated_root / ".aesm")
+
+    second_runtime = Runtime(
+        ActiveRepositoryContext(relocated_root, "github:example/project"),
+        "runtime-b",
+    )
+    result = second_runtime.resolve_and_attach_process_instance("scope:portable")
+
+    assert result.status == "RESOLVED"
+    assert result.process_instance_id == pid
+    assert second_runtime.process_instance.process_instance_id == pid
+
+
+def test_runtime_context_is_immutable_and_does_not_retarget_store(tmp_path: Path):
+    repo_a = tmp_path / "repo-a"
+    repo_b = tmp_path / "repo-b"
+    repo_a.mkdir()
+    repo_b.mkdir()
+
+    context = ActiveRepositoryContext(repo_a, "repo:a")
+    runtime = Runtime(context, "runtime-a")
+    pid = runtime.create_process("Bound work")
+    resolved_scope(runtime, "scope:a")
+
+    assert runtime.repository_context.repository_root == repo_a
+    assert runtime.repository_context.identity() == "repo:a"
+    assert runtime.store.context.repository_root == repo_a
+
+    try:
+        context.repository_root = repo_b
+        raise AssertionError("ActiveRepositoryContext must be immutable")
+    except (AttributeError, TypeError):
+        pass
+
+    assert runtime.repository_context.repository_root == repo_a
+    assert runtime.store.context.repository_root == repo_a
+    assert runtime.resolve_process_instance("scope:a").process_instance_id == pid
+    assert runtime.resolve_process_instance("scope:b").status == "NO_APPLICABLE_PROCESS_INSTANCE"
+
+
+def test_explicit_process_instance_from_another_repository_is_rejected(tmp_path: Path):
+    repo_a = tmp_path / "repo-a"
+    repo_b = tmp_path / "repo-b"
+    repo_a.mkdir()
+    repo_b.mkdir()
+
+    runtime_a = Runtime(ActiveRepositoryContext(repo_a, "repo:a"), "runtime-a")
+    pid_a = runtime_a.create_process("Work A")
+    resolved_scope(runtime_a, "scope:a")
+
+    runtime_b = Runtime(ActiveRepositoryContext(repo_b, "repo:b"), "runtime-b")
+    result = runtime_b.resolve_process_instance("scope:a", process_instance_id=pid_a)
+
+    assert result.status == "INVALID"
+    assert result.process_instance_id is None
+
+
+def test_terminated_process_instance_is_not_applicable(tmp_path: Path):
+    runtime = Runtime(ActiveRepositoryContext(tmp_path), "runtime-a")
+    pid = runtime.create_process("Finished work")
+    resolved_scope(runtime, "scope:finished")
+
+    runtime.apply_lifecycle_determination(
+        {
+            "target_process_instance_id": pid,
+            "requested_transition": "ACTIVE -> TERMINATED",
+            "semantic_basis": "engineering process ended",
+            "authority_context": "authorized-controller",
+            "actor": "controller",
+            "evidence": [],
+            "occurred_at": "2026-09-21T08:00:00+00:00",
+        }
+    )
+    runtime.stop()
+
+    fresh = Runtime(ActiveRepositoryContext(tmp_path), "runtime-b")
+    result = fresh.resolve_process_instance("scope:finished")
+
+    assert result.status == "NO_APPLICABLE_PROCESS_INSTANCE"
+    assert result.candidate_process_instance_ids == ()
