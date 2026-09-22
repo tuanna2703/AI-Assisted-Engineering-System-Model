@@ -61,7 +61,7 @@ For semantic questions, consult the canonical `docs/` material rather than exten
 - `runtime/`, `bridge/`, and other executable directories contain implementation, not engineering records.
 - `tests/` contains executable verification. Test results are evidence; do not duplicate test logic in Markdown records.
 - `.aesm/` is repository-local authoritative Process Instance / Execution Context state where present. Do not treat Markdown records as execution state.
-- `IMPLEMENTATION_PLAN.md` contains current authorized work and progress.
+- `plan/` contains the current planning governance surface. Start at `plan/README.md`, then `plan/CURRENT.md`. `IMPLEMENTATION_PLAN.md` is superseded; do not use it as a planning authority.
 - `IMPLEMENTATION_BASELINE.md` records the current implementation baseline.
 - `implementation/` contains only selected, concise, non-canonical engineering records that preserve important implementation findings, empirical validation, reconciliation, or other durable evidence not already represented adequately by docs, source, tests, or `.aesm/`.
 - Do not create a separate top-level `execution/` directory. Execution is an activity/state governed by Runtime and persisted under `.aesm/`; Markdown descriptions of that activity belong in `implementation/` only when they have durable value.

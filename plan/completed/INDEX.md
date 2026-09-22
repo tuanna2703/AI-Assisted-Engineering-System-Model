@@ -1,0 +1,51 @@
+# Completed Task Index
+
+This index lists all completed engineering tasks. Each entry provides task identity,
+completion date (where available), concise purpose, and relevant concern tags.
+
+Do not duplicate complete task file contents here. For full context, decisions,
+and verification evidence, read the referenced task file.
+
+---
+
+## Index
+
+| Task ID | Completed | Purpose | Concern Tags | Task File |
+|---------|-----------|---------|--------------|-----------|
+| aesm-implementation-foundations | ~2026-09-19 | Establish Process Instance persistence, Execution Context, first vertical slice semantics, minimal Runtime core, and recording behavioral validation | foundation, process-instance, execution-context, runtime-core, recording | [→](aesm-implementation-foundations.md) |
+| agent-guidance-and-environment-mapping | ~2026-09-19 | Establish Agent Guidance Interface, Agent–Runtime boundary, Runtime API surface (four adapter surfaces), minimal bridge, and environment mechanism mapping | agent-guidance, bridge, environment-mapping, runtime-api | [→](agent-guidance-and-environment-mapping.md) |
+| agent-boundary-mechanism-validation | ~2026-09-19 | Validate the complete operational chain from fresh Agent session through Runtime mutations, persisted state, and fresh-session recovery | mechanism-validation, end-to-end, fresh-session, process-instance, bridge | [→](agent-boundary-mechanism-validation.md) |
+| dbp-empirical-execution | ~2026-09-19 | Execute controlled DBP engineering request under AESM; reconcile evidence; identify AESM participation gap; establish project/process binding as separate concern | dbp, empirical-execution, evidence-reconciliation, scope-binding, gap-identification | [→](dbp-empirical-execution.md) |
+| engineering-scope-identity-and-scope-resolution | 2026-09-21 | Define Engineering Scope Identity as distinct AESM concept; design and implement deterministic Runtime-owned scope resolution; validate 204/204 tests | scope-identity, scope-resolution, process-instance-binding, repository-isolation, multi-project | [→](engineering-scope-identity-and-scope-resolution.md) |
+| repository-portable-continuation-validation | 2026-09-21 | Demonstrate Git-portable .aesm/ and fresh-Agent continuation from independent checkout; validate PASS for Git round trip and fresh-session continuation | portability, git-round-trip, fresh-session, continuation, repository-local | [→](repository-portable-continuation-validation.md) |
+| runtime-consistency-and-continuity-hardening | 2026-09-21 | Harden Runtime persistence (rollback symmetry, schema evolution, concurrency, recovery); repair API compatibility; validate cross-process continuity; 192/192 regression PASS | runtime-hardening, persistence-consistency, continuity, schema, concurrency, rollback, verification | [→](runtime-consistency-and-continuity-hardening.md) |
+| planning-system-restructuring | 2026-09-22 | Establish structured, deterministic, recoverable plan/ planning system replacing monolithic IMPLEMENTATION_PLAN.md; enable fresh Agent navigation without prior context | planning-governance, restructuring, migration, agent-navigation | [→](planning-system-restructuring.md) |
+
+---
+
+## Decisions Still in Effect (Quick Reference)
+
+Key decisions from completed tasks that remain active constraints for all future work.
+For full context and the precise decision statement, read the referenced task file.
+
+| Decision | Source Task |
+|----------|-------------|
+| Runtime is the sole authority for persisted AESM state | aesm-implementation-foundations |
+| Planning records ≠ Runtime evidence | aesm-implementation-foundations |
+| Recording behavioral validation closes the recording contract | aesm-implementation-foundations |
+| Agent Guidance Interface semantic contract is closed | agent-guidance-and-environment-mapping |
+| Bridge is thin; four adapter surfaces only | agent-guidance-and-environment-mapping |
+| Minimum mechanism: no VS Code extension, MCP, or second PI store required | agent-guidance-and-environment-mapping |
+| Mechanism validation gate is closed | agent-boundary-mechanism-validation |
+| DBP engineering activity and AESM non-participation are separate findings | dbp-empirical-execution |
+| No retroactive AESM evidence for original DBP execution | dbp-empirical-execution |
+| Engineering Scope Identity is distinct from PI identity, repository identity, workspace identity | engineering-scope-identity-and-scope-resolution |
+| No first-class Project entity; no workspace-wide PI index | engineering-scope-identity-and-scope-resolution |
+| Repository isolation enforced; scope resolution is Runtime-owned | engineering-scope-identity-and-scope-resolution |
+| Git-portable .aesm/; result does not imply multi-repository auto-resolution | repository-portable-continuation-validation |
+| Remote Git round trip is explicitly unclaimed from prior validations | repository-portable-continuation-validation |
+| Rollback symmetry required for all authoritative state mutations | runtime-consistency-and-continuity-hardening |
+| Schema version 1 explicit; missing defaults to v1; unsupported rejected | runtime-consistency-and-continuity-hardening |
+| Single-writer assumption; PI writes use optimistic concurrency (updated_at) | runtime-consistency-and-continuity-hardening |
+| Per-file atomic writes + rollback = bounded recovery; no generalized transaction layer | runtime-consistency-and-continuity-hardening |
+| execution/ directory permanently absent; do not recreate | runtime-consistency-and-continuity-hardening |
