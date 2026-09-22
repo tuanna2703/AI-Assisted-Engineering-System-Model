@@ -231,13 +231,15 @@ Subtasks:
 - [x] Run git diff --check and record result — evidence: PASS, no whitespace errors
 - [x] Run git status and review diff — evidence: 4 planning files modified (plan/CURRENT.md, plan/README.md, plan/ROADMAP.md, plan/completed/planning-system-restructuring.md); plan/active/ new untracked; no production code changes
 
-10-Question Document-Derived Verification:
+10-Question Document-Derived Verification (Verification-Time Snapshot):
 
-1. What task is currently active?
+The answers below record the planning state observed during this Task's verification on 2026-09-22. They are historical verification evidence, not a statement of the repository's current planning state. For the live state, read `plan/CURRENT.md`.
+
+1. At verification time, what task was active?
    aesm-planning-authorization-refinement
    Source: plan/CURRENT.md §Active Task — Task ID field
 
-2. Is there currently an active task?
+2. At verification time, was there an active task?
    Yes
    Source: plan/CURRENT.md §Active Task — Status: in-progress
 
