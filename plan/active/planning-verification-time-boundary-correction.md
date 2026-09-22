@@ -103,9 +103,9 @@ Objective:
 Make the historical verification questions explicitly refer to the planning state at verification time.
 
 Subtasks:
-- [ ] Revise the 10-question verification headings/questions so present-tense navigation claims are explicitly time-bounded.
-- [ ] Preserve the recorded verification answers and their source references.
-- [ ] Add a concise note distinguishing the historical verification snapshot from the live planning state.
+- [x] Revise the 10-question verification headings/questions so present-tense navigation claims are explicitly time-bounded — evidence: completed task verification heading and questions 1–2 now explicitly identify the verification-time snapshot.
+- [x] Preserve the recorded verification answers and their source references — evidence: answers and source references remain unchanged apart from temporal wording.
+- [x] Add a concise note distinguishing the historical verification snapshot from the live planning state — evidence: verification section directs readers to `plan/CURRENT.md` for live state.
 
 Completion condition:
 A reader can distinguish historical verification state from current repository planning state without changing the historical result.
@@ -120,15 +120,18 @@ Objective:
 Verify that the correction introduces no contradiction or new planning authority.
 
 Subtasks:
-- [ ] Re-read the corrected completed task and current planning documents.
-- [ ] Verify `plan/CURRENT.md` still reports no active Task and the DBP Task as NOT AUTHORIZED.
-- [ ] Verify no sequencing artifact or new status value was introduced.
-- [ ] Run `.venv/bin/pytest tests/ -q` and record the actual result.
-- [ ] Run `git diff --check` and review the complete diff.
-- [ ] Verify the DBP continuation validation remains inactive.
+- [x] Re-read the corrected completed task and current planning documents — evidence: GitHub branch contents inspected after the correction.
+- [x] Verify `plan/CURRENT.md` still reports the correction Task as active and the DBP Task as a NOT AUTHORIZED Next Candidate — evidence: current branch `plan/CURRENT.md`.
+- [x] Verify no sequencing artifact or new status value was introduced — evidence: compare `main...fix/planning-verification-time-boundary` contains only three planning-document paths; no sequencing artifact added.
+- [ ] Run `.venv/bin/pytest tests/ -q` and record the actual result — BLOCKED: this execution environment cannot resolve `github.com`, and the repository is not locally available for test execution.
+- [ ] Run `git diff --check` and review the complete diff — BLOCKED for the same local checkout limitation; GitHub compare was reviewed instead.
+- [x] Verify the DBP continuation validation remains inactive — evidence: no DBP files changed; the backlog Task remains the NOT AUTHORIZED candidate in `plan/CURRENT.md`.
 
 Completion condition:
 The historical record is temporally unambiguous, the live planning state is unchanged, and repository verification passes.
+
+Blocked condition:
+Local regression and `git diff --check` cannot currently be executed because this environment cannot resolve `github.com` to obtain a local checkout. The implementation is complete, but the Task cannot be closed until those verification commands are executed in a repository-capable environment.
 
 ---
 
@@ -159,4 +162,10 @@ The historical record is temporally unambiguous, the live planning state is unch
 
 ## Completion Record
 
-To be populated when all acceptance criteria and verification requirements are satisfied.
+Not yet complete. Historical wording correction is implemented. Final verification is blocked by the unavailable local repository/test execution environment described above.
+
+Implementation evidence:
+- `plan/completed/aesm-planning-authorization-refinement.md` now labels its 10-question verification as a verification-time snapshot and explicitly directs readers to `plan/CURRENT.md` for live state.
+- `plan/CURRENT.md` identifies this correction Task as the active Task.
+- GitHub compare `main...fix/planning-verification-time-boundary` shows only three planning-document paths changed.
+- No DBP engineering or AESM Runtime files were modified.
