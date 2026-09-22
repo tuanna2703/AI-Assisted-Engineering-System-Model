@@ -36,8 +36,12 @@ A Work Unit is complete when:
    repository or referenced artifacts, independently of Agent claim.
 3. **Required planning evidence is recorded** in the Task file.
 4. **The Task file records the Work Unit status as `complete`.**
+5. **Navigation projection is reconciled:** `CURRENT.md` is updated to reflect
+   the current Work Unit, OR explicit evidence states that no projection change
+   is required (e.g., this is the last Work Unit in the Task).
 
-Only after step 4 may CURRENT.md advance to the next Work Unit.
+Only after step 4 and step 5 may CURRENT.md be considered authoritative for the
+new navigation state.
 
 **Never advance CURRENT.md before the Task file records Work Unit completion.**
 
@@ -100,6 +104,6 @@ substitute for AESM-governed engineering completion.
 | Level | Satisfied by | Not satisfied by |
 |-------|-------------|-----------------|
 | Subtask | Action performed; independently checkable evidence recorded | Agent statement; checkbox alone |
-| Work Unit | All Subtasks `[x]`; Completion Condition met; evidence recorded; Task file updated | Subtasks checked without verification; CURRENT.md advanced prematurely |
+| Work Unit | All Subtasks `[x]`; Completion Condition met; evidence recorded; Task file updated; navigation projection reconciled | Subtasks checked without verification; CURRENT.md advanced prematurely; projection not reconciled |
 | Task | All Work Units complete; criteria met; verification complete; Completion Record populated; Task moved to completed/ | Work Units checked alone; unsupported Completion Record; missing verification |
-| Engineering | Runtime-mediated recognition; persisted `.aesm/` state | Plan completion; checkbox state; Agent claim |
+| Engineering | Runtime-mediated recognition; persisted `.aesm/` state | Plan completion; checkbox state; Agent claim; planning evidence alone |

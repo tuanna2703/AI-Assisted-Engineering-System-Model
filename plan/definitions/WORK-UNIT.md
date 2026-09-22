@@ -85,9 +85,50 @@ rewritten solely for stylistic consistency.
 3. Verify the Completion Condition after all Subtasks are done.
 4. Record required evidence.
 5. Mark the Work Unit complete in the Task file.
-6. Only then advance CURRENT.md.
+6. Reconcile `CURRENT.md` or explicitly verify no projection change is required.
+7. Evidence the reconciliation (see §Projection Reconciliation).
 
 **Never advance CURRENT.md before the Task file records Work Unit completion.**
+
+**Never mark a Work Unit complete before navigation projection is reconciled.**
+
+## Projection Reconciliation
+
+Navigation reconciliation is a mandatory Work Unit completion obligation.
+Do not create a boilerplate reconciliation Subtask within every Work Unit;
+instead treat reconciliation as an implicit final step of completion.
+
+A Work Unit may become authoritatively `complete` only when all of the following
+are satisfied:
+
+1. Required Subtasks are complete (`[x]`).
+2. The Completion Condition is satisfied.
+3. Required evidence is recorded in the Task file.
+4. The Task file records the Work Unit status as `complete`.
+5. `CURRENT.md` is reconciled to reflect the new Work Unit, OR explicit evidence
+   states that no projection change is required (e.g., this is the Task's final
+   Work Unit and the Task is not yet complete).
+
+Acceptable projection-reconciliation evidence:
+
+> `plan/CURRENT.md §Active Task — Work Unit: <name>` updated to `<next-name>`.
+
+or an equivalent independently checkable statement identifying the new Work Unit
+or confirming that no projection change is needed.
+
+**Invariant:** A Work Unit cannot become authoritatively `complete` until its
+Task state and navigation projection have been reconciled, or explicitly verified
+as requiring no projection change.
+
+## Stale or Missing Navigation (Recovery Behavior)
+
+If CURRENT.md is stale, missing, or points to a completed Work Unit or
+non-existent Task:
+
+1. Use the authoritative Task file to identify the actual current Work Unit.
+2. Repair CURRENT.md from the Task file.
+3. Do not repeat completed work merely because navigation is stale.
+4. Record the repair as evidence in the Task file progress notes.
 
 ## Authority
 

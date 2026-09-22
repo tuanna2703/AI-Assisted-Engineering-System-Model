@@ -23,7 +23,7 @@ Every Task file must define:
 Task ID:       unique slug, e.g. runtime-consistency-hardening
 Status:        one of the allowed planning states (see STATUS.md)
 Created:       ISO 8601 date
-Source:        document or decision that authorized this Task
+Source:        mechanically sufficient authorization record (see §Authorization)
 ```
 
 ### Objective
@@ -45,7 +45,8 @@ determine whether a proposed action violates a constraint.
 ### Dependencies
 
 Other Tasks or engineering artifacts that must be complete or available before
-this Task can be fully executed. State explicitly "None" if there are no dependencies.
+this Task can be fully executed. State explicitly "None" if there are no
+dependencies.
 
 ### Governing Decisions
 
@@ -55,12 +56,14 @@ Each entry must identify:
 - Source Task ID
 - Decision summary
 - Why the decision applies to this Task
+- **Relationship** (if applicable): `qualified` or `superseded` — see §Decision Lifecycle
 
-Only applicable decisions belong here. This section is a bounded traceability record,
-not a duplicate of the entire completed-task history.
+Only applicable decisions belong here. This section is a bounded traceability
+record, not a duplicate of the entire completed-task history.
 
 If a prior decision is intentionally changed, record the supersession explicitly,
-including the superseded Source Task ID and the new decision.
+including the superseded Source Task ID, the relationship (`superseded`), the new
+decision, and why the change was made.
 
 ### Decisions Still in Effect
 
@@ -87,3 +90,114 @@ source document. Do not rename Work Units opportunistically.
 ### Acceptance Criteria
 
 Observable outcomes that must be satisfied for this Task to be considered complete.
+
+---
+
+## Authorization
+
+### Mechanically Sufficient Authorization Record
+
+The `Source:` field of an active Task must contain a mechanically sufficient
+authorization record. A fresh Agent must be able to determine authorization from
+this field alone — without relying on conversation history, inferred context, or
+other documents.
+
+A mechanically sufficient record identifies all four of the following:
+
+1. **Authorization date** — when the authorization was given.
+2. **Nature/source of the instruction** — who or what authorized the Task (e.g.,
+   human instruction, authorized engineering prompt, explicit approval).
+3. **Authorized Task identity** — the Task being authorized, by name or ID.
+4. **Authorized action or scope** — what the Agent is authorized to do.
+
+Example of a sufficient record:
+
+```
+Source:
+  Authorization date: 2026-09-22
+  Authorized by: Human instruction (engineering prompt provided directly)
+  Authorized Task: planning-verification-time-boundary-correction
+  Authorized scope: Correct the historical verification record temporal boundary
+    in plan/completed/aesm-planning-authorization-refinement.md; no DBP or
+    Runtime changes.
+```
+
+An abbreviated form is acceptable when an existing human instruction can be
+traced clearly without invented details.
+
+### Authorization Provenance, Task Provenance, and Execution Evidence
+
+These three are distinct and must not appear under the same `Source:` entry
+without clear labeling:
+
+**Authorization provenance** — the human instruction granting execution authority.
+
+**Task provenance** — what motivated the Task's creation (prior decisions, context,
+investigation).
+
+**Execution evidence** — what happened during execution (commands, results, tests,
+blockers).
+
+### Invalid Authorization
+
+A Task is not authorized when the Agent would have to infer authorization from:
+
+- Task location in `plan/backlog/` or `plan/active/`;
+- CURRENT.md content;
+- prior conversation history alone;
+- logical sequence or apparent necessity;
+- another Task's completion or suggestion;
+- an ambiguous, missing, or fabricated `Source:` field.
+
+The Entry Consistency Assertion in `plan/README.md §Entry Consistency Assertion`
+stops execution when authorization is insufficient.
+
+### Compatibility with Existing Tasks
+
+Existing Tasks authorized before the structured authorization format was established
+may retain their historical `Source:` text. This is a compatibility rule:
+
+- Preserve historical Source text exactly.
+- Do not invent missing details.
+- If the existing Source identifies a genuine human authorization instruction, the
+  Task may continue without retroactive reformatting.
+- Apply the full structured format to newly created Tasks.
+
+---
+
+## Decision Lifecycle
+
+A decision recorded in a completed Task's `Decisions Still in Effect` section
+remains a binding constraint for future Tasks unless explicitly superseded or
+qualified.
+
+### Qualified
+
+An earlier decision remains applicable, but its scope, interpretation, conditions,
+or applicability has been narrowed or otherwise changed.
+
+A qualification must record:
+- Prior Task ID and decision summary
+- Relationship: `qualified`
+- What remains applicable
+- What changed
+- Why the qualification was made
+
+### Superseded
+
+An earlier decision no longer governs the relevant situation because a later
+decision replaces it.
+
+A supersession must record:
+- Prior Task ID and decision summary
+- Relationship: `superseded`
+- The new decision
+- Why the supersession was made
+
+### Discoverability
+
+Decision qualifications and supersessions must be exposed in `plan/completed/INDEX.md`
+so a fresh Agent can discover them without reading every completed Task file.
+
+Historical Task records remain historically accurate. A later qualification or
+supersession does not rewrite the earlier Task's content.

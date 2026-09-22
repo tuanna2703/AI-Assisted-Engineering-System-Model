@@ -160,3 +160,60 @@ decisions remain in effect for future work.
 Decisions recorded under "Decisions Still in Effect" in a completed Task file
 are active constraints that govern future Tasks unless explicitly superseded
 by a later authoritative decision.
+
+---
+
+## 11. Planning Authority Does Not Extend to Runtime
+
+A planning Task does not itself:
+
+- Create a Process Instance.
+- Attach to a Process Instance.
+- Mutate authoritative Execution Context.
+- Produce AESM Runtime evidence.
+- Constitute AESM Engineering Completion.
+
+Repository inspection, file editing, Git operations, and test execution performed
+during a planning Task are **planning operations**. They are not automatically
+Runtime participation. Planning evidence must not be represented as `RUNTIME`,
+`PERSISTED`, or equivalent AESM evidence merely because the Agent used tools.
+
+Planning completion is explicitly distinct from AESM Engineering Completion:
+
+| Claim | Valid source |
+|-------|--------------|
+| Planning record complete | Task file + Completion Record |
+| Engineering work performed | Runtime-mediated evidence + `.aesm/` state |
+| Process Instance state | `.aesm/<pi-id>/context.json` |
+| AESM Engineering Completion | Runtime-mediated recognition; persisted history |
+
+A Task in `plan/completed/` means the planning system records that intended work
+was performed and planning acceptance criteria were satisfied. It does **not**
+mean the AESM Runtime has recognized the corresponding results as authoritative
+Process Instance completion.
+
+### Exception: Explicitly Authorized Engineering Scope
+
+A planning Task may govern or accompany Runtime-mediated engineering work only
+when its authorized scope explicitly includes that engineering work.
+
+Even then:
+- Runtime remains authoritative.
+- Process Instance state remains Runtime-owned.
+- Execution Context remains Runtime-owned.
+- Planning records cannot substitute for Runtime evidence.
+
+---
+
+## 12. Authorization Provenance Must Be Mechanically Determinable
+
+A fresh Agent must be able to determine whether a Task is authorized from the
+Task file's `Source:` field alone — without relying on conversation history,
+inferred context, or another document.
+
+A `Source:` field that requires inference is insufficient.
+
+See `plan/definitions/TASK.md §Authorization` for the required structure.
+
+This principle prevents resumption of unauthorized Tasks and prevents autonomous
+promotion of backlog Tasks.

@@ -86,7 +86,40 @@ For Subtasks, the relevant states are:
 | `[ ]`  | Not started |
 | `[/]`  | In progress |
 | `[x]`  | Complete |
-| `[!]`  | Blocked — reason must be recorded immediately after |
+| `[!]`  | Blocked — reason must be recorded immediately after the marker |
+
+## Blocked Subtask (`[!]`) — Recovery Protocol
+
+A blocked Subtask is not simply an unfinished one. It records a condition that
+prevents legitimate progress.
+
+Format:
+
+```markdown
+- [!] <action that cannot proceed>
+  BLOCKED: <precise reason why execution cannot continue>
+```
+
+When a fresh Agent encounters `[!]` as the next required Subtask:
+
+1. Read the text immediately following the `[!]` marker to identify the blocker.
+2. Inspect the recorded evidence to understand the blocking condition.
+3. Determine whether the blocking condition has actually been resolved — from
+   repository state, not from conversation history.
+4. If the blocker remains unresolved:
+   - Surface the blocking condition to the human.
+   - Stop execution of that blocked work.
+   - Do not invent a workaround.
+   - Do not silently substitute another Task.
+   - Do not reinterpret the blocker as authorization to change scope.
+5. Resume blocked work only when the blocking condition has been explicitly
+   resolved in the planning record and the marker updated accordingly.
+
+**Structural state vs. substantive evidence:** The `[!]` marker is structural
+state. The blocking reason recorded after it is substantive evidence. Correct
+the structural state (the marker) when the blocking condition resolves. Do not
+alter the blocking reason text to make the marker appear consistent — correct
+the marker to match the actual evidence.
 
 ## Granularity Rule
 

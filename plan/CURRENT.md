@@ -13,22 +13,15 @@ For the full navigation protocol, read `plan/README.md`.
 
 ## Active Task
 
-Task ID:
-planning-verification-time-boundary-correction
-
-Task File:
-plan/active/planning-verification-time-boundary-correction.md
-
-Status:
-in-progress
+No active Task.
 
 The most recently completed task was:
 
 Task ID:
-aesm-planning-authorization-refinement
+planning-verification-time-boundary-correction
 
 Task File:
-plan/completed/aesm-planning-authorization-refinement.md
+plan/completed/planning-verification-time-boundary-correction.md
 
 Completed:
 2026-09-22

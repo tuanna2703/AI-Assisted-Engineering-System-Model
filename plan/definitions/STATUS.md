@@ -29,6 +29,22 @@ Do not use "current" as a status. The current item is determined by reading
 `CURRENT.md` and the active Task file. Status reflects execution state, not
 navigation position.
 
+## Distinction: `in-progress` vs `blocked` (Work Unit and Subtask)
+
+- `in-progress`: execution has begun and work can legitimately continue.
+- `blocked` (`[!]` for Subtasks; `Blocked condition:` section for Work Units):
+  a required condition cannot be met; execution cannot advance until the
+  blocking condition is resolved.
+
+A blocked Work Unit is still operationally `in-progress` at the Task level.
+Do not introduce a separate Task-level `blocked` status. The blocking condition
+must be recorded in the affected Work Unit's `Blocked condition:` section.
+
+A Work Unit with at least one `[x]` or `[!]` Subtask is `in-progress`, not
+`not-started`. The presence of `[!]` does not reset the Work Unit to
+`not-started`; it reflects an operational impediment within in-progress
+execution.
+
 ## Prohibited States
 
 The following terms must not appear as status values:
@@ -82,3 +98,29 @@ completion of the previous item. See `plan/README.md` for the work-unit
 transition and recovery protocols.
 
 If CURRENT.md and the Task file disagree about what is active, the **Task file wins**.
+
+---
+
+## Structural State vs. Substantive Evidence
+
+These are distinct and must not be conflated when repairing planning records.
+
+**Structural state** is planning metadata describing where work stands:
+- `[ ]`, `[x]`, `[!]`, `[/]` markers
+- `Status:` fields
+- Work Unit status
+- Navigation/projection metadata (CURRENT.md Work Unit pointer)
+
+**Substantive evidence** is the recorded content describing what actually happened:
+- Observed conditions
+- Executed commands and their results
+- Test results
+- Git results
+- Discovered blockers
+- Historical findings and decisions
+- Verification outcomes
+
+When structural state conflicts with substantive evidence, **correct the structural
+state from the evidence**. Do not alter substantive evidence to make structural
+state appear consistent. If substantive evidence is missing or ambiguous, do not
+manufacture it.

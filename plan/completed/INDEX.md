@@ -21,6 +21,7 @@ and verification evidence, read the referenced task file.
 | runtime-consistency-and-continuity-hardening | 2026-09-21 | Harden Runtime persistence (rollback symmetry, schema evolution, concurrency, recovery); repair API compatibility; validate cross-process continuity; 192/192 regression PASS | runtime-hardening, persistence-consistency, continuity, schema, concurrency, rollback, verification | [→](runtime-consistency-and-continuity-hardening.md) |
 | planning-system-restructuring | 2026-09-22 | Establish structured, deterministic, recoverable plan/ planning system replacing monolithic IMPLEMENTATION_PLAN.md; enable fresh Agent navigation without prior context | planning-governance, restructuring, migration, agent-navigation | [→](planning-system-restructuring.md) |
 | aesm-planning-authorization-refinement | 2026-09-22 | Strengthen backlog-to-active authorization gate in README.md; make CURRENT.md explicitly distinguish candidate from authorized task; add non-binding Suggested Successor to planning-system-restructuring | authorization, backlog-promotion, navigation-refinement, candidate-vs-authorized | [→](aesm-planning-authorization-refinement.md) |
+| planning-verification-time-boundary-correction | 2026-09-22 | Correct the historical verification record temporal boundary; reconcile Work Unit structural state; resolve blocked test subtasks (204/204 PASS); implement planning-system refinement (authorization, blocked-recovery, projection-reconciliation, decision-lifecycle, runtime-boundary, fresh-agent review) | planning-governance, temporal-boundary, verification, structural-reconciliation, authorization, runtime-boundary | [→](planning-verification-time-boundary-correction.md) |
 
 ---
 
@@ -50,3 +51,23 @@ For full context and the precise decision statement, read the referenced task fi
 | Single-writer assumption; PI writes use optimistic concurrency (updated_at) | runtime-consistency-and-continuity-hardening |
 | Per-file atomic writes + rollback = bounded recovery; no generalized transaction layer | runtime-consistency-and-continuity-hardening |
 | execution/ directory permanently absent; do not recreate | runtime-consistency-and-continuity-hardening |
+
+---
+
+## Decision Qualifications and Supersessions
+
+This section records when a later Task has qualified or superseded a decision from
+an earlier Task. Use this section to trace decision lineage without reading every
+completed Task file.
+
+For the full qualification or supersession record, read the later Task's `Governing
+Decisions` section.
+
+| Relationship | Earlier Task | Earlier Decision Summary | Later Task | What Changed |
+|--------------|-------------|--------------------------|------------|-------------|
+| *(none recorded yet)* | | | | |
+
+**Guidance for future Tasks:** When a new Task qualifies or supersedes an earlier
+decision, add a row here identifying: relationship (`qualified`/`superseded`),
+earlier Task ID, the decision affected, later Task ID, and a brief summary of what
+changed. The earlier Task's historical record is not altered.
