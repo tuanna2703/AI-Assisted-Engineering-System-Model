@@ -55,11 +55,17 @@ See `plan/README.md` §Backlog Promotion for the authorization protocol.
 
 ## Recovery Note
 
-If this file appears inconsistent with repository state:
+If this file appears inconsistent with repository state, do not select work from this
+file by heuristic.
 
 1. Read `plan/README.md`.
-2. Check `plan/active/` for any active task files.
-3. If `plan/active/` is empty and no task is in-progress, there is no active task.
-4. If a task file exists in `plan/active/`, update this file to reference it.
+2. Inspect `plan/active/`.
+3. If exactly one active Task exists, read its `Source:` authorization and reconcile
+   this projection to the authoritative Task file.
+4. If `plan/active/` is empty, there is no authorized active Task; do not infer one
+   from the backlog or from this file's Next Candidate.
+5. If more than one active Task exists, stop and obtain explicit human resolution.
+6. If this file names a missing or completed Task, repair it from the authoritative
+   active Task state before proceeding.
 
-The task file is authoritative. This file is a navigation projection.
+The Task file is authoritative. This file is a navigation projection.
