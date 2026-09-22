@@ -23,7 +23,10 @@ Status:
 in-progress
 
 Active Work Unit:
-Experiment Fixture and Authorization Baseline
+Session A — DBP Process Establishment
+
+Execution Status:
+BLOCKED — requires a live DBP checkout with AESM Runtime execution capability
 
 ---
 

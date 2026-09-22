@@ -84,7 +84,43 @@ Planning Task state and evidence cannot substitute for Runtime authority or `.ae
 ## Work Units
 
 ### Experiment Fixture and Authorization Baseline
-Status: not-started
+Status: complete
+
+Objective:
+Define and freeze the controlled DBP continuation fixture before Runtime execution.
+
+Findings:
+- Controlled repository: `tuanna2703/directories-builder-pro`.
+- Current repository root is the DBP checkout; repository-local persistence is `<repo-root>/.aesm/`.
+- The DBP repository currently contains `.aesm/d0640ec8-672e-43bd-bd4b-974d808915a2/` with `process.json`, `context.json`, `history.jsonl`, and a migration-integrity record.
+- The persisted Process Instance has Engineering Scope Identity `project:tuanna2703/directories-builder-pro` and `engineering_scope_resolution=RESOLVED`.
+- The persisted record identifies the earlier controlled DBP engineering objective as the `Edit_Review_Form.business_id` POST_SELECT change.
+- The persisted history shows the earlier Session A / Session B execution used the former workspace ProcessStore before the repository-local migration. The migration record states that the state was relocated into DBP `.aesm/` with identity, hashes, history, and lifecycle preserved.
+- Therefore this existing PI is valid repository-persistent baseline state but is **not** sufficient by itself as fresh evidence for this Task. It must not be treated as proof that the current Task's repository-scoped Runtime continuation has executed.
+- The DBP repository `.gitignore` does not exclude `.aesm/`, so the intended repository-local state is Git-visible.
+- The bounded validation request is continuity itself, not a new DBP feature implementation. Session A must establish/recover the DBP PI through the repository-local Runtime context and perform a small Runtime-mediated mutation; Session B must independently discover and continue it.
+- The current available execution surface for this turn provides repository inspection and Git operations but does not provide a live DBP checkout/runtime process in which the AESM Runtime can be invoked. Consequently Runtime execution cannot be truthfully claimed from repository inspection alone.
+
+Fixture decision:
+Use the existing DBP repository and its repository-local PI as the controlled persistence baseline, but require a new controlled Runtime interaction in a real DBP checkout before Session A can be marked complete. No manual editing of the existing `.aesm/` state is authorized.
+
+Evidence contract:
+- CONTROLLER: human authorization and bounded fixture definition.
+- AGENT: independently established repository context and fresh-session behavior.
+- RUNTIME: actual Runtime construction, scope resolution, attach/create, Context acquisition, and mutation responses.
+- PERSISTED: repository-local `.aesm/` files before/after Runtime activity.
+- VERIFICATION: executable/independent checks of identity, history, repository isolation, and continuity.
+- Planning records remain navigation/governance evidence only.
+
+Completion condition:
+Fixture, scope binding, bounded request, permitted Runtime operations, session boundaries, and evidence contract are explicitly recorded and reviewable before Runtime execution.
+
+Subtasks:
+- [x] Inspect current DBP repository baseline and identify a bounded engineering request that can be executed without free-ranging implementation.
+- [x] Define the expected repository identity, repository root, Engineering Scope Identity, and active-repository context for the DBP fixture.
+- [x] Define the Process Instance baseline and the exact Runtime-mediated operations permitted in Session A and Session B.
+- [x] Define evidence requirements for CONTROLLER, AGENT, RUNTIME, PERSISTED, and VERIFICATION evidence.
+- [x] Define the remote Git round-trip evidence scope, if it remains feasible under the controlled experiment.
 
 Objective:
 Define and freeze the controlled DBP continuation fixture before Runtime execution.
@@ -99,7 +135,7 @@ Completion condition:
 The fixture, scope binding, bounded request, permitted Runtime operations, session boundaries, and evidence contract are explicitly recorded and reviewable before Session A begins.
 
 ### Session A — DBP Process Establishment
-Status: not-started
+Status: blocked — live Runtime execution environment required
 
 Objective:
 Establish or deterministically resolve the DBP Process Instance through the Runtime and perform the bounded first-session engineering activity.
@@ -115,7 +151,7 @@ Completion condition:
 Session A produces an authoritative DBP Process Instance with persisted state and evidence sufficient for an independent fresh Session B to discover it without being handed the Process Instance ID.
 
 ### Session B — Fresh-Agent Repository-Scoped Continuation
-Status: not-started
+Status: blocked — depends on Session A and a distinct live Agent/runtime session
 
 Objective:
 Demonstrate that a distinct Agent/session can discover and continue the same DBP Process Instance from repository-local persisted state.
@@ -196,3 +232,10 @@ Every acceptance criterion has independently checkable evidence, or each unmet c
 
 Status: pending
 Completed: not yet
+
+
+## Current Execution Boundary
+
+The fixture Work Unit is complete. The next executable work requires a real DBP checkout with the AESM Runtime available to the Agent. Repository inspection alone can establish persisted artifacts and repository structure, but cannot establish Runtime authority, Agent-caused mutations, OS-process separation, or fresh-session discovery.
+
+The existing DBP `.aesm/` PI must therefore be treated as a **historical migrated baseline**, not as newly generated evidence for this Task. The next session must not fabricate a new history entry by editing GitHub files directly; Runtime must produce the authoritative mutation and persistence.
