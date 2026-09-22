@@ -18,27 +18,31 @@ No active task.
 The most recently completed task was:
 
 Task ID:
-planning-system-restructuring
+aesm-planning-authorization-refinement
 
 Task File:
-plan/completed/planning-system-restructuring.md
+plan/completed/aesm-planning-authorization-refinement.md
 
 Completed:
 2026-09-22
 
 ---
 
-## Next Authorized Work
+## Next Candidate
 
-The next candidate task is in `plan/backlog/`:
+Task ID:
+repository-scoped-dbp-continuation-validation
 
-```
+Task File:
 plan/backlog/repository-scoped-dbp-continuation-validation.md
-```
 
-**This task must not be activated autonomously.**
+Authorization Status:
+NOT AUTHORIZED
 
-Activation requires explicit human instruction. See `plan/README.md` §Backlog Promotion.
+Required Action:
+Obtain explicit human authorization before activation.
+A next candidate is not an authorized task.
+See `plan/README.md` §Backlog Promotion for the authorization protocol.
 
 ---
 
@@ -48,7 +52,7 @@ If this file appears inconsistent with repository state:
 
 1. Read `plan/README.md`.
 2. Check `plan/active/` for any active task files.
-3. If `plan/active/` is empty and no task is in-progress, this state is correct.
+3. If `plan/active/` is empty and no task is in-progress, there is no active task.
 4. If a task file exists in `plan/active/`, update this file to reference it.
 
 The task file is authoritative. This file is a navigation projection.

@@ -20,6 +20,7 @@ and verification evidence, read the referenced task file.
 | repository-portable-continuation-validation | 2026-09-21 | Demonstrate Git-portable .aesm/ and fresh-Agent continuation from independent checkout; validate PASS for Git round trip and fresh-session continuation | portability, git-round-trip, fresh-session, continuation, repository-local | [→](repository-portable-continuation-validation.md) |
 | runtime-consistency-and-continuity-hardening | 2026-09-21 | Harden Runtime persistence (rollback symmetry, schema evolution, concurrency, recovery); repair API compatibility; validate cross-process continuity; 192/192 regression PASS | runtime-hardening, persistence-consistency, continuity, schema, concurrency, rollback, verification | [→](runtime-consistency-and-continuity-hardening.md) |
 | planning-system-restructuring | 2026-09-22 | Establish structured, deterministic, recoverable plan/ planning system replacing monolithic IMPLEMENTATION_PLAN.md; enable fresh Agent navigation without prior context | planning-governance, restructuring, migration, agent-navigation | [→](planning-system-restructuring.md) |
+| aesm-planning-authorization-refinement | 2026-09-22 | Strengthen backlog-to-active authorization gate in README.md; make CURRENT.md explicitly distinguish candidate from authorized task; add non-binding Suggested Successor to planning-system-restructuring | authorization, backlog-promotion, navigation-refinement, candidate-vs-authorized | [→](aesm-planning-authorization-refinement.md) |
 
 ---
 

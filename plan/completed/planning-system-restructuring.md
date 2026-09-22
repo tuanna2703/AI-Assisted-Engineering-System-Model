@@ -419,3 +419,19 @@ Verification result:
 - Recovery scenario demonstrated: stale CURRENT.md corrected from task file authority
 - Consistency checklist: all items PASS
 - One active planning authority (plan/); IMPLEMENTATION_PLAN.md marked SUPERSEDED
+
+---
+
+## Suggested Successor
+
+Suggested Successor:
+repository-scoped-dbp-continuation-validation
+
+This entry is **non-binding**. It is a suggestion recorded for planning continuity.
+
+It does not authorize the suggested Task.
+It does not activate `plan/backlog/repository-scoped-dbp-continuation-validation.md`.
+It may be reconsidered, deprioritized, or replaced by the human at any time.
+Explicit human authorization is still required before that Task may be activated.
+
+See `plan/README.md` §Backlog Promotion for the authorization protocol.

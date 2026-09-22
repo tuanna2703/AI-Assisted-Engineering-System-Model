@@ -21,8 +21,11 @@ The core AESM system (Runtime, bridge, Process Instance, Execution Context,
 scope resolution) is implemented and verified as of the Runtime Consistency and
 Continuity Hardening completion (2026-09-21).
 
-The immediate next authorized work is the Repository-Scoped DBP Continuation
-Validation (see `plan/backlog/repository-scoped-dbp-continuation-validation.md`).
+The next candidate task is the Repository-Scoped DBP Continuation Validation
+(see `plan/backlog/repository-scoped-dbp-continuation-validation.md`).
+
+This is a backlog candidate — it is **not authorized** for execution until an explicit
+human instruction activates it. See `plan/README.md` §Backlog Promotion.
 
 ---
 

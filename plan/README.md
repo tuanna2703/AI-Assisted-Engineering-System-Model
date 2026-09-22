@@ -122,11 +122,57 @@ memory of previous sessions. The Task file contains the authoritative record.
 
 Tasks in `plan/backlog/` are candidate future work.
 
-**An Agent must not autonomously select a backlog Task.**
+A file under `plan/backlog/` represents a **candidate**. Its presence does
+not authorize execution.
 
-Promotion from backlog to active requires an explicit planning decision — a
-human instruction that authorizes the Task. When authorized, the Task file moves
-to `plan/active/` and CURRENT.md is updated.
+### What Constitutes Authorization
+
+A backlog Task becomes executable only after **explicit human authorization**:
+an unambiguous human instruction that identifies the intended Task by name
+and directs the Agent to activate it.
+
+Acceptable form (example):
+
+> Activate `repository-scoped-dbp-continuation-validation`.
+
+Equivalent wording is acceptable when the intended Task and the instruction
+to activate it are unmistakable.
+
+### What Does NOT Constitute Authorization
+
+The following do **not** constitute authorization, individually or combined:
+
+- the Task being listed in `plan/backlog/`;
+- the Task being described as "next" in any document;
+- a previous Task suggesting it as a successor;
+- `plan/CURRENT.md` listing it as a Next Candidate;
+- `plan/ROADMAP.md` naming it as a strategic next step;
+- the Agent deciding it is logically next;
+- the absence of another active Task;
+- the Agent inferring authorization from repository state.
+
+### Authorization Record
+
+Once the human authorizes a Task:
+
+1. The Task file moves from `plan/backlog/` to `plan/active/`.
+2. `plan/CURRENT.md` is updated to reference it as the Active Task.
+3. The active Task file's `Source:` field records the authorization.
+
+The active Task file in `plan/active/` is the authorization record.
+A fresh Agent can determine that explicit authorization occurred by finding the
+Task file in `plan/active/` and reading its `Source:` field.
+
+Before a Task has been moved to `plan/active/`, it is not authorized,
+regardless of what any other planning document says about it.
+
+### No Autonomous Promotion
+
+**An Agent must not autonomously select or activate a backlog Task.**
+
+An Agent must not activate a backlog Task merely because it appears to be the
+logically next task, because no other task is active, or because any planning
+document describes it as "next" or "candidate."
 
 The backlog is a holding area, not a queue. Tasks in the backlog are not
 necessarily in priority order.
