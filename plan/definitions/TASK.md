@@ -47,6 +47,21 @@ determine whether a proposed action violates a constraint.
 Other Tasks or engineering artifacts that must be complete or available before
 this Task can be fully executed. State explicitly "None" if there are no dependencies.
 
+### Governing Decisions
+
+Prior decisions that were reviewed and determined to constrain this Task.
+
+Each entry must identify:
+- Source Task ID
+- Decision summary
+- Why the decision applies to this Task
+
+Only applicable decisions belong here. This section is a bounded traceability record,
+not a duplicate of the entire completed-task history.
+
+If a prior decision is intentionally changed, record the supersession explicitly,
+including the superseded Source Task ID and the new decision.
+
 ### Decisions Still in Effect
 
 Decisions made during prior Tasks that remain active constraints during execution
@@ -72,38 +87,3 @@ source document. Do not rename Work Units opportunistically.
 ### Acceptance Criteria
 
 Observable outcomes that must be satisfied for this Task to be considered complete.
-These are the gate conditions that close the Task.
-
-### Verification Requirements
-
-What must be verified (and how) before the Task may be declared complete.
-Verification must be independent of Agent claim or narrative.
-
-### Completion Record
-
-Populated only when the Task is complete:
-
-```text
-Completed:           ISO 8601 date
-Evidence:            references to runtime/test/artifact evidence
-Verification result: summary of what was verified and how
-```
-
-## Authority
-
-A Task file is the authoritative record of Task state.
-
-`plan/CURRENT.md` is a navigation projection. If it disagrees with the Task file,
-**the Task file wins**.
-
-## Lifecycle
-
-A Task follows this lifecycle:
-1. Created in `plan/active/` when authorized.
-2. Updated continuously as Work Units progress.
-3. Moved to `plan/completed/` when all acceptance criteria and verification are satisfied.
-4. Indexed in `plan/completed/INDEX.md`.
-
-A Task is not removed. It transitions to completed and becomes historical context.
-
-See COMPLETION.md for the precise definition of Task completion.
