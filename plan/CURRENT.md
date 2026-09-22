@@ -13,7 +13,14 @@ For the full navigation protocol, read `plan/README.md`.
 
 ## Active Task
 
-No active task.
+Task ID:
+planning-verification-time-boundary-correction
+
+Task File:
+plan/active/planning-verification-time-boundary-correction.md
+
+Status:
+in-progress
 
 The most recently completed task was:
 
