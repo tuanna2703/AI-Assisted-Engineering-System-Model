@@ -17,12 +17,13 @@ A Subtask is complete when:
 1. The concrete action described by the Subtask has been executed.
 2. The result exists in the repository, test output, or a referenced artifact
    — not solely in Agent memory or conversation history.
-3. The Task file records the Subtask as `[x]` with an evidence reference.
+3. The Task file records the Subtask as `[x]` with an independently checkable
+   evidence reference.
 
 **An Agent claim is not Subtask completion.**
 
 If no persistent evidence exists after the action, record that explicitly as a
-finding rather than marking the Subtask complete without evidence.
+finding or block the Subtask rather than marking it complete without evidence.
 
 ---
 
@@ -33,13 +34,15 @@ A Work Unit is complete when:
 1. **All Subtasks are marked `[x]` in the Task file.**
 2. **The Work Unit's Completion Condition is satisfied** — verifiable from the
    repository or referenced artifacts, independently of Agent claim.
-3. **Required planning evidence is recorded** in the Task file (status,
-   evidence references, relevant decisions).
+3. **Required planning evidence is recorded** in the Task file.
 4. **The Task file records the Work Unit status as `complete`.**
 
 Only after step 4 may CURRENT.md advance to the next Work Unit.
 
 **Never advance CURRENT.md before the Task file records Work Unit completion.**
+
+If all Subtasks are `[x]` but the Completion Condition or evidence is not verified,
+the Work Unit is not complete. The state must be repaired before execution advances.
 
 ---
 
@@ -54,9 +57,14 @@ A Task is complete when:
    Agent claim. It must reference executable test results, repository state,
    or other persisted evidence.
 4. **Completion evidence is recorded** in the Task file's Completion Record.
-5. **The Task file status is updated to `complete`.**
-6. **The Task file is moved to `plan/completed/`.**
-7. **`plan/completed/INDEX.md` is updated** with the Task entry.
+5. **The Completion Record is populated with the actual verification result.**
+6. **The Task file status is updated to `complete`.**
+7. **The Task file is moved to `plan/completed/`.**
+8. **`plan/completed/INDEX.md` is updated** with the Task entry.
+
+A Task with all Work Units marked `complete` but without a complete and supported
+Completion Record remains `in-progress`. This is a verification-pending condition
+within the existing status model; it is not a new status.
 
 ---
 
@@ -91,7 +99,7 @@ substitute for AESM-governed engineering completion.
 
 | Level | Satisfied by | Not satisfied by |
 |-------|-------------|-----------------|
-| Subtask | Action performed; result verifiable from repository | Agent statement; checkbox alone |
-| Work Unit | All Subtasks `[x]`; Completion Condition met; Task file updated | Subtasks done but not recorded; CURRENT.md advanced prematurely |
-| Task | All Work Units complete; criteria met; verification done; Task moved to completed/ | Work units done without verification; Task file not updated |
+| Subtask | Action performed; independently checkable evidence recorded | Agent statement; checkbox alone |
+| Work Unit | All Subtasks `[x]`; Completion Condition met; evidence recorded; Task file updated | Subtasks checked without verification; CURRENT.md advanced prematurely |
+| Task | All Work Units complete; criteria met; verification complete; Completion Record populated; Task moved to completed/ | Work Units checked alone; unsupported Completion Record; missing verification |
 | Engineering | Runtime-mediated recognition; persisted `.aesm/` state | Plan completion; checkbox state; Agent claim |

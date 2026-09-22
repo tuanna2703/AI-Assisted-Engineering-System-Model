@@ -19,6 +19,12 @@ additional states without updating this definition and recording the decision.
 - `in-progress`: at least one Subtask has been executed. The Work Unit or Task
   has not yet satisfied its Completion Condition.
 
+A Task remains `in-progress` while final acceptance or verification is incomplete,
+even if every Work Unit is marked `complete`.
+
+Do not introduce a separate `verification-pending` status unless a demonstrated
+need makes the existing `in-progress` state insufficient.
+
 Do not use "current" as a status. The current item is determined by reading
 `CURRENT.md` and the active Task file. Status reflects execution state, not
 navigation position.
@@ -52,7 +58,7 @@ Status: in-progress
 Subtask status uses checkbox markers within the Subtask list:
 
 ```markdown
-- [x] Inspect existing repository structure — evidence: plan/active/planning-system-restructuring.md
+- [x] Inspect existing repository structure — evidence: plan/active/planning-system-restructuring.md; inspection recorded.
 - [/] Create planning directory skeleton
 - [ ] Write definitions files
 ```
@@ -62,14 +68,17 @@ Subtask status uses checkbox markers within the Subtask list:
 Status must progress forward through the Task file as execution occurs.
 
 An Agent must not:
+
 - Mark a Work Unit `complete` while a Subtask within it is `in-progress` or `not-started`.
 - Mark a Task `complete` while a Work Unit within it is not `complete`.
+- Mark a Task `complete` while acceptance criteria or required verification remain incomplete.
 - Mark any item `complete` without recording evidence of the Completion Condition being satisfied.
+- Treat unsupported `[x]` markers as authoritative when their evidence cannot be verified.
 
 ## CURRENT.md and Status
 
 `CURRENT.md` reflects the current active item after the Task file records
 completion of the previous item. See `plan/README.md` for the work-unit
-transition protocol.
+transition and recovery protocols.
 
 If CURRENT.md and the Task file disagree about what is active, the **Task file wins**.

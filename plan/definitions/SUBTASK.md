@@ -42,9 +42,39 @@ Within a Task file, Subtasks are expressed as:
 - [x] <completed action — evidence: <where result can be verified>>
 ```
 
-Evidence is required on completion. An Agent marking a Subtask complete must be
-able to state where the result of that Subtask can be verified. If no persistent
-evidence exists, that is itself a finding to record.
+## Evidence Contract
+
+A completed Subtask must contain an evidence reference that allows an independent
+reader to locate or reproduce the result.
+
+Prefer one of:
+
+- **Artifact evidence:** repository path plus the relevant property/result.
+- **Execution evidence:** exact command plus observed result.
+- **Test evidence:** test identifier or suite plus pass/fail result.
+- **Version-control evidence:** commit or diff reference.
+- **Finding/block evidence:** explicit reason why required verification could not occur.
+
+Examples:
+
+```markdown
+- [x] Add the validation test — evidence: tests/planning/test_recovery.py; 8 tests pass.
+- [x] Update the recovery protocol — evidence: plan/README.md §Recovery Protocol; stale-CURRENT cases covered.
+- [x] Review the complete diff — evidence: commit abc1234; diff --check passes.
+```
+
+The following are insufficient by themselves:
+
+```text
+evidence: verified
+evidence: done
+evidence: file created
+```
+
+If the result has no durable evidence, record that as a finding or block the Subtask
+rather than treating the Agent assertion as evidence.
+
+Planning evidence does not constitute AESM Runtime evidence.
 
 ## Status Values
 
@@ -70,8 +100,11 @@ sequence as a single Subtask with an ordered description.
 ## Completion
 
 A Subtask is complete when:
-1. The action has been performed.
-2. The result exists in the repository or is verifiable from a referenced artifact.
-3. The Task file records completion with available evidence.
 
-An Agent claim is not completion. The evidence reference is the completion record.
+1. The action has been performed.
+2. The result exists in the repository, test output, or another referenced artifact.
+3. The evidence reference is independently checkable.
+4. The Task file records completion with the evidence reference.
+
+An Agent claim is not completion. The evidence reference is part of the completion
+record.
