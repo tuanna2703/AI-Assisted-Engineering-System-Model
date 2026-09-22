@@ -6,6 +6,11 @@ A **Work Unit** is a coherent, bounded portion of a Task. It represents the
 smallest division of a Task that has its own completion condition, verification
 requirement, and observable outcome.
 
+A Work Unit should also provide a meaningful **recovery boundary**: if execution
+stops after the Work Unit completes, a fresh Agent should be able to continue at
+the next Work Unit without reconstructing hidden context or re-evaluating the
+meaning of the completed work.
+
 Work Units are executed in the order defined in the Task file. A Work Unit may
 not be skipped unless the Task file explicitly marks it as inapplicable and
 records the reason.
@@ -51,6 +56,27 @@ considered complete.
 The completion condition must be verifiable independently of Agent claim. An
 Agent must be able to read the condition and determine whether it is satisfied
 without relying on memory, conversation history, or construction knowledge.
+
+## Granularity Heuristic
+
+A Work Unit is an appropriate boundary when most of the following are true:
+
+- it produces a coherent artifact, decision, implementation result, or verification result;
+- it has a distinct completion condition;
+- its completion creates a useful recovery point;
+- a fresh Agent can understand the next Work Unit from the Task file alone;
+- interruption before its completion would leave a meaningfully different state.
+
+A command or trivial file edit that has no independent recovery meaning should
+normally remain a Subtask, not become its own Work Unit.
+
+Implementation, validation, and reconciliation may be separate Work Units when
+they produce independently meaningful states or when interruption between them
+would materially affect recovery. They should not be separated merely to create
+more checklist entries.
+
+The heuristic is guidance for new Tasks. Historical Task boundaries are not
+rewritten solely for stylistic consistency.
 
 ## Execution Protocol
 
