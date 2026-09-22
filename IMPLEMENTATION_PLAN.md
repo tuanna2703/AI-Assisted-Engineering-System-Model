@@ -478,6 +478,131 @@ The validation demonstrated repository-local Process Instance portability throug
 
 **Closure:** The repository-local `.aesm/` boundary is empirically demonstrated as portable through Git and recoverable by a fresh Agent in an independent repository workspace. This result does not imply automatic resolution of arbitrary multi-repository engineering scopes.
 
+## Current Work Unit — Repository-Scoped DBP Continuation Validation
+
+**Status: Planned — experiment not yet executed.**
+
+Objective: establish executable end-to-end evidence that a fresh Agent can continue real DBP engineering work through the repository-scoped AESM persistence and scope-resolution mechanisms, using the DBP repository-local `.aesm/` boundary rather than the superseded workspace-level `.aesm-process-store`.
+
+The experiment will validate:
+
+```text
+Fresh Agent
+   ↓
+explicit DBP repository context
+   ↓
+DBP repository identity
+   ↓
+DBP/.aesm/
+   ↓
+correct Process Instance
+   ↓
+Runtime-authoritative Execution Context
+   ↓
+engineering action
+   ↓
+persisted evidence
+   ↓
+fresh Agent
+   ↓
+same DBP/.aesm/
+   ↓
+same Process Instance
+   ↓
+continued engineering
+```
+
+### Planning boundary
+
+The continuation experiment is intentionally not executed by this planning change.
+
+Use the already-established Project / Scope Resolution contract. Do not reopen Engineering Scope Identity semantics, Agent Guidance Interface semantics, Agent–Runtime authority boundaries, repository-local `.aesm/` persistence semantics, or the deterministic resolution contract.
+
+No new persistence store, workspace-wide Process Instance index, generalized Project entity, Agent-owned Process Instance selection, or implicit fallback mechanism is authorized.
+
+### Plan
+
+#### Experiment preparation
+
+- [ ] Establish the DBP repository checkout as the active repository.
+- [ ] Verify the active repository root and stable repository identity.
+- [ ] Verify the authoritative persistence boundary is `<DBP repository root>/.aesm/`.
+- [ ] Verify the superseded workspace-level `.aesm-process-store` is not used for DBP resolution or persistence.
+- [ ] Verify Runtime is bound to the explicit Active Repository Context and cannot silently retarget another repository.
+
+#### Continuation baseline
+
+- [ ] Locate Process Instance `d0640ec8-672e-43bd-bd4b-974d808915a2` through the repository-scoped mechanism.
+- [ ] Record persisted Process Instance state, Engineering Scope Identity, repository identity, Execution Context version, history, evidence, decisions, artifacts, and verification state.
+- [ ] Preserve the baseline before continuation mutation.
+- [ ] Ensure baseline discovery is Runtime-mediated rather than treating the supplied PI identifier as an authority shortcut.
+
+#### Fresh-Agent continuation
+
+- [ ] Start a genuinely fresh Agent session from the DBP repository checkout.
+- [ ] Provide explicit DBP repository context without supplying the PI identity as an authority shortcut.
+- [ ] Resolve the DBP scope and applicable Process Instance through Runtime.
+- [ ] Obtain the authoritative Execution Context from Runtime.
+- [ ] Capture resolution/attachment evidence that distinguishes Agent narrative from Runtime authority.
+
+#### Real bounded engineering action
+
+- [ ] Select one small, controlled DBP engineering action with an observable effect and minimal unrelated product impact.
+- [ ] Have the Agent perform the action through the established Agent–Runtime interaction.
+- [ ] Require Runtime-authoritative state transition(s) where legitimately applicable.
+- [ ] Record attributable evidence and any artifact/verification records through Runtime.
+- [ ] Verify the engineering action is represented in persisted AESM state, not only in Agent narrative.
+
+#### Session collapse and recovery
+
+- [ ] End the first Agent session without carrying authoritative state through conversation memory.
+- [ ] Start a second genuinely fresh Agent session from the DBP checkout.
+- [ ] Establish the same explicit repository context and identity.
+- [ ] Resolve the same repository-local `.aesm/` boundary and same applicable PI.
+- [ ] Recover authoritative Execution Context from persisted state.
+- [ ] Perform one bounded continuation action through Runtime.
+- [ ] Verify the existing PI/history is extended rather than replaced by a new PI.
+
+#### Boundary-failure validation
+
+- [ ] Missing active repository context → explicit failure; no implicit repository discovery.
+- [ ] Invalid repository context → explicit failure; no fallback.
+- [ ] Cross-repository PI access → rejection.
+- [ ] Superseded workspace-level `.aesm-process-store` present → DBP resolution remains repository-local.
+- [ ] Multiple applicable PIs → explicit ambiguity; no heuristic selection.
+- [ ] No applicable PI → no implicit creation; creation requires explicit authorization.
+- [ ] Unauthorized PI creation → Runtime rejection.
+- [ ] Mid-session repository-context change → existing Runtime rejects/requires a new Runtime session without retargeting its store.
+
+#### Verification and evidence
+
+- [ ] Run focused DBP continuation/resolution tests first.
+- [ ] Run the full AESM regression suite.
+- [ ] Capture exact commands, exit status, test counts, HEAD SHA, PI identity, Runtime identities, and working-tree state.
+- [ ] Reconcile `CONTROLLER → RUNTIME → PERSISTED → VERIFICATION → AGENT` evidence.
+- [ ] Preserve the original DBP implementation/completion report separately from AESM continuation evidence.
+- [ ] Produce `implementation/REPOSITORY-SCOPED-DBP-CONTINUATION-VALIDATION.md`.
+- [ ] Update this plan only from executable evidence.
+
+### Acceptance criteria
+
+The gate closes only when executable evidence demonstrates:
+
+1. Explicit DBP Active Repository Context and validated repository identity/root relationship.
+2. Authoritative PI and Context loaded from DBP-local `.aesm/`, with no old workspace-store fallback.
+3. Deterministic PI resolution without Agent-supplied PI identity acting as authority.
+4. Real bounded DBP engineering work attributable to Runtime-mediated AESM participation.
+5. Persisted authoritative state/evidence surviving session termination.
+6. A second fresh Agent resolves the same PI and continues from persisted Context rather than conversation memory.
+7. Cross-repository isolation.
+8. Explicit failure for missing/invalid/ambiguous context, cross-repository access, stale workspace persistence, and unauthorized creation.
+9. Focused validation and full regression pass.
+10. Evidence reconciliation that keeps Controller, Agent, Runtime, Persisted, and Verification evidence distinct.
+
+### Exit condition
+
+**Repository-Scoped DBP Continuation Validation — PASS** only when the complete fresh-session continuation chain and required boundary-failure/regression evidence are demonstrated. Otherwise the work unit remains open with the exact unproven boundary recorded.
+
 ## Current Work Unit — Runtime Consistency and Continuity Hardening
 
 **Status: Implementation in progress — targeted implementation changes applied; behavioral and cross-process verification pending.**
