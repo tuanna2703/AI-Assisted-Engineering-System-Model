@@ -11,7 +11,8 @@ This document records the current repository boundary for implementing AESM. It 
 - `bridge/` — Agent access to Runtime; it does not own Runtime authority.
 - `tests/` — executable verification and regression evidence.
 - `.aesm/` — repository-local authoritative Process Instance / Execution Context persistence when a repository is an active AESM engineering scope.
-- `IMPLEMENTATION_PLAN.md` — controlled current implementation work.
+- `plan/` — planning governance surface; entry point is `plan/README.md`.
+- `IMPLEMENTATION_PLAN.md` — superseded legacy planning document; retained for migration/reconciliation only.
 - `IMPLEMENTATION_BASELINE.md` — this implementation boundary record.
 - `implementation/` — selected durable engineering records only.
 - `README.md` — repository orientation.

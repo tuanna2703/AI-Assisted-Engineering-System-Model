@@ -1,3 +1,24 @@
+---
+
+## SUPERSEDED
+
+This document is being migrated to `plan/`.
+
+During migration:
+
+- `plan/CURRENT.md` is the planning navigation entry point.
+- The active task file (`plan/active/planning-system-restructuring.md`) is authoritative for task state.
+- This document is retained only for migration and reconciliation.
+
+After the Planning System Restructuring task verification is complete, this
+document will be formally retired in accordance with repository conventions.
+
+Do not use this document as a planning authority. Do not update it. If planning
+information appears here that is not yet in `plan/`, report it as a migration gap
+rather than treating this document as authoritative.
+
+---
+
 # AESM Implementation Plan
 
 ## Purpose
