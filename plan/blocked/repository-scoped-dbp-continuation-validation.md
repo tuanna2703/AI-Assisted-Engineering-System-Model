@@ -23,7 +23,9 @@ dbp, continuation, fresh-agent, repository-scoped, empirical-validation
 
 ## Blocking Condition
 
-Status: OPEN
+Status: RESOLVED
+Resolved Work Unit: Session A — DBP Process Establishment (blocking condition)
+Resolved At: 2026-09-23T09:14:28Z
 Blocked Work Unit: Session A — DBP Process Establishment
 Resume Point: Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
 Blocking Reason: The available execution surface provides repository inspection and Git operations but does not provide a live DBP checkout/runtime process in which the AESM Runtime can be invoked. Runtime execution cannot be truthfully claimed from repository inspection alone. The existing DBP Process Instance (`d0640ec8-672e-43bd-bd4b-974d808915a2`, scope `project:tuanna2703/directories-builder-pro`) must be deterministically resolved through the Runtime rather than through manual `.aesm/` editing. A new same-scope Session A cannot be established while the existing active Process Instance persists and its disposition has not been explicitly authorized.
@@ -45,8 +47,24 @@ Authorized Action: Reactivate Task
 Authorized Scope: Resolve the recorded blocker and resume execution of the existing Task according to its approved Work Units, constraints, and acceptance criteria; proceed with Session A only through Runtime-authoritative operations and do not fabricate Runtime evidence.
 Resolution Evidence: `plan/completed/resolve-dbp-active-process-instance-disposition.md` — Runtime.apply_lifecycle_determination() transitioned PI `d0640ec8-672e-43bd-bd4b-974d808915a2` from ACTIVE to TERMINATED; Runtime.attach() independently verified lifecycle `terminated`, with Runtime/persisted lifecycle match true and history entry #15.
 
-
 ---
+
+## Authorization Event — PI Termination
+
+Date: 2026-09-23T16:11:32+07:00
+Conversation ID: e3f553ea-23e0-4939-985e-b47d40dbb72b
+Authorized Transition: active → terminated
+Process Instance ID: d0640ec8-672e-43bd-bd4b-974d808915a2
+Scope: project:tuanna2703/directories-builder-pro
+Runtime ID: termination-agent-e3f553ea
+Occurred At (UTC): 2026-09-23T09:14:28.380144+00:00
+Authority Context: authorized-controller
+Semantic Basis: The engineering objective (Edit_Review_Form.business_id SELECT→POST_SELECT) was implemented and verified by Session A (runtime_id=session-a) and independently continued by Session B (runtime_id=session-b). The engineering lifecycle is complete. The blocking condition recorded in repository-scoped-dbp-continuation-validation requires that this active Process Instance be terminated through Runtime-authoritative operations before a new same-scope Session A can be established. Explicit authorization granted by human controller on 2026-09-23T16:11:32+07:00.
+History Entry: history.jsonl line 15, type=lifecycle_transition, resulting_lifecycle=terminated
+Persisted process.json lifecycle: terminated
+Persisted process.json updated_at: 2026-09-23T09:14:28.381239+00:00
+Fresh Runtime Reload Result: lifecycle=terminated (Runtime identity=reload-verify-agent, match=True)
+Blocking Condition Transition: OPEN → RESOLVED
 
 ## Governing Constraints
 
