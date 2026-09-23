@@ -23,7 +23,8 @@ and verification evidence, read the referenced task file.
 | planning-system-restructuring | 2026-09-22 | complete | Establish structured, deterministic, recoverable plan/ planning system replacing monolithic IMPLEMENTATION_PLAN.md; enable fresh Agent navigation without prior context | planning-governance, restructuring, migration, agent-navigation | [→](planning-system-restructuring.md) |
 | aesm-planning-authorization-refinement | 2026-09-22 | complete | Strengthen backlog-to-active authorization gate in README.md; make CURRENT.md explicitly distinguish candidate from authorized task; add non-binding Suggested Successor to planning-system-restructuring | authorization, backlog-promotion, navigation-refinement, candidate-vs-authorized | [→](aesm-planning-authorization-refinement.md) |
 | planning-verification-time-boundary-correction | 2026-09-22 | complete | Correct the historical verification record temporal boundary; reconcile Work Unit structural state; resolve blocked test subtasks (204/204 PASS); implement planning-system refinement (authorization, blocked-recovery, projection-reconciliation, decision-lifecycle, runtime-boundary, fresh-agent review) | planning-governance, temporal-boundary, verification, structural-reconciliation, authorization, runtime-boundary | [→](planning-verification-time-boundary-correction.md) |
-| resolve-dbp-active-process-instance-disposition | 2026-09-23 | complete | Inspect active DBP PI, obtain and record human termination authorization, execute Runtime-mediated ACTIVE->TERMINATED lifecycle transition, independently verify persisted state, record resolution evidence for blocked continuation Task | dbp, process-instance, disposition, unblocking, continuation, resolution | [→](resolve-dbp-active-process-instance-disposition.md) |
+| resolve-dbp-active-process-instance-disposition | 2026-09-23 | complete | Inspect active DBP PI, obtain and record human termination authorization, execute Runtime-mediated ACTIVE→TERMINATED lifecycle transition, independently verify persisted state, record resolution evidence for blocked continuation Task | dbp, process-instance, disposition, unblocking, continuation, resolution | [→](resolve-dbp-active-process-instance-disposition.md) |
+| plan-execution-boundary-governance-resolution | 2026-09-23 | complete | Establish, implement, and validate the AESM planning/execution boundary: normative boundary model, finding classification (IN_SCOPE/ACCEPTANCE_INVESTIGATION/FUTURE_WORK_CANDIDATE/BLOCKING_FINDING/IRRELEVANT_OBSERVATION), bounded investigation, execution-stop semantics, blocked-lifecycle integration, plan-mutation authority, acceptance-based completion, reusable Agent guidance, conformance tests (9/9 pass, 213/213 regression); DBP classified analytically | planning-governance, execution-boundary, scope-control, findings, blocked-recovery, completion, agent-guidance, conformance | [→](plan-execution-boundary-governance-resolution.md) |
 
 ---
 
@@ -53,6 +54,13 @@ For full context and the precise decision statement, read the referenced task fi
 | Single-writer assumption; PI writes use optimistic concurrency (updated_at) | runtime-consistency-and-continuity-hardening |
 | Per-file atomic writes + rollback = bounded recovery; no generalized transaction layer | runtime-consistency-and-continuity-hardening |
 | execution/ directory permanently absent; do not recreate | runtime-consistency-and-continuity-hardening |
+| Execution discovery does not create authorization; a Finding is classified evidence, not authorization | plan-execution-boundary-governance-resolution |
+| Work Candidate is record-only; only explicit planning authorization creates executable work | plan-execution-boundary-governance-resolution |
+| Scope decision is deterministic: Explicit Coverage → Acceptance Investigation → STOP | plan-execution-boundary-governance-resolution |
+| Out-of-scope executable finding requires Execution Stop Report and existing blocked lifecycle | plan-execution-boundary-governance-resolution |
+| Blocker resolution does not authorize or auto-reactivate a blocked Task | plan-execution-boundary-governance-resolution |
+| Completion is acceptance-based; future-work candidates do not prevent completion | plan-execution-boundary-governance-resolution |
+| Implementation scope is bounded by positive Change Inventory; deviations require explicit scope-check record | plan-execution-boundary-governance-resolution |
 
 ---
 

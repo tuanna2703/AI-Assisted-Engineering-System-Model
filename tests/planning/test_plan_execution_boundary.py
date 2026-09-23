@@ -2,7 +2,25 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 BOUNDARY = ROOT / "plan" / "definitions" / "PLAN-EXECUTION-BOUNDARY.md"
-TASK = ROOT / "plan" / "active" / "plan-execution-boundary-governance-resolution.md"
+
+def _locate_task() -> Path:
+    """Locate the resolution Task in its current lifecycle location.
+
+    The Task resides in plan/active/ when executing, plan/blocked/ when
+    execution is blocked, and plan/completed/ when the Task is complete.
+    The test must find it regardless of lifecycle state so that the
+    conformance suite remains executable across all lifecycle transitions.
+    """
+    for subdir in ("active", "blocked", "completed"):
+        candidate = ROOT / "plan" / subdir / "plan-execution-boundary-governance-resolution.md"
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError(
+        "plan-execution-boundary-governance-resolution.md not found in "
+        "plan/active/, plan/blocked/, or plan/completed/"
+    )
+
+TASK = _locate_task()
 
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8")

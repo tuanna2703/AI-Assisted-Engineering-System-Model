@@ -21,6 +21,7 @@ See `plan/definitions/BLOCKED.md` for the full blocked-Task lifecycle definition
 
 | Task | Blocked Work Unit | Resume Point | Blocking Condition | Resolution Task | Eligibility |
 |------|-------------------|--------------|--------------------|-----------------|-------------|
+| `repository-scoped-dbp-continuation-validation` | Session A — DBP Process Establishment | Establish the active repository context from the controlled DBP repository checkout without relying on conversation history. | Live DBP checkout with AESM Runtime execution capability unavailable. | `resolve-dbp-active-process-instance-disposition` (COMPLETE) | `BLOCKED` |
 
 ---
 
