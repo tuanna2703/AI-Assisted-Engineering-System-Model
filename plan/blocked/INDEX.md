@@ -21,7 +21,6 @@ See `plan/definitions/BLOCKED.md` for the full blocked-Task lifecycle definition
 
 | Task | Blocked Work Unit | Resume Point | Blocking Condition | Resolution Task | Eligibility |
 |------|-------------------|--------------|--------------------|-----------------|-------------|
-| repository-scoped-dbp-continuation-validation | Session A — DBP Process Establishment | Establish the active repository context from the controlled DBP repository checkout without relying on conversation history. | The available execution surface provides repository inspection and Git operations but does not provide a live DBP checkout/runtime process in which the AESM Runtime can be invoked. A fresh Session A requires a real DBP checkout environment with Runtime execution capability. The existing Process Instance (`d0640ec8-672e-43bd-bd4b-974d808915a2`) must be deterministically resolved through the Runtime; its existing state must not be manually edited. | resolve-dbp-active-process-instance-disposition | BLOCKED |
 
 ---
 

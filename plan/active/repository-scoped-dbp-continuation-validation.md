@@ -6,7 +6,7 @@ Task ID:
 repository-scoped-dbp-continuation-validation
 
 Status:
-blocked
+in-progress
 
 Created:
 2026-09-22
@@ -23,7 +23,7 @@ dbp, continuation, fresh-agent, repository-scoped, empirical-validation
 
 ## Blocking Condition
 
-Status: OPEN
+Status: RESOLVED
 Blocked Work Unit: Session A — DBP Process Establishment
 Resume Point: Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
 Blocking Reason: The available execution surface provides repository inspection and Git operations but does not provide a live DBP checkout/runtime process in which the AESM Runtime can be invoked. Runtime execution cannot be truthfully claimed from repository inspection alone. The existing DBP Process Instance (`d0640ec8-672e-43bd-bd4b-974d808915a2`, scope `project:tuanna2703/directories-builder-pro`) must be deterministically resolved through the Runtime rather than through manual `.aesm/` editing. A new same-scope Session A cannot be established while the existing active Process Instance persists and its disposition has not been explicitly authorized.
@@ -35,6 +35,16 @@ Resolution Task: resolve-dbp-active-process-instance-disposition
 ## Objective
 
 Validate that a fresh Agent can continue a DBP-related Process Instance from a repository checkout, using the established Runtime/scope-resolution mechanism — demonstrating that the operational chain governs a real engineering scope rather than just the AESM-self-development scope.
+
+## Reactivation Record
+
+Date: 2026-09-23
+Source: Human instruction — explicit authorization given on 2026-09-23: "I authorize resolution and reactivation of `repository-scoped-dbp-continuation-validation` based on the completed Resolution Task and its verified Runtime evidence. Proceed according to the task's existing plan."
+Task: repository-scoped-dbp-continuation-validation
+Authorized Action: Reactivate Task
+Authorized Scope: Resolve the recorded blocker and resume execution of the existing Task according to its approved Work Units, constraints, and acceptance criteria; proceed with Session A only through Runtime-authoritative operations and do not fabricate Runtime evidence.
+Resolution Evidence: `plan/completed/resolve-dbp-active-process-instance-disposition.md` — Runtime.apply_lifecycle_determination() transitioned PI `d0640ec8-672e-43bd-bd4b-974d808915a2` from ACTIVE to TERMINATED; Runtime.attach() independently verified lifecycle `terminated`, with Runtime/persisted lifecycle match true and history entry #15.
+
 
 ---
 
@@ -134,14 +144,14 @@ Subtasks:
 - [x] Define the remote Git round-trip evidence scope, if it remains feasible under the controlled experiment.
 
 ### Session A — DBP Process Establishment
-Status: blocked — live Runtime execution environment required
+Status: in-progress — live Runtime execution required for the next executable Subtask
 
 Objective:
 Establish or deterministically resolve the DBP Process Instance through the Runtime and perform the bounded first-session engineering activity.
 
 Subtasks:
-- [!] Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
-  BLOCKED: A live DBP checkout with AESM Runtime execution capability is required. Repository inspection alone cannot produce Runtime evidence. The existing Process Instance (d0640ec8-672e-43bd-bd4b-974d808915a2) must have its disposition authorized before a new Session A can begin. See Blocking Condition above.
+- [ ] Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
+  Execution requirement: a live DBP checkout with AESM Runtime execution capability is required. Repository inspection alone cannot produce Runtime evidence. The prior Process Instance disposition is resolved; Session A must now establish repository context and continue through the Runtime-owned path.
 - [ ] Resolve the DBP Engineering Scope and Process Instance through the Runtime-owned resolution path.
 - [ ] If no existing applicable Process Instance exists, create exactly one through the explicit Runtime creation operation.
 - [ ] Obtain and record authoritative Execution Context from Runtime.
