@@ -19,9 +19,9 @@ Task File: plan/active/plan-execution-boundary-governance-resolution.md
 
 Task Status: in-progress
 
-Current Work Unit: Establish Boundary Baseline
+Current Work Unit: Define Boundary Model and Change Inventory
 
-Next executable Subtask: Inspect `plan/README.md`, Task/Work Unit/Subtask definitions, authorization rules, blocked lifecycle, completion model, Agent guidance, and relevant tests; record which existing mechanisms map to each normative requirement.
+Next executable Subtask: Define the Finding lifecycle: Discovery/Observation → Finding → Work Candidate → Authorized Work.
 
 ---
 
