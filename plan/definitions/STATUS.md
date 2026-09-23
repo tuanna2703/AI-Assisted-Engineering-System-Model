@@ -5,12 +5,26 @@
 These are the only allowed status values in the `plan/` system. Do not introduce
 additional states without updating this definition and recording the decision.
 
+### Subtask and Work Unit Status Markers
+
 | Status | Marker | Meaning |
 |--------|--------|---------|
 | `not-started` | `[ ]` | The item has been defined but execution has not begun. |
 | `in-progress` | `[/]` | Execution has begun; some Subtasks are complete; the Completion Condition is not yet satisfied. |
 | `complete` | `[x]` | All Subtasks are done; the Completion Condition is satisfied; evidence is recorded. |
 | `blocked` | `[!]` | Execution cannot continue until an explicit condition is resolved. The blocking reason must be recorded immediately after the status marker. |
+
+### Task-Level Status Values
+
+Task-level `Status:` fields use text values, not checkbox markers:
+
+| Status | Meaning |
+|--------|---------|
+| `not-started` | The Task has been defined but no Work Unit has begun. |
+| `in-progress` | Execution has begun; Work Units are being executed; the Task is not yet complete. |
+| `blocked` | The Task cannot advance and has been durably removed from the active execution position. A `Blocking Condition` section must be present. The Task is stored in `plan/blocked/`. See `plan/definitions/BLOCKED.md`. |
+| `complete` | All Work Units are complete; acceptance criteria are satisfied; Completion Record is populated; the Task is in `plan/completed/`. |
+| `superseded` | The Task was intentionally replaced or made unnecessary by another authorized planning decision. Terminal. Stored in `plan/completed/`. |
 
 ## Distinction: `not-started` vs `in-progress`
 
@@ -29,16 +43,26 @@ Do not use "current" as a status. The current item is determined by reading
 `CURRENT.md` and the active Task file. Status reflects execution state, not
 navigation position.
 
-## Distinction: `in-progress` vs `blocked` (Work Unit and Subtask)
+## Distinction: `in-progress` vs `blocked` (Work Unit, Subtask, and Task)
 
-- `in-progress`: execution has begun and work can legitimately continue.
-- `blocked` (`[!]` for Subtasks; `Blocked condition:` section for Work Units):
-  a required condition cannot be met; execution cannot advance until the
-  blocking condition is resolved.
+| Level | `in-progress` | `blocked` |
+|-------|---------------|-----------|
+| Subtask | Execution has begun and can continue. | `[!]` marker; blocking reason recorded immediately after; cannot advance. |
+| Work Unit | At least one Subtask started; Completion Condition not yet satisfied. | `Blocked condition:` section present; required condition prevents remaining Subtasks from proceeding. |
+| Task | Work Units are being executed. | Task-level `Status: blocked`; `Blocking Condition` section present; Task is in `plan/blocked/`; not the active Task. |
 
-A blocked Work Unit is still operationally `in-progress` at the Task level.
-Do not introduce a separate Task-level `blocked` status. The blocking condition
-must be recorded in the affected Work Unit's `Blocked condition:` section.
+**Work Unit blocking:** When a Work Unit's next required Subtask is `[!]`, the
+Work Unit is operationally blocked. The Work Unit status remains `in-progress`
+if at least one Subtask has started.
+
+**Task-level blocking:** A Task is operationally blocked (Task-level `blocked`)
+when its current Work Unit is blocked and no other Work Unit is available to
+execute in the same Task. In this case:
+- The Task must be moved from `plan/active/` to `plan/blocked/`.
+- The Task's `Status:` field is changed to `blocked`.
+- A `Blocking Condition` section is added to the Task file.
+- The Task is removed from `plan/active/`; there is then no active Task.
+- See `plan/definitions/BLOCKED.md` for the full lifecycle definition.
 
 A Work Unit with at least one `[x]` or `[!]` Subtask is `in-progress`, not
 `not-started`. The presence of `[!]` does not reset the Work Unit to
@@ -53,6 +77,7 @@ The following terms must not appear as status values:
 - `pending` (use `not-started` or `blocked`)
 - `done` (use `complete`)
 - `wip` (use `in-progress`)
+- `cancelled` (use `superseded` with an explicit supersession record)
 
 ## Status in Task Files
 
@@ -61,6 +86,20 @@ Task-level status applies to the whole Task:
 ```markdown
 Status:
 in-progress
+```
+
+A blocked Task uses:
+
+```markdown
+Status:
+blocked
+```
+
+A superseded Task uses:
+
+```markdown
+Status:
+superseded
 ```
 
 Work Unit status appears within the Work Units section:
@@ -90,6 +129,24 @@ An Agent must not:
 - Mark a Task `complete` while acceptance criteria or required verification remain incomplete.
 - Mark any item `complete` without recording evidence of the Completion Condition being satisfied.
 - Treat unsupported `[x]` markers as authoritative when their evidence cannot be verified.
+- Change a Blocking Condition `Status: OPEN` to `Status: RESOLVED` by inference.
+- Infer Task reactivation from Resolution Task completion, `Status: RESOLVED`, or `ELIGIBLE FOR REACTIVATION` alone.
+
+## Terminal Statuses: `complete` vs `superseded`
+
+Both `complete` and `superseded` are terminal statuses. Both are stored in
+`plan/completed/`. Neither may be reactivated as if it were merely blocked.
+
+| Status | Meaning | Reactivatable? |
+|--------|---------|----------------|
+| `complete` | The Task's intended work was completed. | No — terminal. |
+| `superseded` | The Task was intentionally replaced or made unnecessary by another authorized planning decision. | No — terminal. |
+| `blocked` | The Task cannot advance; blocker is recorded; remains required unless superseded. | Yes — only via explicit reactivation authorization. |
+
+Supersession must be explicitly recorded in the Task file and in
+`plan/completed/INDEX.md`. It must not be inferred.
+
+---
 
 ## CURRENT.md and Status
 

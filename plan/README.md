@@ -26,6 +26,9 @@ plan/README.md              ← you are here
       ↓
 plan/CURRENT.md             ← navigation projection
       ↓
+[No active Task?]           ← check plan/blocked/INDEX.md; if blocked Tasks exist,
+                              read blocker; surface to human; do not self-activate
+      ↓
 plan/active/<task>.md       ← authoritative Task file, if one exists
       ↓
 Task consistency checks     ← verify authorization, CURRENT, and Task state before execution
@@ -132,20 +135,119 @@ existing record, apply the normal recovery rule: stop and surface the discrepanc
 
 ---
 
-## Blocked-Task Recovery Path
+## Blocked-Task Lifecycle
 
-### Blocked vs In-Progress
+### Blocking at Three Levels
 
-A blocked state is distinct from ordinary `in-progress`:
+Blocking may occur at three distinct levels:
 
-| State | Meaning |
-|-------|---------|
-| `in-progress` | Execution has begun; work can legitimately continue. |
-| `blocked` (Work Unit) | A required condition cannot be met; the Work Unit cannot advance until the blocking condition is resolved. |
-| `[!]` (Subtask) | This specific Subtask cannot execute; the blocking reason is recorded immediately after the marker. |
+| Level | Representation | Location |
+|-------|---------------|----------|
+| Subtask | `[!]` marker; reason immediately after | Within Work Unit in Task file |
+| Work Unit | `Blocked condition:` section | Within Task file |
+| Task | `Status: blocked`; `Blocking Condition` section | Task file in `plan/blocked/` |
 
-A blocked Task or Work Unit is not simply an unfinished one. It contains a
-recorded condition that prevents legitimate progress.
+See `plan/definitions/BLOCKED.md` for the complete lifecycle definition.
+
+### When a Task Becomes Blocked (Task-Level)
+
+A Task is operationally blocked at the Task level when:
+- Its current Work Unit is blocked and no other Work Unit can execute, and
+- The blocking condition requires external resolution outside the Task's scope.
+
+When a Task becomes blocked at the Task level:
+1. The Task's `Status:` is changed to `blocked`.
+2. A `Blocking Condition` section is added immediately after the `Identity` section.
+3. The Task file is moved from `plan/active/` to `plan/blocked/`.
+4. An entry is added to `plan/blocked/INDEX.md`.
+5. `CURRENT.md` is updated to reflect no active Task (with reason: work is blocked).
+
+A blocked Task is not an active Task. At most one Task may reside in `plan/active/`;
+a blocked Task does not occupy the active slot.
+
+### Blocking Condition Structure
+
+Every blocked Task file must contain:
+
+```markdown
+## Blocking Condition
+
+Status: OPEN
+Blocked Work Unit: <semantic Work Unit name>
+Resume Point: <exact Subtask text — must match an existing Subtask>
+Blocking Reason: <precise factual reason execution cannot currently continue>
+Resolution Condition: <condition that must become true before the blocker is considered resolved>
+Resolution Task: <Resolution Task ID or NONE>
+```
+
+### Resolution Task
+
+A Resolution Task is an independent Task in `plan/backlog/` that performs work
+toward resolving the blocking condition. It must contain:
+
+```markdown
+## Resolution Context
+
+Resolves Task: <blocked Task ID>
+Resolves Condition: <specific blocking condition this Task addresses>
+```
+
+Completion of a Resolution Task does **not** automatically reactivate the blocked Task.
+A Resolution Task is unauthorized while in `plan/backlog/`.
+
+### Resolution Transition (OPEN → RESOLVED)
+
+When the Resolution Task completes and the recorded `Resolution Condition` is
+independently verified as true, an authorized actor may record:
+
+```markdown
+Blocking Condition
+
+Status: RESOLVED
+```
+
+and update the blocked-Task index entry to:
+
+```text
+Eligibility: ELIGIBLE FOR REACTIVATION
+```
+
+Only an authorized actor may record this transition:
+- the human controller, or
+- an Agent acting only under explicit human instruction.
+
+An Agent must never change `OPEN` to `RESOLVED` by inference.
+
+### Reactivation Authorization
+
+`ELIGIBLE FOR REACTIVATION` does not mean active. Reactivation requires a new
+explicit human authorization event recorded in the Task file:
+
+```markdown
+## Reactivation Record
+
+Date: <YYYY-MM-DD>
+Source: <human instruction / authorization source>
+Task: <Task ID>
+Authorized Action: Reactivate Task
+Authorized Scope: <what the Agent is authorized to do upon reactivation>
+Resolution Evidence: <reference to evidence establishing that the blocker is resolved>
+```
+
+After a valid Reactivation Record is present:
+1. The Task file moves from `plan/blocked/` to `plan/active/`.
+2. The `Blocking Condition` shows `Status: RESOLVED`.
+3. The Task's `Status:` is updated to `in-progress`.
+4. The Task's row is removed from `plan/blocked/INDEX.md`.
+5. `CURRENT.md` is updated to reflect the reactivated Task.
+
+The following do **not** authorize reactivation:
+- Completion of the Resolution Task.
+- `Status: RESOLVED` in the Blocking Condition.
+- `ELIGIBLE FOR REACTIVATION` in the blocked index.
+- Chronological order of events.
+- Prior conversation instructions.
+- Absence of another active Task.
 
 ### Fresh-Agent Blocked-Subtask Protocol
 
@@ -164,30 +266,33 @@ When a fresh Agent encounters a `[!]` Subtask as the next required Subtask:
 5. A fresh Agent may resume blocked work only when the blocking condition has been
    explicitly resolved in the planning record and the `[!]` marker updated.
 
-### Blocked Work Units
+### No-Active-Task Recovery
 
-A Work Unit whose next required Subtask is `[!]` is operationally blocked,
-regardless of whether the Work Unit's status field says `not-started` or
-`in-progress`. The Work Unit status field must accurately reflect the operational
-state:
+A fresh Agent encountering no active Task must determine why:
 
-- If no Subtask has been started: `not-started`.
-- If at least one Subtask is `[x]` or `[!]`: `in-progress`.
-- If a required condition prevents the remaining Subtasks from proceeding: the
-  Work Unit's `Blocked condition:` section must record the blocker.
+| Situation | Indicator | Action |
+|-----------|-----------|--------|
+| Work is blocked | `plan/blocked/INDEX.md` has entries | Read blocked Task's Blocking Condition; surface to human; do not self-activate |
+| Previous Task is complete | `plan/active/` is empty; `plan/completed/INDEX.md` has the last Task | Await explicit authorization for a new Task |
+| Awaiting authorization | `plan/backlog/` has candidate Tasks | Do not activate; await human instruction |
 
-Structural state (status markers, Work Unit status) must be consistent with
-substantive evidence (what actually happened). When they conflict, correct the
-structural state from the evidence — do not alter the substantive evidence to
-make structural state look consistent.
+A fresh Agent must not autonomously select or activate a backlog Task. It must not
+infer authorization from the blocked state, chronology, or any repository observation.
 
-### Blocked Task
+---
 
-A Task is operationally blocked when its current Work Unit is blocked and no
-other Work Unit is available to execute. The Task's overall status remains
-`in-progress` (the blocking condition exists within the in-progress execution;
-do not invent a separate `blocked` Task-level status). The blocking condition
-must be recorded in the affected Work Unit.
+## Superseded Task Semantics
+
+`superseded` is a terminal status distinct from `complete`.
+
+| Status | Meaning | Reactivatable? |
+|--------|---------|----------------|
+| `complete` | The Task's intended work was completed. | No |
+| `superseded` | The Task was intentionally replaced or made unnecessary by another authorized planning decision. | No |
+
+Both are stored in `plan/completed/`. Both are distinguished by the `Status`
+column in `plan/completed/INDEX.md`. Supersession must be explicitly recorded
+in the Task file; it must not be inferred.
 
 ---
 
@@ -199,6 +304,7 @@ It identifies:
 - The currently active Task, when one exists
 - The current Work Unit within that Task
 - The path to the Task file
+- The no-active-Task state and its reason, when no active Task exists
 - The next candidate, when explicitly documented
 
 `plan/CURRENT.md` is updated only after the Task file records Work Unit
@@ -216,6 +322,17 @@ CURRENT.md to it, and do not infer a different Task.
 
 If `plan/active/` contains more than one Task, the state is ambiguous. Do not
 choose one. Stop and require explicit human resolution.
+
+### No-Active-Task CURRENT State
+
+When `plan/active/` contains no Task, `CURRENT.md` must explicitly state:
+- that no active Task exists,
+- which of the following reasons applies:
+  - `Work is blocked` — a Task is in `plan/blocked/`.
+  - `Awaiting authorization` — planning is awaiting explicit human authorization.
+  - `No work in progress` — the previous Task is complete and no successor is authorized.
+
+A no-active-Task CURRENT.md must not imply that a blocked Task is active.
 
 ---
 
@@ -282,7 +399,7 @@ At session start, or when returning to work after an interruption:
 9. Determine the Task's actual state from the Task file.
 10. Find the first Work Unit that is not `complete`.
 11. Within that Work Unit, find the first Subtask that is not `[x]`.
-12. If that Subtask is `[!]` (blocked), follow §Blocked-Task Recovery Path.
+12. If that Subtask is `[!]` (blocked), follow §Blocked-Task Lifecycle.
 13. Confirm that the selected Work Unit contains unfinished, unblocked work. If all
     Subtasks are `[x]` while the Work Unit is not complete, repair the Work Unit
     instead of executing a duplicate Subtask.
@@ -290,6 +407,17 @@ At session start, or when returning to work after an interruption:
 15. If they disagree, the **Task file wins**.
 16. Repair CURRENT.md if necessary.
 17. Continue from the next executable Subtask.
+
+**If `plan/active/` is empty:**
+
+1. Read `plan/blocked/INDEX.md`.
+2. If blocked Tasks exist, read each blocked Task's `Blocking Condition` section.
+3. Surface the blocking condition to the human.
+4. Do not self-activate any Task.
+5. Never infer authorization from repository chronology, prior conversation, or
+   Resolution Task completion.
+6. If no blocked Tasks exist, read `plan/backlog/` for candidate Tasks.
+7. Await explicit human authorization before activating any backlog Task.
 
 ### Interrupted Authorization Recovery
 
@@ -305,6 +433,8 @@ CURRENT.md update. Recover as follows:
 | More than one Task is in `active/` | Stop; require explicit human resolution. |
 | CURRENT points to a completed Task | Read the active directory and Task records; repair CURRENT.md from the actual active state. |
 | CURRENT points to a completed Work Unit within the active Task | Repair CURRENT.md from the Task file; do not re-execute the completed Work Unit. |
+| `active/` is empty; `blocked/` has entries | Read blocked Task(s); surface blocker to human; do not select work. |
+| Blocked Task has `Status: RESOLVED` but no Reactivation Record | Task is eligible but not yet reactivated; do not move it to active; await explicit reactivation authorization. |
 
 An Agent must not rely on conversation history, construction knowledge, or memory
 of previous sessions.
@@ -536,22 +666,26 @@ A Task may move to `plan/completed/` only after:
 ```text
 plan/
 ├── README.md              ← this file; Agent entry point
-├── CURRENT.md             ← navigation projection; active Task + Work Unit
+├── CURRENT.md             ← navigation projection; active Task + Work Unit, or no-active-Task state
 ├── ROADMAP.md             ← long-term strategic direction
 ├── PRINCIPLES.md          ← governing principles; Runtime authority boundary
 ├── definitions/
-│   ├── TASK.md            ← what a Task is
+│   ├── TASK.md            ← what a Task is; blocked/superseded status; Blocking Condition structure
 │   ├── WORK-UNIT.md       ← what a Work Unit is
 │   ├── SUBTASK.md         ← what a Subtask is
-│   ├── STATUS.md          ← allowed planning states
+│   ├── STATUS.md          ← allowed planning states; blocked vs in-progress; complete vs superseded
+│   ├── BLOCKED.md         ← blocked Task lifecycle; Blocking Condition; Resolution Task; reactivation
 │   └── COMPLETION.md      ← completion levels and conditions
 ├── active/
-│   └── <task-id>.md       ← active Task files (authoritative state)
+│   └── <task-id>.md       ← active Task files (authoritative state); at most one
 ├── backlog/
-│   └── <task-id>.md       ← candidate future Tasks
+│   └── <task-id>.md       ← candidate future Tasks; unauthorized until explicitly activated
+├── blocked/
+│   ├── INDEX.md            ← index of blocked Tasks; schema: Task | Blocked Work Unit | Resume Point | Blocking Condition | Resolution Task | Eligibility
+│   └── <task-id>.md       ← blocked Task files; Status: blocked; Blocking Condition section required
 └── completed/
-    ├── INDEX.md            ← index of completed Tasks with decision qualifications
-    └── <task-id>.md       ← completed Task files (historical record)
+    ├── INDEX.md            ← index of completed Tasks; Status column distinguishes complete from superseded
+    └── <task-id>.md       ← completed/superseded Task files (historical record; permanent)
 ```
 
 ---
@@ -574,3 +708,10 @@ plan/
 14. A blocked Subtask (`[!]`) must be surfaced to the human; it must not be worked around or silently skipped.
 15. A planning Task does not create, attach to, or mutate a Process Instance or Execution Context.
 16. Work Unit completion requires navigation-projection reconciliation or explicit no-change verification.
+17. A Task-level `blocked` status means the Task is in `plan/blocked/`, not `plan/active/`.
+18. A blocked Task remains required unless explicitly superseded by an authorized planning decision.
+19. Resolution is not authorization. Completing a Resolution Task does not automatically reactivate the blocked Task.
+20. Reactivation requires: (a) verified Resolution Condition, (b) `Status: RESOLVED` recorded by authorized actor, (c) explicit new Reactivation Record with human authorization.
+21. `complete` and `superseded` are both terminal statuses; `plan/completed/INDEX.md` distinguishes them by a `Status` column.
+22. A blocked Task leaving `plan/blocked/` must have its row removed from `plan/blocked/INDEX.md`.
+23. `CURRENT.md` must explicitly state why no active Task exists (blocked / awaiting authorization / no work in progress) when `plan/active/` is empty.

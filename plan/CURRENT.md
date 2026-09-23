@@ -13,39 +13,79 @@ For the full navigation protocol, read `plan/README.md`.
 
 ## Active Task
 
-Task ID:
+None.
+
+The previously active Task `repository-scoped-dbp-continuation-validation` has
+been migrated to `plan/blocked/` as part of the Blocked Task Lifecycle and
+Recovery Model planning-system implementation (2026-09-23). There is currently
+no active Task.
+
+---
+
+## Reason No Active Task Exists
+
+**Work is blocked.** One Task remains in `plan/blocked/`:
+
+Task:
 repository-scoped-dbp-continuation-validation
 
 Task File:
-plan/active/repository-scoped-dbp-continuation-validation.md
+plan/blocked/repository-scoped-dbp-continuation-validation.md
 
-Status:
-in-progress
+Task Status:
+blocked
 
-Active Work Unit:
+Blocked Work Unit:
 Session A — DBP Process Establishment
 
-Execution Status:
-BLOCKED — requires a live DBP checkout with AESM Runtime execution capability
+Blocking Condition:
+OPEN — live DBP Runtime execution environment required; existing Process Instance
+disposition not yet authorized. See Blocking Condition section in Task file.
+
+Resolution Task (unauthorized, in backlog):
+resolve-dbp-active-process-instance-disposition
+
+Resolution Task File:
+plan/backlog/resolve-dbp-active-process-instance-disposition.md
+
+---
+
+## No-Active-Task State Semantics
+
+This section is required by the planning model to distinguish between
+three distinct no-active-Task situations:
+
+| Reason | This State? |
+|--------|-------------|
+| No active Task because work is blocked | **YES** — see plan/blocked/ |
+| No active Task because the previous Task is complete | No |
+| No active Task because planning is awaiting explicit authorization | No |
+
+A fresh Agent must not infer an active Task from this file's absence of one.
+A fresh Agent must not autonomously activate any backlog Task.
 
 ---
 
 ## Next Candidate
 
-None recorded while an active Task exists.
+None. The Resolution Task (`resolve-dbp-active-process-instance-disposition`) is
+in `plan/backlog/` and **unauthorized**. It must not be activated without an
+explicit human instruction identifying it by name.
 
 ---
 
 ## Recovery Note
 
-If this file appears inconsistent with repository state, do not select work from this
-file by heuristic.
+If this file appears inconsistent with repository state, do not select work from
+this file by heuristic.
 
 1. Read `plan/README.md`.
-2. Inspect `plan/active/`.
-3. If exactly one active Task exists, read its `Source:` authorization and reconcile
-   this projection to the authoritative Task file.
-4. If `CURRENT.md` and the Task file disagree, the Task file wins.
-5. If more than one active Task exists, stop and obtain explicit human resolution.
+2. Inspect `plan/active/`. If it contains a Task, that Task file is authoritative.
+3. If `plan/active/` is empty, inspect `plan/blocked/INDEX.md`.
+4. If blocked Tasks exist, read each blocked Task's `Blocking Condition` section.
+5. If `CURRENT.md` and the Task file disagree, the Task file wins.
+6. If more than one active Task exists, stop and obtain explicit human resolution.
+7. Never infer authorization from repository chronology, blocker resolution, or
+   conversation history.
 
 The Task file is authoritative. This file is a navigation projection.

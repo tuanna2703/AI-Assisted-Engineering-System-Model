@@ -6,18 +6,29 @@ Task ID:
 repository-scoped-dbp-continuation-validation
 
 Status:
-in-progress
+blocked
 
 Created:
 2026-09-22
 
 Source:
-Human instruction — explicit authorization given on 2026-09-22: “I authorize”.
+Human instruction — explicit authorization given on 2026-09-22: "I authorize".
 Authorized Task identity: repository-scoped-dbp-continuation-validation.
 Authorized action/scope: activate this Task, review and finalize its Work Unit plan, and execute the approved repository-scoped DBP continuation validation in accordance with the AESM planning protocol.
 
 Concern tags:
 dbp, continuation, fresh-agent, repository-scoped, empirical-validation
+
+---
+
+## Blocking Condition
+
+Status: OPEN
+Blocked Work Unit: Session A — DBP Process Establishment
+Resume Point: Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
+Blocking Reason: The available execution surface provides repository inspection and Git operations but does not provide a live DBP checkout/runtime process in which the AESM Runtime can be invoked. Runtime execution cannot be truthfully claimed from repository inspection alone. The existing DBP Process Instance (`d0640ec8-672e-43bd-bd4b-974d808915a2`, scope `project:tuanna2703/directories-builder-pro`) must be deterministically resolved through the Runtime rather than through manual `.aesm/` editing. A new same-scope Session A cannot be established while the existing active Process Instance persists and its disposition has not been explicitly authorized.
+Resolution Condition: A live DBP checkout with AESM Runtime execution capability is available, the disposition of the existing active Process Instance (`d0640ec8-672e-43bd-bd4b-974d808915a2`) has been explicitly authorized, and a legitimate Session A can be established through the Runtime-owned resolution path without manual `.aesm/` mutation.
+Resolution Task: resolve-dbp-active-process-instance-disposition
 
 ---
 
@@ -122,18 +133,6 @@ Subtasks:
 - [x] Define evidence requirements for CONTROLLER, AGENT, RUNTIME, PERSISTED, and VERIFICATION evidence.
 - [x] Define the remote Git round-trip evidence scope, if it remains feasible under the controlled experiment.
 
-Objective:
-Define and freeze the controlled DBP continuation fixture before Runtime execution.
-
-Subtasks:
-- [ ] Inspect current DBP repository baseline and identify a bounded engineering request that can be executed without free-ranging implementation.
-- [ ] Define the expected repository identity, repository root, Engineering Scope Identity, and active-repository context for the DBP fixture.
-- [ ] Define the Process Instance baseline and the exact Runtime-mediated operations permitted in Session A and Session B.
-- [ ] Define evidence requirements for CONTROLLER, AGENT, RUNTIME, PERSISTED, and VERIFICATION evidence.
-- [ ] Define the remote Git round-trip evidence scope, if it remains feasible under the controlled experiment.
-Completion condition:
-The fixture, scope binding, bounded request, permitted Runtime operations, session boundaries, and evidence contract are explicitly recorded and reviewable before Session A begins.
-
 ### Session A — DBP Process Establishment
 Status: blocked — live Runtime execution environment required
 
@@ -141,12 +140,14 @@ Objective:
 Establish or deterministically resolve the DBP Process Instance through the Runtime and perform the bounded first-session engineering activity.
 
 Subtasks:
-- [ ] Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
+- [!] Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
+  BLOCKED: A live DBP checkout with AESM Runtime execution capability is required. Repository inspection alone cannot produce Runtime evidence. The existing Process Instance (d0640ec8-672e-43bd-bd4b-974d808915a2) must have its disposition authorized before a new Session A can begin. See Blocking Condition above.
 - [ ] Resolve the DBP Engineering Scope and Process Instance through the Runtime-owned resolution path.
 - [ ] If no existing applicable Process Instance exists, create exactly one through the explicit Runtime creation operation.
 - [ ] Obtain and record authoritative Execution Context from Runtime.
 - [ ] Perform only the bounded Runtime-mediated engineering activity defined by the fixture.
 - [ ] Persist and independently inspect the resulting `.aesm/` state and history.
+
 Completion condition:
 Session A produces an authoritative DBP Process Instance with persisted state and evidence sufficient for an independent fresh Session B to discover it without being handed the Process Instance ID.
 
@@ -164,6 +165,7 @@ Subtasks:
 - [ ] Perform one bounded continuation operation through Runtime.
 - [ ] Verify persisted history and Context changes are attributable to Session B.
 - [ ] Exercise a negative isolation/ambiguity case if the fixture includes multiple repository scopes or candidates.
+
 Completion condition:
 Fresh Session B independently discovers the intended DBP Process Instance, performs a Runtime-mediated continuation, and leaves durable evidence proving same-PI continuity and repository isolation.
 
@@ -179,6 +181,7 @@ Subtasks:
 - [ ] Verify byte-level or schema-level identity of the relevant persisted state in the independent checkout.
 - [ ] Run the fresh-Agent discovery/continuation protocol against that checkout when feasible.
 - [ ] Record any limitation if the remote round trip cannot be completed; do not infer success from local Git operations.
+
 Completion condition:
 The evidence clearly distinguishes local repository persistence, remote Git portability, and fresh-Agent continuation, with unclaimed portions explicitly recorded.
 
@@ -196,6 +199,7 @@ Subtasks:
 - [ ] Reconcile VERIFICATION evidence from executable tests/checks and independent observations.
 - [ ] Verify that no planning record is being used as a substitute for Runtime evidence.
 - [ ] Classify the result as PASS or document each unmet acceptance criterion and remaining gap.
+
 Completion condition:
 Every acceptance criterion has independently checkable evidence, or each unmet criterion is explicitly documented as a gap; no unsupported PASS claim remains.
 
@@ -233,9 +237,12 @@ Every acceptance criterion has independently checkable evidence, or each unmet c
 Status: pending
 Completed: not yet
 
+---
 
 ## Current Execution Boundary
 
 The fixture Work Unit is complete. The next executable work requires a real DBP checkout with the AESM Runtime available to the Agent. Repository inspection alone can establish persisted artifacts and repository structure, but cannot establish Runtime authority, Agent-caused mutations, OS-process separation, or fresh-session discovery.
 
 The existing DBP `.aesm/` PI must therefore be treated as a **historical migrated baseline**, not as newly generated evidence for this Task. The next session must not fabricate a new history entry by editing GitHub files directly; Runtime must produce the authoritative mutation and persistence.
+
+This Task was migrated from `plan/active/` to `plan/blocked/` on 2026-09-23 as part of the Blocked Task Lifecycle and Recovery Model planning-system implementation. The original authorization record above is preserved exactly. The blocking condition above is the authoritative record of why this Task cannot currently advance.

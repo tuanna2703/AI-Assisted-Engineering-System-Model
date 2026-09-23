@@ -1,7 +1,8 @@
 # Completed Task Index
 
-This index lists all completed engineering tasks. Each entry provides task identity,
-completion date (where available), concise purpose, and relevant concern tags.
+This index lists all Tasks in `plan/completed/`. Each entry provides task identity,
+completion date (where available), status (`complete` or `superseded`), concise
+purpose, and relevant concern tags.
 
 Do not duplicate complete task file contents here. For full context, decisions,
 and verification evidence, read the referenced task file.
@@ -10,18 +11,18 @@ and verification evidence, read the referenced task file.
 
 ## Index
 
-| Task ID | Completed | Purpose | Concern Tags | Task File |
-|---------|-----------|---------|--------------|-----------|
-| aesm-implementation-foundations | ~2026-09-19 | Establish Process Instance persistence, Execution Context, first vertical slice semantics, minimal Runtime core, and recording behavioral validation | foundation, process-instance, execution-context, runtime-core, recording | [→](aesm-implementation-foundations.md) |
-| agent-guidance-and-environment-mapping | ~2026-09-19 | Establish Agent Guidance Interface, Agent–Runtime boundary, Runtime API surface (four adapter surfaces), minimal bridge, and environment mechanism mapping | agent-guidance, bridge, environment-mapping, runtime-api | [→](agent-guidance-and-environment-mapping.md) |
-| agent-boundary-mechanism-validation | ~2026-09-19 | Validate the complete operational chain from fresh Agent session through Runtime mutations, persisted state, and fresh-session recovery | mechanism-validation, end-to-end, fresh-session, process-instance, bridge | [→](agent-boundary-mechanism-validation.md) |
-| dbp-empirical-execution | ~2026-09-19 | Execute controlled DBP engineering request under AESM; reconcile evidence; identify AESM participation gap; establish project/process binding as separate concern | dbp, empirical-execution, evidence-reconciliation, scope-binding, gap-identification | [→](dbp-empirical-execution.md) |
-| engineering-scope-identity-and-scope-resolution | 2026-09-21 | Define Engineering Scope Identity as distinct AESM concept; design and implement deterministic Runtime-owned scope resolution; validate 204/204 tests | scope-identity, scope-resolution, process-instance-binding, repository-isolation, multi-project | [→](engineering-scope-identity-and-scope-resolution.md) |
-| repository-portable-continuation-validation | 2026-09-21 | Demonstrate Git-portable .aesm/ and fresh-Agent continuation from independent checkout; validate PASS for Git round trip and fresh-session continuation | portability, git-round-trip, fresh-session, continuation, repository-local | [→](repository-portable-continuation-validation.md) |
-| runtime-consistency-and-continuity-hardening | 2026-09-21 | Harden Runtime persistence (rollback symmetry, schema evolution, concurrency, recovery); repair API compatibility; validate cross-process continuity; 192/192 regression PASS | runtime-hardening, persistence-consistency, continuity, schema, concurrency, rollback, verification | [→](runtime-consistency-and-continuity-hardening.md) |
-| planning-system-restructuring | 2026-09-22 | Establish structured, deterministic, recoverable plan/ planning system replacing monolithic IMPLEMENTATION_PLAN.md; enable fresh Agent navigation without prior context | planning-governance, restructuring, migration, agent-navigation | [→](planning-system-restructuring.md) |
-| aesm-planning-authorization-refinement | 2026-09-22 | Strengthen backlog-to-active authorization gate in README.md; make CURRENT.md explicitly distinguish candidate from authorized task; add non-binding Suggested Successor to planning-system-restructuring | authorization, backlog-promotion, navigation-refinement, candidate-vs-authorized | [→](aesm-planning-authorization-refinement.md) |
-| planning-verification-time-boundary-correction | 2026-09-22 | Correct the historical verification record temporal boundary; reconcile Work Unit structural state; resolve blocked test subtasks (204/204 PASS); implement planning-system refinement (authorization, blocked-recovery, projection-reconciliation, decision-lifecycle, runtime-boundary, fresh-agent review) | planning-governance, temporal-boundary, verification, structural-reconciliation, authorization, runtime-boundary | [→](planning-verification-time-boundary-correction.md) |
+| Task ID | Completed | Status | Purpose | Concern Tags | Task File |
+|---------|-----------|--------|---------|--------------|-----------|
+| aesm-implementation-foundations | ~2026-09-19 | complete | Establish Process Instance persistence, Execution Context, first vertical slice semantics, minimal Runtime core, and recording behavioral validation | foundation, process-instance, execution-context, runtime-core, recording | [→](aesm-implementation-foundations.md) |
+| agent-guidance-and-environment-mapping | ~2026-09-19 | complete | Establish Agent Guidance Interface, Agent–Runtime boundary, Runtime API surface (four adapter surfaces), minimal bridge, and environment mechanism mapping | agent-guidance, bridge, environment-mapping, runtime-api | [→](agent-guidance-and-environment-mapping.md) |
+| agent-boundary-mechanism-validation | ~2026-09-19 | complete | Validate the complete operational chain from fresh Agent session through Runtime mutations, persisted state, and fresh-session recovery | mechanism-validation, end-to-end, fresh-session, process-instance, bridge | [→](agent-boundary-mechanism-validation.md) |
+| dbp-empirical-execution | ~2026-09-19 | complete | Execute controlled DBP engineering request under AESM; reconcile evidence; identify AESM participation gap; establish project/process binding as separate concern | dbp, empirical-execution, evidence-reconciliation, scope-binding, gap-identification | [→](dbp-empirical-execution.md) |
+| engineering-scope-identity-and-scope-resolution | 2026-09-21 | complete | Define Engineering Scope Identity as distinct AESM concept; design and implement deterministic Runtime-owned scope resolution; validate 204/204 tests | scope-identity, scope-resolution, process-instance-binding, repository-isolation, multi-project | [→](engineering-scope-identity-and-scope-resolution.md) |
+| repository-portable-continuation-validation | 2026-09-21 | complete | Demonstrate Git-portable .aesm/ and fresh-Agent continuation from independent checkout; validate PASS for Git round trip and fresh-session continuation | portability, git-round-trip, fresh-session, continuation, repository-local | [→](repository-portable-continuation-validation.md) |
+| runtime-consistency-and-continuity-hardening | 2026-09-21 | complete | Harden Runtime persistence (rollback symmetry, schema evolution, concurrency, recovery); repair API compatibility; validate cross-process continuity; 192/192 regression PASS | runtime-hardening, persistence-consistency, continuity, schema, concurrency, rollback, verification | [→](runtime-consistency-and-continuity-hardening.md) |
+| planning-system-restructuring | 2026-09-22 | complete | Establish structured, deterministic, recoverable plan/ planning system replacing monolithic IMPLEMENTATION_PLAN.md; enable fresh Agent navigation without prior context | planning-governance, restructuring, migration, agent-navigation | [→](planning-system-restructuring.md) |
+| aesm-planning-authorization-refinement | 2026-09-22 | complete | Strengthen backlog-to-active authorization gate in README.md; make CURRENT.md explicitly distinguish candidate from authorized task; add non-binding Suggested Successor to planning-system-restructuring | authorization, backlog-promotion, navigation-refinement, candidate-vs-authorized | [→](aesm-planning-authorization-refinement.md) |
+| planning-verification-time-boundary-correction | 2026-09-22 | complete | Correct the historical verification record temporal boundary; reconcile Work Unit structural state; resolve blocked test subtasks (204/204 PASS); implement planning-system refinement (authorization, blocked-recovery, projection-reconciliation, decision-lifecycle, runtime-boundary, fresh-agent review) | planning-governance, temporal-boundary, verification, structural-reconciliation, authorization, runtime-boundary | [→](planning-verification-time-boundary-correction.md) |
 
 ---
 

@@ -91,7 +91,62 @@ source document. Do not rename Work Units opportunistically.
 
 Observable outcomes that must be satisfied for this Task to be considered complete.
 
+### Blocking Condition (required for blocked Tasks)
+
+When a Task's `Status:` is `blocked`, the Task file must contain a `Blocking
+Condition` section immediately after the `Identity` section:
+
+```markdown
+## Blocking Condition
+
+Status: OPEN
+Blocked Work Unit: <semantic Work Unit name>
+Resume Point: <exact Subtask text — must match an existing Subtask>
+Blocking Reason: <precise factual reason execution cannot currently continue>
+Resolution Condition: <condition that must become true before the blocker is considered resolved>
+Resolution Task: <Resolution Task ID or NONE>
+```
+
+`Status` may be `OPEN` or `RESOLVED`. An Agent must never change `OPEN` to
+`RESOLVED` by inference. Only an authorized actor may record the transition.
+
+See `plan/definitions/BLOCKED.md` for the full definition.
+
+### Reactivation Record (required when a blocked Task is reactivated)
+
+When a blocked Task receives an explicit reactivation authorization, the Task
+file must record:
+
+```markdown
+## Reactivation Record
+
+Date: <YYYY-MM-DD>
+Source: <human instruction / authorization source>
+Task: <Task ID>
+Authorized Action: Reactivate Task
+Authorized Scope: <what the Agent is authorized to do upon reactivation>
+Resolution Evidence: <reference to evidence establishing that the blocker is resolved>
+```
+
+A Reactivation Record is a new authorization event. It does not overwrite the
+original `Source:` authorization.
+
 ---
+
+## Terminal Statuses: `complete` and `superseded`
+
+Both `complete` and `superseded` are terminal statuses. Both result in the Task
+being stored in `plan/completed/`.
+
+- `complete` — the Task's intended work was completed.
+- `superseded` — the Task was intentionally replaced or made unnecessary by
+  another authorized planning decision.
+
+Supersession must be explicitly recorded in the Task file and in
+`plan/completed/INDEX.md`. It must not be inferred from omission, logical sequence,
+or another Task's completion.
+
+Neither terminal status may be reactivated as if it were merely blocked.
 
 ## Authorization
 
