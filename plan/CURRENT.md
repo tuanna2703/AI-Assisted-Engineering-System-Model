@@ -13,18 +13,23 @@ For the full navigation protocol, read `plan/README.md`.
 
 ## Active Task
 
-None.
+Task:
+resolve-dbp-active-process-instance-disposition
 
-The previously active Task `repository-scoped-dbp-continuation-validation` has
-been migrated to `plan/blocked/` as part of the Blocked Task Lifecycle and
-Recovery Model planning-system implementation (2026-09-23). There is currently
-no active Task.
+Task File:
+plan/active/resolve-dbp-active-process-instance-disposition.md
+
+Status:
+in-progress
+
+Current Work Unit:
+Inspect Existing Process Instance State
 
 ---
 
 ## Reason No Active Task Exists
 
-**Work is blocked.** One Task remains in `plan/blocked/`:
+**A Resolution Task is active while the DBP continuation Task remains blocked.** One Task remains in `plan/blocked/`:
 
 Task:
 repository-scoped-dbp-continuation-validation
@@ -42,11 +47,14 @@ Blocking Condition:
 OPEN — live DBP Runtime execution environment required; existing Process Instance
 disposition not yet authorized. See Blocking Condition section in Task file.
 
-Resolution Task (unauthorized, in backlog):
+Resolution Task:
 resolve-dbp-active-process-instance-disposition
 
 Resolution Task File:
-plan/backlog/resolve-dbp-active-process-instance-disposition.md
+plan/active/resolve-dbp-active-process-instance-disposition.md
+
+Resolution Task Authorization:
+Explicit human authorization given on 2026-09-23 to activate and execute the planned scope.
 
 ---
 
@@ -68,9 +76,7 @@ A fresh Agent must not autonomously activate any backlog Task.
 
 ## Next Candidate
 
-None. The Resolution Task (`resolve-dbp-active-process-instance-disposition`) is
-in `plan/backlog/` and **unauthorized**. It must not be activated without an
-explicit human instruction identifying it by name.
+None. The Resolution Task is now active and its current Work Unit is `Inspect Existing Process Instance State`.
 
 ---
 
