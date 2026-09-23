@@ -6,7 +6,7 @@ Task ID:
 plan-execution-boundary-governance-resolution
 
 Status:
-in-progress
+blocked
 
 Created:
 2026-09-23
@@ -19,6 +19,15 @@ Source:
 
 Concern tags:
 planning-governance, execution-boundary, scope-control, findings, blocked-recovery, completion, agent-guidance, conformance
+
+## Blocking Condition
+
+Status: OPEN
+Blocked Work Unit: Verify Boundary Behavior
+Resume Point: Run the available repository conformance/test suite and record exact results.
+Blocking Reason: The connected execution surface can inspect and modify repository files but does not provide a direct command/test runner or a separate fresh-Agent execution session. Automated conformance execution and independent fresh-Agent validation cannot be truthfully claimed from repository inspection alone.
+Resolution Condition: A repository execution environment capable of running the planning conformance suite and a distinct fresh-Agent/session surface capable of applying the persisted planning protocol are available, or an explicitly authorized planning decision changes the validation requirement.
+Resolution Task: NONE
 
 ## Objective
 
@@ -258,6 +267,25 @@ No Runtime, bridge, `.aesm/`, or DBP source implementation changes are authorize
 - Verify canonical scenarios have deterministic expected outcomes.
 - Fresh-Agent validation must be performed from persisted repository state, not reconstructed from conversation history.
 - DBP validation must distinguish analytical classification from live Runtime evidence.
+
+## Execution Stop Record
+
+Status: EXECUTION STOPPED
+Task: plan-execution-boundary-governance-resolution
+Work Unit: Verify Boundary Behavior
+Subtask: Run the available repository conformance/test suite and record exact results.
+Authorization: Task Source dated 2026-09-23.
+Observed Condition: Repository read/write access is available, but no direct command/test runner or distinct fresh-Agent execution surface is available.
+Finding: Required independent verification cannot be produced by repository inspection.
+Plan Coverage: The verification Subtask explicitly requires repository conformance execution; the available tool surface does not satisfy that execution requirement.
+Acceptance Relevance: Required for Acceptance Criteria 10, 12, and 14.
+Investigation Performed: Inspected available repository tooling and workflow surface; no direct command runner was available.
+Investigation Result: Test execution and true fresh-Agent validation remain unavailable in this session.
+Scope Determination: BLOCKING_FINDING for this Task's remaining verification.
+Mutation Already Performed: Planning boundary artifacts, Agent guidance, Task structure, and conformance tests were persisted. No Runtime, bridge, or DBP source mutation was performed.
+Current Persisted Planning State: Boundary model and implementation are recorded; verification Work Unit is blocked.
+Required Human / Planning Decision: Provide an executable verification/fresh-Agent environment or explicitly authorize a changed validation boundary.
+Resume Point: Run the available repository conformance/test suite and record exact results.
 
 ## Completion Record
 

@@ -13,20 +13,35 @@ For the full navigation protocol, read `plan/README.md`.
 
 ## Active Task
 
-Task: plan-execution-boundary-governance-resolution
+None. `plan/active/` is empty.
 
-Task File: plan/active/plan-execution-boundary-governance-resolution.md
+## Reason No Active Task Exists
 
-Task Status: in-progress
+Work is blocked. The Task `plan-execution-boundary-governance-resolution` is in
+`plan/blocked/` because the repository execution surface cannot run the
+required conformance suite or provide a distinct fresh-Agent session.
 
-Current Work Unit: Define Boundary Model and Change Inventory
+Blocked Task:
+`plan-execution-boundary-governance-resolution.md`
 
-Next executable Subtask: Define the Finding lifecycle: Discovery/Observation → Finding → Work Candidate → Authorized Work.
+Blocked Work Unit:
+Verify Boundary Behavior
+
+Resume Point:
+Run the available repository conformance/test suite and record exact results.
+
+A fresh Agent must read the blocked Task's Blocking Condition and must not
+self-reactivate it. Explicit reactivation authorization is required after the
+blocking condition is resolved.
 
 ---
 
 ## Recovery Note
 
-The previously active DBP continuation Task is blocked because its live DBP Runtime prerequisite remains unavailable. It is preserved under `plan/blocked/` and must not be self-reactivated.
+The DBP continuation Task remains separately blocked and is also not eligible for
+execution from this navigation state. No blocked Task is active merely because
+it is listed in `plan/blocked/`.
 
-The current Task is explicitly authorized by its own `Source:` field. If this file appears inconsistent with repository state, do not select work by heuristic. Read `plan/README.md`, inspect `plan/active/`, and treat the authoritative Task file as the source of truth. Repair `CURRENT.md` from the Task file before executing work when needed.
+If this file appears inconsistent with repository state, read `plan/README.md`,
+inspect `plan/active/` and `plan/blocked/`, and treat the authoritative Task
+file as the source of truth.
