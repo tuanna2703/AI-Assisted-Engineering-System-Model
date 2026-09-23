@@ -217,3 +217,34 @@ See `plan/definitions/TASK.md §Authorization` for the required structure.
 
 This principle prevents resumption of unauthorized Tasks and prevents autonomous
 promotion of backlog Tasks.
+
+
+---
+
+## 13. Plan–Execution Boundary
+
+Execution discoveries must not silently become new authorized work.
+
+The authorized Task → Work Unit → Subtask hierarchy remains the executable planning
+scope. A discovery becomes evidence; a material discovery becomes a Finding; a
+potential new action becomes a Work Candidate; only explicit planning
+authorization creates executable work.
+
+Agents must apply the deterministic procedure in
+`plan/definitions/PLAN-EXECUTION-BOUNDARY.md`:
+
+1. explicit coverage → continue;
+2. necessary bounded acceptance investigation → investigate only within the
+   defined boundary;
+3. otherwise → stop and classify the Finding.
+
+Semantic relatedness, usefulness, severity, convenience, or implementation
+simplicity are not authorization criteria.
+
+An out-of-scope executable Finding that prevents existing acceptance requires a
+structured Execution Stop Report and the existing blocked lifecycle. Resolution
+does not itself authorize or reactivate work.
+
+Task completion is based on authorized acceptance conditions and verification.
+The absence of additional findings is not a completion condition, and future-work
+candidates do not prevent completion after authorized acceptance is satisfied.

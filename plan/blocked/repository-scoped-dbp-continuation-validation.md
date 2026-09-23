@@ -6,7 +6,7 @@ Task ID:
 repository-scoped-dbp-continuation-validation
 
 Status:
-in-progress
+blocked
 
 Created:
 2026-09-22
@@ -23,7 +23,7 @@ dbp, continuation, fresh-agent, repository-scoped, empirical-validation
 
 ## Blocking Condition
 
-Status: RESOLVED
+Status: OPEN
 Blocked Work Unit: Session A — DBP Process Establishment
 Resume Point: Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
 Blocking Reason: The available execution surface provides repository inspection and Git operations but does not provide a live DBP checkout/runtime process in which the AESM Runtime can be invoked. Runtime execution cannot be truthfully claimed from repository inspection alone. The existing DBP Process Instance (`d0640ec8-672e-43bd-bd4b-974d808915a2`, scope `project:tuanna2703/directories-builder-pro`) must be deterministically resolved through the Runtime rather than through manual `.aesm/` editing. A new same-scope Session A cannot be established while the existing active Process Instance persists and its disposition has not been explicitly authorized.
@@ -144,14 +144,14 @@ Subtasks:
 - [x] Define the remote Git round-trip evidence scope, if it remains feasible under the controlled experiment.
 
 ### Session A — DBP Process Establishment
-Status: in-progress — live Runtime execution required for the next executable Subtask
+Status: blocked — live Runtime execution environment required
 
 Objective:
 Establish or deterministically resolve the DBP Process Instance through the Runtime and perform the bounded first-session engineering activity.
 
 Subtasks:
-- [ ] Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
-  Execution requirement: a live DBP checkout with AESM Runtime execution capability is required. Repository inspection alone cannot produce Runtime evidence. The prior Process Instance disposition is resolved; Session A must now establish repository context and continue through the Runtime-owned path.
+- [!] Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
+  BLOCKED: A live DBP checkout with AESM Runtime execution capability is still unavailable. The earlier Resolution Task resolved the Process Instance disposition, but it did not make the required DBP Runtime execution surface available. Repository inspection alone cannot produce Runtime evidence.
 - [ ] Resolve the DBP Engineering Scope and Process Instance through the Runtime-owned resolution path.
 - [ ] If no existing applicable Process Instance exists, create exactly one through the explicit Runtime creation operation.
 - [ ] Obtain and record authoritative Execution Context from Runtime.
@@ -255,4 +255,4 @@ The fixture Work Unit is complete. The next executable work requires a real DBP 
 
 The existing DBP `.aesm/` PI must therefore be treated as a **historical migrated baseline**, not as newly generated evidence for this Task. The next session must not fabricate a new history entry by editing GitHub files directly; Runtime must produce the authoritative mutation and persistence.
 
-This Task was migrated from `plan/active/` to `plan/blocked/` on 2026-09-23 as part of the Blocked Task Lifecycle and Recovery Model planning-system implementation. The original authorization record above is preserved exactly. The blocking condition above is the authoritative record of why this Task cannot currently advance.
+The Task was reactivated under the recorded 2026-09-23 Reactivation Record, but the first executable Subtask immediately encountered the still-unavailable live DBP Runtime execution prerequisite. The reactivation authorization is preserved as historical authorization evidence; the current `Blocking Condition` is authoritative for the present execution state. The Task remains required and must not be treated as abandoned or superseded.

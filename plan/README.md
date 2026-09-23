@@ -576,6 +576,35 @@ reference does not prove Runtime state or engineering completion.
 
 ---
 
+
+
+## Plan–Execution Boundary
+
+Execution discoveries do not create execution authority.
+
+The canonical boundary definition is `plan/definitions/PLAN-EXECUTION-BOUNDARY.md`. It defines:
+
+- authorized scope as the Task → Work Unit → Subtask hierarchy;
+- Discovery/Observation → Finding → Work Candidate → Authorized Work;
+- the deterministic Explicit Coverage → Acceptance Investigation → STOP decision;
+- bounded acceptance-investigation conditions;
+- the five Finding dispositions;
+- the structured Execution Stop Report;
+- integration with the existing blocked lifecycle;
+- plan-mutation authority and positive Change Inventories;
+- acceptance-based completion and non-proliferation;
+- evidence separation and fresh-Agent validation.
+
+Before modifying anything because of an execution discovery, an Agent must apply that definition. A Finding is evidence, not authorization. A Work Candidate is not executable until explicitly authorized.
+
+### Required scope procedure
+
+1. Is the required action explicitly covered by an authorized Subtask or current Work Unit completion condition? Continue within scope.
+2. If not, is bounded investigation strictly necessary to determine an existing acceptance condition? Investigate only within the defined boundary.
+3. Otherwise stop the unplanned action. Record the Finding; if it blocks existing acceptance, use the existing blocked lifecycle.
+
+The boundary does not change Runtime authority or create a new blocked status.
+
 ## Planning / AESM Boundary
 
 ```text
@@ -715,3 +744,7 @@ plan/
 21. `complete` and `superseded` are both terminal statuses; `plan/completed/INDEX.md` distinguishes them by a `Status` column.
 22. A blocked Task leaving `plan/blocked/` must have its row removed from `plan/blocked/INDEX.md`.
 23. `CURRENT.md` must explicitly state why no active Task exists (blocked / awaiting authorization / no work in progress) when `plan/active/` is empty.
+24. Execution discoveries do not create authorization; apply `plan/definitions/PLAN-EXECUTION-BOUNDARY.md` before acting on a Finding.
+25. Bounded acceptance investigation may not create executable work or change acceptance conditions.
+26. An out-of-scope executable finding must stop rather than silently mutate the plan.
+27. Future-work candidates do not prevent completion when authorized acceptance conditions are satisfied.

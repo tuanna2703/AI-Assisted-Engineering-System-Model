@@ -67,3 +67,24 @@ For semantic questions, consult the canonical `docs/` material rather than exten
 - Do not create a separate top-level `execution/` directory. Execution is an activity/state governed by Runtime and persisted under `.aesm/`; Markdown descriptions of that activity belong in `implementation/` only when they have durable value.
 - Do not use `implementation/` as a session transcript, task scratchpad, duplicate plan, duplicate specification, or archive of every intermediate step.
 - When a record is fully superseded by canonical documentation, executable tests, current implementation, or a later durable validation record, remove it rather than creating another historical copy.
+
+
+---
+
+## Plan–Execution Boundary
+
+When executing a Task under `plan/`, apply
+`plan/definitions/PLAN-EXECUTION-BOUNDARY.md` before acting on discoveries.
+
+- The authorized Task → Work Unit → Subtask hierarchy is the execution scope.
+- Discovery is evidence; it does not authorize new work.
+- Classify material discoveries as Findings.
+- A Work Candidate is record-only until explicitly authorized.
+- Use Explicit Coverage → Acceptance Investigation → STOP as the scope decision.
+- Acceptance investigation is allowed only when every bounded-investigation condition is satisfied and the investigation is necessary to determine an existing acceptance condition.
+- Do not create, activate, expand, reorder, or reinterpret executable planning work because of a Finding.
+- Do not change acceptance conditions because execution discovered a different approach.
+- An out-of-scope executable requirement that prevents existing acceptance requires an Execution Stop Report and the existing blocked lifecycle.
+- Blocker resolution does not automatically reactivate a Task.
+- Future-work candidates do not prevent completion after authorized acceptance conditions are satisfied.
+- If the required execution environment is unavailable, record the limitation and do not fabricate Runtime, persisted, or fresh-session evidence.
