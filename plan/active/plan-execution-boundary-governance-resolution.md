@@ -105,21 +105,39 @@ The historical DBP Process Instance disposition was resolved through Runtime. Th
 ## Work Units
 
 ### Establish Boundary Baseline
-Status: in-progress
+Status: complete
 
 Objective:
 Inspect the existing planning system and produce an evidence-backed gap matrix against the normative boundary requirements without changing implementation.
 
 Subtasks:
-- [/] Inspect `plan/README.md`, Task/Work Unit/Subtask definitions, authorization rules, blocked lifecycle, completion model, Agent guidance, and relevant tests; record which existing mechanisms map to each normative requirement.
-- [ ] Inspect the active/blocked planning state and repair any structural inconsistency encountered without changing substantive historical evidence.
-- [ ] Record a gap matrix identifying `satisfied`, `partial`, `missing`, or `conflicting` behavior for every normative requirement.
+- [x] Inspect `plan/README.md`, Task/Work Unit/Subtask definitions, authorization rules, blocked lifecycle, completion model, Agent guidance, and relevant tests; record which existing mechanisms map to each normative requirement. Evidence: repository inspection at commit `19b29e7287060e86e36902f357e2eaf2eaa3ab36`.
+- [x] Inspect the active/blocked planning state and repair any structural inconsistency encountered without changing substantive historical evidence. Evidence: the reactivated DBP continuation Task was found unable to execute because its live Runtime prerequisite remains unavailable; it was restored to `plan/blocked/` with `Status: blocked`, an OPEN Blocking Condition, and a `[!]` resume Subtask; `plan/blocked/INDEX.md` and `plan/CURRENT.md` were reconciled.
+- [x] Record a gap matrix identifying `satisfied`, `partial`, `missing`, or `conflicting` behavior for every normative requirement. Evidence: gap matrix below.
 
 Completion condition:
 A durable gap matrix exists in this Task file, all thirteen normative requirements have an evidence-backed classification, and no implementation change has been made under this Work Unit.
 
+### Boundary Baseline Gap Matrix
+
+| Normative requirement | Current classification | Existing mechanism / evidence | Gap requiring resolution |
+|---|---|---|---|
+| Authorized scope is bounded by Task → Work Unit → Subtask | partial | `TASK.md`, `WORK-UNIT.md`, and `SUBTASK.md` define the hierarchy and executable planning records. | No single durable rule yet prevents an execution discovery from being treated as additional authorized work. |
+| Discovery does not create authorization | missing | `PRINCIPLES.md` establishes no implicit scope at the planning level. | No canonical Discovery → Finding → Work Candidate → Authorized Work lifecycle for execution findings. |
+| Material discovery is classified as a Finding | missing | Existing planning records contain findings/blocking notes in individual Tasks. | No reusable Finding definition with mandatory dispositions and execution consequences. |
+| Work Candidate is distinct from executable work | missing | Backlog Tasks are unauthorized until activation. | No explicit intermediate Work Candidate concept connecting findings to later authorization. |
+| Acceptance investigation is bounded | partial | Completion criteria and verification requirements exist. | No deterministic rule limiting unplanned investigation to evidence necessary for an existing acceptance condition. |
+| Scope decision is mechanical | missing | Entry Consistency Assertion governs authorization before execution. | No execution-time Explicit Coverage → Acceptance Investigation → STOP decision procedure. |
+| Out-of-scope executable condition causes an execution stop | partial | `[!]` Subtasks and Task-level blocked lifecycle exist. | No structured Execution Stop Report tied to the discovery, scope determination, mutation, and resume point. |
+| Blocked recovery remains the existing lifecycle | satisfied | `BLOCKED.md`, `README.md`, explicit Resolution Task and Reactivation Record already define recovery. | Boundary definition must explicitly integrate with, not replace, this lifecycle. |
+| Execution cannot mutate planning authority from a finding | partial | Backlog promotion and authorization rules prohibit autonomous activation. | Need explicit prohibition on creating/expanding/reordering/reinterpreting executable work because of findings. |
+| Completion is acceptance-based | partial | `COMPLETION.md` defines Work Unit/Task completion through completion conditions and acceptance criteria. | Need explicit non-proliferation rule: absence of findings is not required; future candidates do not prevent completion. |
+| Evidence categories remain separated | satisfied | `PRINCIPLES.md`, `COMPLETION.md`, and `AGENTS.md` distinguish planning records from Runtime evidence. | Boundary artifacts must preserve and operationalize the separation for findings/stops. |
+| Implementation scope is positively bounded | missing | Existing planning rules prohibit unrelated changes generally. | No reusable Change Inventory requirement preventing an Agent from broadening implementation to arbitrary "necessary" artifacts. |
+| Fresh-Agent behavior is independently testable | partial | `README.md` and `AGENTS.md` define fresh-Agent navigation and authorization checks. | Need deterministic canonical boundary scenarios and executable/independent verification of finding decisions. |
+
 ### Define Boundary Model and Change Inventory
-Status: not-started
+Status: in-progress
 
 Objective:
 Convert the normative requirements and baseline findings into a precise, reusable governance model and a positive implementation Change Inventory.
@@ -245,6 +263,12 @@ No Runtime, bridge, `.aesm/`, or DBP source implementation changes are authorize
 
 Status: pending
 Completed: not yet
+
+## Boundary Model Evidence
+
+The baseline confirms that the repository already has strong Task authorization, semantic Work Unit/Subtask structure, blocked recovery, completion hierarchy, and planning/Runtime separation. The material gap is the absence of one durable execution-time contract connecting discoveries to findings, findings to non-executable candidates, and out-of-scope findings to deterministic stop behavior.
+
+The implementation therefore must extend existing planning mechanisms rather than replace them. In particular, `BLOCKED.md` remains the recovery authority, `TASK.md` remains Task authority, and Runtime/.aesm/ remain outside this planning Task's mutation scope.
 
 ## Current Execution Boundary
 
