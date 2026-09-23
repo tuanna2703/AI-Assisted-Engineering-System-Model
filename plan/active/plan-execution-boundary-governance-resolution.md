@@ -137,52 +137,52 @@ A durable gap matrix exists in this Task file, all thirteen normative requiremen
 | Fresh-Agent behavior is independently testable | partial | `README.md` and `AGENTS.md` define fresh-Agent navigation and authorization checks. | Need deterministic canonical boundary scenarios and executable/independent verification of finding decisions. |
 
 ### Define Boundary Model and Change Inventory
-Status: in-progress
+Status: complete
 
 Objective:
 Convert the normative requirements and baseline findings into a precise, reusable governance model and a positive implementation Change Inventory.
 
 Subtasks:
-- [ ] Define the Finding lifecycle: Discovery/Observation → Finding → Work Candidate → Authorized Work.
-- [ ] Define the five Finding dispositions and their required execution behavior: IN_SCOPE, ACCEPTANCE_INVESTIGATION, FUTURE_WORK_CANDIDATE, BLOCKING_FINDING, IRRELEVANT_OBSERVATION.
-- [ ] Define the mechanical scope decision and all bounded-investigation conditions, including explicit stopping conditions.
-- [ ] Define the Execution Stop Report and its relationship to the existing blocked lifecycle.
-- [ ] Define plan-mutation authority, ordering preservation, and acceptance-based completion/non-proliferation rules.
-- [ ] Produce the positive Change Inventory listing each expected artifact and the reason it must change; require an explicit scope-check record before any deviation.
+- [x] Define the Finding lifecycle: Discovery/Observation → Finding → Work Candidate → Authorized Work. Evidence: `plan/definitions/PLAN-EXECUTION-BOUNDARY.md` §Authority Model.
+- [x] Define the five Finding dispositions and their required execution behavior: IN_SCOPE, ACCEPTANCE_INVESTIGATION, FUTURE_WORK_CANDIDATE, BLOCKING_FINDING, IRRELEVANT_OBSERVATION. Evidence: `plan/definitions/PLAN-EXECUTION-BOUNDARY.md` §Finding Dispositions.
+- [x] Define the mechanical scope decision and all bounded-investigation conditions, including explicit stopping conditions. Evidence: `plan/definitions/PLAN-EXECUTION-BOUNDARY.md` §§Mechanical Scope Decision, Bounded Acceptance Investigation.
+- [x] Define the Execution Stop Report and its relationship to the existing blocked lifecycle. Evidence: `plan/definitions/PLAN-EXECUTION-BOUNDARY.md` §§Execution Stop Report, Blocked Recovery.
+- [x] Define plan-mutation authority, ordering preservation, and acceptance-based completion/non-proliferation rules. Evidence: `plan/definitions/PLAN-EXECUTION-BOUNDARY.md` §§Plan Mutation Authority, Completion and Non-Proliferation.
+- [x] Produce the positive Change Inventory listing each expected artifact and the reason it must change; require an explicit scope-check record before any deviation. Evidence: Task §Change Inventory.
 
 Completion condition:
 The reusable boundary model is persisted in the designated planning/Agent artifacts and the Change Inventory identifies every implementation artifact allowed for the next Work Unit.
 
 ### Implement Governance Boundary
-Status: not-started
+Status: complete
 
 Objective:
 Implement only the approved Change Inventory without modifying Runtime semantics or absorbing unrelated findings.
 
 Subtasks:
-- [ ] Update the canonical planning boundary definition and references.
-- [ ] Update persistent Agent guidance so fresh Agents apply the same boundary rules without conversation history.
-- [ ] Add conformance tests for the canonical scope, finding, stop, recovery, mutation, and completion scenarios.
-- [ ] Review the implementation diff against the Change Inventory and record any deviation as a scope-check decision before further edits.
+- [x] Update the canonical planning boundary definition and references. Evidence: `plan/definitions/PLAN-EXECUTION-BOUNDARY.md`, `plan/README.md`, and `plan/PRINCIPLES.md`.
+- [x] Update persistent Agent guidance so fresh Agents apply the same boundary rules without conversation history. Evidence: `AGENTS.md` §Plan–Execution Boundary.
+- [x] Add conformance tests for the canonical scope, finding, stop, recovery, mutation, and completion scenarios. Evidence: `tests/planning/test_plan_execution_boundary.py`.
+- [x] Review the implementation diff against the Change Inventory and record any deviation as a scope-check decision before further edits. Evidence: Git comparison `19b29e7287060e86e36902f357e2eaf2eaa3ab36..9e7aee69bab319a4aed053371c7c2f49e76b11d0` established the initial Change Inventory implementation set; subsequent commits changed only the Task state/navigation and no Runtime/DBP source artifacts.
 
 Completion condition:
 All artifacts in the Change Inventory are implemented, no unauthorized artifact was modified, and the repository contains executable or independently checkable conformance coverage for the normative boundary.
 
 ### Verify Boundary Behavior
-Status: not-started
+Status: in-progress
 
 Objective:
 Verify the implemented boundary through deterministic conformance scenarios and repository-level checks.
 
 Subtasks:
-- [ ] Verify explicit in-scope work produces `IN_SCOPE` and permits continuation.
-- [ ] Verify necessary acceptance investigation produces `ACCEPTANCE_INVESTIGATION` and cannot authorize unrelated implementation.
-- [ ] Verify an unrelated discovered defect produces `FUTURE_WORK_CANDIDATE` or `IRRELEVANT_OBSERVATION` and does not mutate the plan.
-- [ ] Verify an out-of-scope executable requirement produces `BLOCKING_FINDING` and an Execution Stop Report rather than silent scope expansion.
-- [ ] Verify blocker resolution does not automatically reactivate work.
-- [ ] Verify explicit reactivation is a new authorization event.
-- [ ] Verify completion remains possible when future-work candidates exist after all authorized acceptance conditions are satisfied.
-- [ ] Run the available repository conformance/test suite and record exact results.
+- [x] Verify explicit in-scope work produces `IN_SCOPE` and permits continuation. Evidence: canonical scenario persisted in Task §Canonical Validation Scenarios and boundary definition §Canonical Validation Scenarios.
+- [x] Verify necessary acceptance investigation produces `ACCEPTANCE_INVESTIGATION` and cannot authorize unrelated implementation. Evidence: boundary definition §Bounded Acceptance Investigation and scenario table.
+- [x] Verify an unrelated discovered defect produces `FUTURE_WORK_CANDIDATE` or `IRRELEVANT_OBSERVATION` and does not mutate the plan. Evidence: boundary definition §§Finding Dispositions, Plan Mutation Authority.
+- [x] Verify an out-of-scope executable requirement produces `BLOCKING_FINDING` and an Execution Stop Report rather than silent scope expansion. Evidence: boundary definition §§Mechanical Scope Decision, Execution Stop Report.
+- [x] Verify blocker resolution does not automatically reactivate work. Evidence: boundary definition §Blocked Recovery and existing `BLOCKED.md` lifecycle.
+- [x] Verify explicit reactivation is a new authorization event. Evidence: boundary definition §Blocked Recovery and existing `TASK.md`/Reactivate semantics.
+- [x] Verify completion remains possible when future-work candidates exist after all authorized acceptance conditions are satisfied. Evidence: boundary definition §Completion and Non-Proliferation and canonical future-improvement scenario.
+- [ ] Run the available repository conformance/test suite and record exact results. BLOCKED: The connected GitHub execution surface provides repository read/write and workflow inspection but no direct command/test execution environment for this repository; no test pass result is claimed.
 
 Completion condition:
 Every canonical scenario has an independently checkable expected and observed result, and all available automated verification passes or each failure is recorded as an explicit blocker/finding.
@@ -269,6 +269,10 @@ Completed: not yet
 The baseline confirms that the repository already has strong Task authorization, semantic Work Unit/Subtask structure, blocked recovery, completion hierarchy, and planning/Runtime separation. The material gap is the absence of one durable execution-time contract connecting discoveries to findings, findings to non-executable candidates, and out-of-scope findings to deterministic stop behavior.
 
 The implementation therefore must extend existing planning mechanisms rather than replace them. In particular, `BLOCKED.md` remains the recovery authority, `TASK.md` remains Task authority, and Runtime/.aesm/ remain outside this planning Task's mutation scope.
+
+## Verification Limitation
+
+The implementation and scenario definitions are persisted, but the available execution surface in this session does not provide a direct repository command runner or an independently instantiated fresh Agent session. Therefore automated test execution and true fresh-Agent behavioral validation cannot be claimed from GitHub file inspection alone. The Task remains `in-progress` until those verification surfaces are available or an authorized planning decision explicitly bounds the remaining validation as unavailable.
 
 ## Current Execution Boundary
 
