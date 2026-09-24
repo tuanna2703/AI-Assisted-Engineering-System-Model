@@ -91,3 +91,9 @@ When executing a Task under `plan/`, apply the scope control rule in
   conditions are satisfied.
 - If the required execution environment is unavailable, record the limitation
   and do not fabricate Runtime, persisted, or fresh-session evidence.
+
+---
+
+## Default Session Entry
+
+When starting a new session with no explicit instruction, read `plan/README.md`, then `plan/CURRENT.md`, then the active task file, and report the current planning state and next action.
