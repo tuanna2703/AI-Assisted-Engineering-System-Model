@@ -73,18 +73,21 @@ For semantic questions, consult the canonical `docs/` material rather than exten
 
 ## Plan–Execution Boundary
 
-When executing a Task under `plan/`, apply
-`plan/definitions/PLAN-EXECUTION-BOUNDARY.md` before acting on discoveries.
+When executing a Task under `plan/`, apply the scope control rule in
+`plan/README.md §Scope Control` before acting on discoveries.
 
 - The authorized Task → Work Unit → Subtask hierarchy is the execution scope.
 - Discovery is evidence; it does not authorize new work.
-- Classify material discoveries as Findings.
-- A Work Candidate is record-only until explicitly authorized.
-- Use Explicit Coverage → Acceptance Investigation → STOP as the scope decision.
-- Acceptance investigation is allowed only when every bounded-investigation condition is satisfied and the investigation is necessary to determine an existing acceptance condition.
-- Do not create, activate, expand, reorder, or reinterpret executable planning work because of a Finding.
-- Do not change acceptance conditions because execution discovered a different approach.
-- An out-of-scope executable requirement that prevents existing acceptance requires an Execution Stop Report and the existing blocked lifecycle.
+- Three outcomes: in scope (continue), out of scope (record, do not execute),
+  blocking (stop, surface to human).
+- Semantic relatedness, usefulness, severity, or convenience are not
+  authorization criteria.
+- Do not create, activate, expand, reorder, or reinterpret executable planning
+  work because of a discovery.
+- An out-of-scope condition that prevents existing acceptance requires the
+  existing blocked lifecycle.
 - Blocker resolution does not automatically reactivate a Task.
-- Future-work candidates do not prevent completion after authorized acceptance conditions are satisfied.
-- If the required execution environment is unavailable, record the limitation and do not fabricate Runtime, persisted, or fresh-session evidence.
+- Future-work candidates do not prevent completion after authorized acceptance
+  conditions are satisfied.
+- If the required execution environment is unavailable, record the limitation
+  and do not fabricate Runtime, persisted, or fresh-session evidence.

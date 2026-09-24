@@ -21,18 +21,14 @@ dbp, continuation, fresh-agent, repository-scoped, empirical-validation
 
 ---
 
-## Blocking Condition
+## Blocked
 
-Status: RESOLVED
-Resolved Work Unit: Session A — DBP Process Establishment (blocking condition)
-Resolved At: 2026-09-23T09:14:28Z
-Blocked Work Unit: Session A — DBP Process Establishment
-Resume Point: Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
-Blocking Reason: The available execution surface provides repository inspection and Git operations but does not provide a live DBP checkout/runtime process in which the AESM Runtime can be invoked. Runtime execution cannot be truthfully claimed from repository inspection alone. The existing DBP Process Instance (`d0640ec8-672e-43bd-bd4b-974d808915a2`, scope `project:tuanna2703/directories-builder-pro`) must be deterministically resolved through the Runtime rather than through manual `.aesm/` editing. A new same-scope Session A cannot be established while the existing active Process Instance persists and its disposition has not been explicitly authorized.
-Resolution Condition: A live DBP checkout with AESM Runtime execution capability is available, the disposition of the existing active Process Instance (`d0640ec8-672e-43bd-bd4b-974d808915a2`) has been explicitly authorized, and a legitimate Session A can be established through the Runtime-owned resolution path without manual `.aesm/` mutation.
-Resolution Task: resolve-dbp-active-process-instance-disposition
+Reason:    Live DBP checkout with AESM Runtime execution capability is unavailable. Repository inspection alone cannot produce Runtime evidence.
+Resume At: Establish the active repository context from the controlled DBP repository checkout without relying on conversation history.
+Condition: A live DBP checkout with AESM Runtime execution capability is available and a legitimate Session A can be established through the Runtime-owned resolution path.
 
 ---
+
 
 ## Objective
 

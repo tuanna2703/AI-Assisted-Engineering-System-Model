@@ -1,136 +1,129 @@
+"""Structural invariant tests for the AESM planning system.
+
+These tests verify structural properties of the planning system rather than
+checking string presence in definition files. They validate that the system
+conforms to its architectural invariants.
+"""
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-BOUNDARY = ROOT / "plan" / "definitions" / "PLAN-EXECUTION-BOUNDARY.md"
+PLAN = ROOT / "plan"
+ACTIVE = PLAN / "active"
+COMPLETED = PLAN / "completed"
+CURRENT = PLAN / "CURRENT.md"
 
-def _locate_task() -> Path:
-    """Locate the resolution Task in its current lifecycle location.
 
-    The Task resides in plan/active/ when executing, plan/blocked/ when
-    execution is blocked, and plan/completed/ when the Task is complete.
-    The test must find it regardless of lifecycle state so that the
-    conformance suite remains executable across all lifecycle transitions.
-    """
-    for subdir in ("active", "blocked", "completed"):
-        candidate = ROOT / "plan" / subdir / "plan-execution-boundary-governance-resolution.md"
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(
-        "plan-execution-boundary-governance-resolution.md not found in "
-        "plan/active/, plan/blocked/, or plan/completed/"
+def test_at_most_one_active_task():
+    """plan/active/ must contain at most one task file."""
+    if not ACTIVE.exists():
+        return  # no active directory = 0 tasks; valid
+    task_files = [f for f in ACTIVE.iterdir() if f.suffix == ".md"]
+    assert len(task_files) <= 1, (
+        f"Expected at most 1 active task, found {len(task_files)}: "
+        f"{[f.name for f in task_files]}"
     )
 
-TASK = _locate_task()
 
-def read(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
+def test_active_tasks_have_four_element_source():
+    """Every active task must have a Source: field with authorization evidence."""
+    if not ACTIVE.exists():
+        return
+    for task_file in ACTIVE.glob("*.md"):
+        text = task_file.read_text(encoding="utf-8")
+        assert "Source:" in text, (
+            f"{task_file.name} missing Source: field"
+        )
+        # The Source: field should contain date, authorization type, task identity,
+        # and scope evidence. We check for the presence of identifiable elements.
+        source_idx = text.index("Source:")
+        source_block = text[source_idx:source_idx + 500]
+        assert any(year in source_block for year in ("2026", "2025", "2027", "2028")), (
+            f"{task_file.name} Source: field missing date element"
+        )
 
-def test_boundary_definition_contains_required_authority_rules():
-    text = read(BOUNDARY)
-    required = [
-        "## Authority Model",
-        "## Authorized Scope",
-        "## Mechanical Scope Decision",
-        "## Bounded Acceptance Investigation",
-        "## Finding Dispositions",
-        "## Execution Stop Report",
-        "## Blocked Recovery",
-        "## Plan Mutation Authority",
-        "## Change Inventory",
-        "## Completion and Non-Proliferation",
-        "## Evidence Separation",
-        "## Fresh-Agent Requirement",
-        "## DBP Validation Rule",
-    ]
-    for section in required:
-        assert section in text, section
 
-def test_scope_decision_is_ordered_and_non_inferential():
-    text = read(BOUNDARY)
-    assert "1. **Explicit coverage:**" in text
-    assert "2. **Acceptance investigation:**" in text
-    assert "3. **Stop:**" in text
-    assert "semantic relatedness" in text
-    assert "usefulness" in text
+def test_current_md_references_active_task_or_none():
+    """CURRENT.md must reference the active task path, or state 'None'."""
+    assert CURRENT.exists(), "plan/CURRENT.md does not exist"
+    text = CURRENT.read_text(encoding="utf-8")
+    assert "Active Task:" in text, "CURRENT.md missing 'Active Task:' field"
 
-def test_finding_lifecycle_separates_observation_candidate_and_authorized_work():
-    text = read(BOUNDARY)
-    for term in ("Observation/Discovery", "Finding", "Work Candidate", "Authorized Work"):
-        assert term in text
-    assert "Only explicit planning authorization creates executable work." in text
+    # Either references an active task file or explicitly states None
+    if ACTIVE.exists():
+        task_files = list(ACTIVE.glob("*.md"))
+        if task_files:
+            task_name = task_files[0].stem
+            assert task_name in text, (
+                f"CURRENT.md does not reference active task '{task_name}'"
+            )
+            return
+    # No active task — CURRENT.md should say None or reference blocked state
+    assert "None" in text or "blocked" in text.lower(), (
+        "CURRENT.md has no active task but does not state 'None' or 'blocked'"
+    )
 
-def test_all_five_finding_dispositions_are_defined():
-    text = read(BOUNDARY)
-    for disposition in (
-        "`IN_SCOPE`",
-        "`ACCEPTANCE_INVESTIGATION`",
-        "`FUTURE_WORK_CANDIDATE`",
-        "`BLOCKING_FINDING`",
-        "`IRRELEVANT_OBSERVATION`",
-    ):
-        assert disposition in text
 
-def test_execution_stop_report_contains_recovery_identity():
-    text = read(BOUNDARY)
-    for field in (
-        "Task:",
-        "Work Unit:",
-        "Subtask:",
-        "Authorization:",
-        "Observed Condition:",
-        "Scope Determination:",
-        "Mutation Already Performed:",
-        "Current Persisted Planning State:",
-        "Required Human / Planning Decision:",
-        "Resume Point:",
-    ):
-        assert field in text
+def test_blocked_tasks_have_blocked_section():
+    """Every active task with Status: blocked must contain a ## Blocked section."""
+    if not ACTIVE.exists():
+        return
+    for task_file in ACTIVE.glob("*.md"):
+        text = task_file.read_text(encoding="utf-8")
+        if "Status:" in text:
+            # Find the Status value
+            for line in text.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("Status:") or stripped == "blocked":
+                    if "blocked" in stripped:
+                        assert "## Blocked" in text, (
+                            f"{task_file.name} has Status: blocked but no ## Blocked section"
+                        )
+                        assert "Reason:" in text, (
+                            f"{task_file.name} ## Blocked section missing Reason field"
+                        )
+                        assert "Resume At:" in text, (
+                            f"{task_file.name} ## Blocked section missing Resume At field"
+                        )
+                        assert "Condition:" in text, (
+                            f"{task_file.name} ## Blocked section missing Condition field"
+                        )
+                        break
 
-def test_boundary_preserves_existing_blocked_lifecycle():
-    text = read(BOUNDARY)
-    assert "Do not create a parallel stop status." in text
-    assert "Resolution of the blocker does not authorize new work." in text
-    assert "Reactivation requires the existing explicit Reactivation Record" in text
 
-def test_completion_is_acceptance_based():
-    text = read(BOUNDARY)
-    assert "No additional issues were discovered." in text
-    assert "future-work candidate may remain recorded" in text
+def test_completed_tasks_have_completion_record():
+    """Every completed task (except INDEX.md and TEMPLATE.md) should have
+    completion evidence — either a formal Completion Record section or
+    historical completion markers (Status: complete, Completed:)."""
+    exempt = {"INDEX.md", "TEMPLATE.md"}
+    for task_file in COMPLETED.glob("*.md"):
+        if task_file.name in exempt:
+            continue
+        text = task_file.read_text(encoding="utf-8")
+        has_completion = (
+            "Completion Record" in text
+            or "## Completion" in text
+            or "Status:\ncomplete" in text
+            or "Completed:" in text
+        )
+        assert has_completion, (
+            f"{task_file.name} missing completion evidence"
+        )
 
-def test_task_is_mechanically_authorized_and_has_semantic_work_units():
-    text = read(TASK)
-    for field in (
-        "Task ID:",
-        "Status:",
-        "Created:",
-        "Source:",
-        "Authorized by:",
-        "Authorized Task:",
-        "Authorized scope:",
-        "## Objective",
-        "## Governing Constraints",
-        "## Work Units",
-        "## Acceptance Criteria",
-        "## Completion Record",
-    ):
-        assert field in text
-    assert "### Establish Boundary Baseline" in text
-    assert "### Define Boundary Model and Change Inventory" in text
-    assert "### Implement Governance Boundary" in text
-    assert "### Verify Boundary Behavior" in text
-    assert "### Fresh-Agent and DBP Boundary Validation" in text
-    assert "Phase 1" not in text
-    assert "Phase 2" not in text
 
-def test_canonical_scenarios_are_persisted():
-    text = read(TASK)
-    for scenario in (
-        "Explicitly authorized work",
-        "Acceptance uncertainty",
-        "Unrelated defect",
-        "Unauthorized required implementation",
-        "Resolved blocker",
-        "Explicit reactivation",
-        "Future improvement after acceptance",
-    ):
-        assert scenario in text
+def test_definitions_directory_does_not_exist():
+    """plan/definitions/ must not exist after refactoring."""
+    defs = PLAN / "definitions"
+    assert not defs.exists(), (
+        f"plan/definitions/ still exists with contents: "
+        f"{list(defs.iterdir()) if defs.exists() else []}"
+    )
+
+
+def test_blocked_directory_does_not_exist():
+    """plan/blocked/ must not exist after refactoring."""
+    blocked = PLAN / "blocked"
+    assert not blocked.exists(), (
+        f"plan/blocked/ still exists with contents: "
+        f"{list(blocked.iterdir()) if blocked.exists() else []}"
+    )
